@@ -1,0 +1,9 @@
+/build/bin/
+/build/darwin/
+/build/windows/
+/frontend/wailsjs/
+/dist/
+/ui-screenshots/
+/.cache/
+*.log
+.DS_Store

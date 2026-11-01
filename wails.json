@@ -1,0 +1,17 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "zapret-desktop",
+  "outputfilename": "ZapretDesktop",
+  "frontend:dir": "frontend",
+  "frontend:install": "",
+  "frontend:build": "",
+  "frontend:dev:watcher": "",
+  "author": { "name": "Kalinin Danila" },
+  "info": {
+    "companyName": "rrabmig",
+    "productName": "Zapret Desktop",
+    "productVersion": "0.1.0",
+    "copyright": "Copyright 2026 Kalinin Danila",
+    "comments": "Independent GUI for Flowseal/zapret-discord-youtube"
+  }
+}

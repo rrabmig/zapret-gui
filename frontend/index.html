@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Zapret Desktop</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+<main class="page">
+  <header>
+    <div class="title-row">
+      <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.4c0 4.4 3.2 7.5 7.5 9.6 4.3-2.1 7.5-5.2 7.5-9.6V6L12 3Z"/><path d="m8.5 12 2.3 2.3 4.7-5"/></svg><h1>zapret<span class="cmd">desktop</span></h1></div>
+      <span id="status" class="badge muted" role="status">Загрузка</span>
+    </div>
+    <p class="subtitle">Простой интерфейс. Оригинальный движок.</p>
+    <dl class="readout"><div><dt>Оболочка</dt><dd id="app-version">—</dd></div><div><dt>Upstream</dt><dd id="upstream-version">не установлен</dd></div><div><dt>Платформа</dt><dd id="platform">—</dd></div></dl>
+  </header>
+
+  <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
+  <div id="unsupported" class="notice warning" hidden>Интерфейс доступен на этой ОС. Движок Flowseal требует Windows и WinDivert; запуск, системные службы и сетевые тесты здесь недоступны.</div>
+  <div id="tools-active" class="notice warning" hidden>Открыто оригинальное окно upstream. Завершите работу в нём, закройте окно и нажмите <button data-action="tools-finished" class="text-button">«Сеанс завершён»</button>. Изменения из этого окна не переносятся в настройки GUI.</div>
+
+  <nav class="tabs" aria-label="Разделы">
+    <button class="is-on" data-tab="overview" aria-current="page">Обзор</button>
+    <button data-tab="strategies">Стратегии <span id="strategy-count" class="count">0</span></button>
+    <button data-tab="lists">Списки</button>
+    <button data-tab="updates">Обновления</button>
+    <button data-tab="settings">Настройки</button>
+    <button data-tab="journal">Журнал</button>
+  </nav>
+
+  <section id="overview" class="panel">
+    <div class="section-head"><div><h2>Подключение</h2><p>Выберите стратегию и запустите движок вручную.</p></div><span class="caption mono" id="current-strategy">general</span></div>
+    <div class="connection card">
+      <div class="connection-icon" aria-hidden="true"><span id="connection-dot"></span></div>
+      <div class="connection-copy"><h3 id="connection-title">Движок не запущен</h3><p id="connection-description">Установите официальный пакет во вкладке «Обновления».</p></div>
+      <button id="start-stop" class="primary" disabled>Запустить</button>
+    </div>
+    <div class="section-head"><div><h2>Служба и автозапуск</h2><p>Отдельная служба ZapretDesktop. Продолжает работать после закрытия GUI.</p></div><span id="service-status" class="badge muted">Не установлена</span></div>
+    <div class="card row"><div><strong>Запуск вместе с Windows</strong><p>Использует текущую стратегию и настройки.</p></div><div class="actions"><button data-action="service-install" data-engine data-package>Установить</button><button data-action="service-start" data-engine>Запустить</button><button data-action="service-stop" data-engine>Остановить</button><button data-action="service-remove" data-engine class="danger">Удалить</button></div></div>
+    <div class="section-head"><div><h2>Инструменты</h2><p>Сетевые проверки запускаются только по вашей команде.</p></div></div>
+    <div class="tool-grid">
+      <button id="diagnostics" class="tool"><span class="tool-symbol">⌕</span><strong>Диагностика</strong><span>Только чтение локального состояния</span><span aria-hidden="true">↗</span></button>
+      <button id="run-tests" class="tool" data-engine data-package><span class="tool-symbol">▷</span><strong>Проверка стратегий</strong><span>Standard tests и DPI checkers</span><span aria-hidden="true">↗</span></button>
+      <button id="upstream-menu" class="tool" data-engine data-package><span class="tool-symbol">≡</span><strong>Оригинальное меню</strong><span>Все возможности service.bat</span><span aria-hidden="true">↗</span></button>
+      <button id="clear-cache" class="tool" data-engine><span class="tool-symbol">↺</span><strong>Кэш Discord</strong><span>Сохранить кэш в резервных папках</span><span aria-hidden="true">↗</span></button>
+    </div>
+    <div id="checks" class="checks" aria-live="polite"></div>
+    <p class="footnote">Никаких запусков по умолчанию. Закрытие GUI останавливает только запущенный им процесс.</p>
+  </section>
+
+  <section id="strategies" class="panel" hidden>
+    <div class="section-head"><div><h2>Стратегии</h2><p>Каталог формируется из установленного официального релиза.</p></div><input id="strategy-search" type="search" placeholder="Найти стратегию" aria-label="Поиск стратегий"></div>
+    <p id="strategies-empty" class="empty">Сначала установите пакет во вкладке «Обновления».</p>
+    <fieldset id="strategy-list" class="strategy-list"><legend class="sr-only">Активная стратегия</legend></fieldset>
+    <div class="sticky-actions"><span class="caption">Выбор сохраняется без запуска движка.</span></div>
+  </section>
+
+  <section id="lists" class="panel" hidden>
+    <div class="section-head"><div><h2>Ваши списки</h2><p>Сохраняются отдельно от upstream и переживают обновление и откат.</p></div><button id="update-ipset">Обновить IPSet</button></div>
+    <div class="list-layout"><div class="list-menu" aria-label="Файлы списков">
+      <button class="is-on" data-list="list-general-user.txt">Домены<span>list-general-user.txt</span></button>
+      <button data-list="list-exclude-user.txt">Исключения доменов<span>list-exclude-user.txt</span></button>
+      <button data-list="ipset-extra-user.txt">Дополнительные IP<span>ipset-extra-user.txt</span></button>
+      <button data-list="ipset-exclude-user.txt">Исключения IP<span>ipset-exclude-user.txt</span></button>
+      <button data-list="targets.txt">Цели проверок<span>utils/targets.txt</span></button>
+    </div><div class="editor card"><label for="list-content" id="list-label" class="mono">list-general-user.txt</label><textarea id="list-content" spellcheck="false" placeholder="# Один домен или IP/CIDR на строку"></textarea><div class="editor-footer"><span class="caption" id="list-note">ASCII-домены, без схемы и пути. Комментарии через #.</span><button id="save-list" class="primary">Сохранить список</button></div></div></div>
+    <div class="section-head"><div><h2>Hosts</h2><p>Предпросмотр данных upstream. Применение — отдельным действием с резервной копией.</p></div><button id="preview-hosts">Загрузить предпросмотр</button></div>
+    <div id="hosts-box" class="card hosts" hidden><pre id="hosts-content"></pre><div class="editor-footer"><span class="caption">Меняется только блок # BEGIN ZapretDesktop.</span><button id="apply-hosts" data-engine class="primary">Применить к hosts</button></div></div>
+  </section>
+
+  <section id="updates" class="panel" hidden>
+    <div class="section-head"><div><h2>Официальный пакет</h2><p>Flowseal / zapret-discord-youtube · стабильные GitHub Releases</p></div><button id="check-updates">Проверить обновления</button></div>
+    <div class="card release-card"><div><span class="caption">Установлено</span><strong id="installed-tag" class="release-version">—</strong></div><div><span class="caption">Последний стабильный релиз</span><strong id="latest-tag" class="release-version">—</strong></div><div><span class="caption">Последняя проверка</span><span id="last-check">Ещё не выполнялась</span></div></div>
+    <div class="action-line"><p class="caption">Загрузка ZIP → SHA-256 → распаковка → переключение версии.<br>Скачанный код не запускается автоматически.</p><button id="install-update" class="primary">Скачать и установить</button></div>
+    <div class="section-head"><div><h2>Установленные версии</h2><p>Предыдущие пакеты остаются на диске для возврата.</p></div><button id="rollback" disabled>Откатить версию</button></div>
+    <div id="packages"></div>
+    <div class="note"><strong>GUI и движок обновляются отдельно</strong><p>Оболочка использует целый официальный релиз, без fork и submodule. Проверка обновлений не устанавливает пакет. Настройки и пользовательские списки хранятся отдельно. Если формат стратегий изменится, останется оригинальное меню.</p></div>
+  </section>
+
+  <section id="settings" class="panel" hidden>
+    <form id="settings-form">
+      <div class="section-head"><div><h2>Поведение приложения</h2><p>Изменения применяются после сохранения.</p></div></div>
+      <div class="card settings-card">
+        <label class="setting-row"><span><strong>Разрешить запуск движка</strong><small>Открывает запуск, службы и системные действия на Windows.</small></span><input id="engine-allowed" type="checkbox" role="switch"></label>
+        <label class="setting-row"><span><strong>Проверять обновления при открытии</strong><small>Только метаданные GitHub. Установка остаётся ручной.</small></span><input id="auto-check" type="checkbox" role="switch"></label>
+        <label class="setting-row"><span><strong>Оформление</strong><small>Светлая, тёмная или тема системы.</small></span><select id="theme"><option value="system">Системная</option><option value="light">Светлая</option><option value="dark">Тёмная</option></select></label>
+      </div>
+      <div class="section-head"><div><h2>Фильтрация</h2><p>Соответствует настройкам актуального service.bat.</p></div></div>
+      <div class="card settings-card">
+        <label class="setting-row"><span><strong>Game Filter</strong><small>Режим фильтрации игровых портов.</small></span><select id="game-mode"><option value="disabled">Выключен</option><option value="all">TCP и UDP</option><option value="tcp">Только TCP</option><option value="udp">Только UDP</option></select></label>
+        <label class="setting-row"><span><strong>Порты TCP</strong><small>Например, 1024-1934,1936-65535</small></span><input id="game-tcp" type="text" maxlength="512" required></label>
+        <label class="setting-row"><span><strong>Порты UDP</strong><small>Диапазоны и отдельные порты через запятую.</small></span><input id="game-udp" type="text" maxlength="512" required></label>
+        <label class="setting-row"><span><strong>IPSet Filter</strong><small id="ipset-note">loaded — только IP из списка.</small></span><select id="ipset"><option value="loaded">loaded · по списку</option><option value="none">none · без IP</option><option value="any">any · все IP</option></select></label>
+      </div>
+      <div class="section-head"><div><h2>Активные фейки</h2><p>Файлы из bin текущего релиза. Применяются в рабочей копии.</p></div></div>
+      <div class="card settings-card">
+        <label class="setting-row"><span><strong>Discord UDP</strong><small>ACTIVE_DISCORD_UDP.bin</small></span><select id="discord-fake"><option value="">Как в upstream</option></select></label>
+        <label class="setting-row"><span><strong>Game UDP</strong><small>ACTIVE_GAME_UDP.bin</small></span><select id="game-fake"><option value="">Как в upstream</option></select></label>
+      </div>
+      <div class="action-line"><span id="settings-note" class="caption">Остановите движок и удалите службу перед изменением фильтров.</span><button type="submit" class="primary">Сохранить настройки</button></div>
+    </form>
+    <div class="section-head"><div><h2>Права администратора</h2><p>Нужны для WinDivert, системной службы и файла hosts.</p></div><button id="elevate" data-engine>Запросить права</button></div>
+    <p id="data-dir" class="footnote mono"></p>
+  </section>
+
+  <section id="journal" class="panel" hidden>
+    <div class="section-head"><div><h2>Журнал</h2><p>Последние 250 строк. Полный журнал — app.log в каталоге данных.</p></div><button id="refresh-log">Обновить</button></div>
+    <pre id="log-content" class="card log" tabindex="0" aria-label="Журнал приложения">Пока нет записей.</pre>
+  </section>
+
+  <footer><span>Независимый GUI для проекта Flowseal</span><span id="footer-mode">Без автоматического запуска</span></footer>
+</main>
+
+<dialog id="confirm-dialog" aria-labelledby="dialog-title"><form method="dialog"><span class="eyebrow">Zapret Desktop</span><h2 id="dialog-title">Подтвердите действие</h2><p id="dialog-body"></p><div class="actions"><button value="cancel">Отмена</button><button id="dialog-confirm" value="confirm" class="primary">Продолжить</button></div></form></dialog>
+</body>
+</html>

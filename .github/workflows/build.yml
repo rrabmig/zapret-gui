@@ -1,0 +1,156 @@
+name: Build desktop
+
+on:
+  push:
+    branches: [main, 'codex/**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  interface:
+    name: Interface checks (inert bridge)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: JavaScript syntax
+        run: node --check frontend/app.js
+      - name: Install browser test tools on the runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ui-check" --no-package-lock --no-save playwright@1.64.1
+          "$RUNNER_TEMP/ui-check/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Test GUI with an inert bridge and capture both themes
+        env:
+          NODE_PATH: ${{ runner.temp }}/ui-check/node_modules
+          UI_SCREENSHOT_DIR: ${{ runner.temp }}/ui-screenshots
+        run: node scripts/ui-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-screenshots-fixtures
+          path: ${{ runner.temp }}/ui-screenshots/*.png
+          if-no-files-found: ignore
+          retention-days: 14
+
+  core:
+    name: Offline core checks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Unit tests (no engine, no external network probes)
+        run: go test -race ./internal/core
+      - name: Vet core
+        run: go vet ./internal/core ./cmd/catalog-check
+
+  compatibility:
+    name: Official strategy format (text only)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download verified strategy text into runner temp
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/fetch-upstream-fixtures.py "$RUNNER_TEMP/upstream-text"
+      - name: Inspect every strategy without executing it
+        run: go run ./cmd/catalog-check "$RUNNER_TEMP/upstream-text"
+
+  desktop:
+    name: Build ${{ matrix.platform }}
+    needs: [core, interface]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            platform: windows/amd64
+            artifact: zapret-desktop-windows-amd64
+            flags: ''
+          - os: macos-14
+            platform: darwin/universal
+            artifact: zapret-desktop-macos-universal
+            flags: ''
+          - os: ubuntu-24.04
+            platform: linux/amd64
+            artifact: zapret-desktop-linux-amd64
+            flags: '-tags webkit2_41'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Linux WebKit build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+      - name: Install pinned GUI build tool
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
+      - name: Compile GUI only
+        shell: bash
+        env:
+          TARGET_PLATFORM: ${{ matrix.platform }}
+          BUILD_FLAGS: ${{ matrix.flags }}
+        run: |
+          version="${GITHUB_REF_NAME}"
+          if [[ "$GITHUB_REF_TYPE" != "tag" ]]; then version="0.1.0-${GITHUB_SHA:0:8}"; fi
+          wails build -clean -platform "$TARGET_PLATFORM" $BUILD_FLAGS -ldflags "-X main.Version=$version"
+      - name: Package application and documentation
+        shell: bash
+        env:
+          ARTIFACT_NAME: ${{ matrix.artifact }}
+        run: |
+          python - <<'PY'
+          import os, pathlib, shutil
+          dest = pathlib.Path('dist') / os.environ['ARTIFACT_NAME']
+          shutil.copytree('build/bin', dest)
+          for name in ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md']:
+              shutil.copy2(name, dest / name)
+          shutil.copytree('docs', dest / 'docs')
+          shutil.make_archive(str(dest), 'zip', dest.parent, dest.name)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  draft-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [desktop, compatibility]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create private draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "Zapret Desktop $GITHUB_REF_NAME"
