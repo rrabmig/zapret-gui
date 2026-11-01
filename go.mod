@@ -1,4 +1,4 @@
-module github.com/rrabmig/zapret-desktop
+module github.com/rrabmig/zapret-gui
 
 go 1.25.0
 

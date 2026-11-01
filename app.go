@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rrabmig/zapret-desktop/internal/core"
+	"github.com/rrabmig/zapret-gui/internal/core"
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 

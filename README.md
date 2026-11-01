@@ -1,4 +1,4 @@
-# Zapret Desktop
+# zapret-gui
 
 Минималистичная Go-оболочка над [Flowseal/zapret-discord-youtube](https://github.com/Flowseal/zapret-discord-youtube). Официальный пакет скачивается отдельно. Fork, submodule и встроенная копия движка не нужны.
 
@@ -33,7 +33,7 @@
 
 ## Первый запуск на личном Windows-устройстве
 
-1. В верхней части интерфейса раскройте **«Скачать приложение»** и выберите Windows x64. Этот блок доступен и в HTML-превью. Также сборки находятся в **Actions → Build desktop → Artifacts** private-репозитория; для скачивания нужно войти в GitHub с доступом к нему. Распакуйте скачанный архив и ZIP внутри него. Для WebView нужен [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
+1. В верхней части интерфейса раскройте **«Скачать приложение»** и откройте страницу сборок. Этот блок доступен и в HTML-превью. На GitHub выберите успешный запуск **Actions → Build desktop**, прокрутите до **Artifacts** и скачайте `zapret-gui-windows-amd64`. Для скачивания нужно войти в GitHub с доступом к [private-репозиторию](https://github.com/rrabmig/zapret-gui). Распакуйте скачанный архив и ZIP внутри него. Для WebView нужен [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
 2. Откройте `ZapretDesktop.exe`. Движок выключен; установки драйвера и запуска стратегий при открытии нет.
 3. В «Обновлениях» загрузите официальный стабильный пакет. Проверьте выбранную стратегию и пользовательские списки.
 4. В «Настройках» включите «Разрешить запуск движка», сохраните и нажмите «Запросить права». GUI перезапустится после UAC.

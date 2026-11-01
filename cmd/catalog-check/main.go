@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rrabmig/zapret-desktop/internal/core"
+	"github.com/rrabmig/zapret-gui/internal/core"
 )
 
 func main() {

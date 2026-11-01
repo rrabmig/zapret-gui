@@ -87,15 +87,15 @@ jobs:
         include:
           - os: windows-2022
             platform: windows/amd64
-            artifact: zapret-desktop-windows-amd64
+            artifact: zapret-gui-windows-amd64
             flags: ''
           - os: macos-15
             platform: darwin/universal
-            artifact: zapret-desktop-macos-universal
+            artifact: zapret-gui-macos-universal
             flags: ''
           - os: ubuntu-24.04
             platform: linux/amd64
-            artifact: zapret-desktop-linux-amd64
+            artifact: zapret-gui-linux-amd64
             flags: '-tags webkit2_41'
     runs-on: ${{ matrix.os }}
     steps:
