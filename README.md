@@ -33,7 +33,7 @@
 
 ## Первый запуск на личном Windows-устройстве
 
-1. Скачайте Windows ZIP из **Actions → Build desktop → Artifacts** этого private-репозитория. Распакуйте архив. Для WebView нужен [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
+1. В верхней части интерфейса раскройте **«Скачать приложение»** и выберите Windows x64. Этот блок доступен и в HTML-превью. Также сборки находятся в **Actions → Build desktop → Artifacts** private-репозитория; для скачивания нужно войти в GitHub с доступом к нему. Распакуйте скачанный архив и ZIP внутри него. Для WebView нужен [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
 2. Откройте `ZapretDesktop.exe`. Движок выключен; установки драйвера и запуска стратегий при открытии нет.
 3. В «Обновлениях» загрузите официальный стабильный пакет. Проверьте выбранную стратегию и пользовательские списки.
 4. В «Настройках» включите «Разрешить запуск движка», сохраните и нажмите «Запросить права». GUI перезапустится после UAC.

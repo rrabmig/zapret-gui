@@ -290,8 +290,20 @@ window.addEventListener("beforeunload", (event) => {
   if (listDirty || settingsDirty) { event.preventDefault(); event.returnValue = ""; }
 });
 
+// Keep downloads available in the HTML preview. In the desktop app, open
+// GitHub in the user's browser so their private-repository login is available.
+document.querySelectorAll("a[data-external]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    if (typeof window.runtime?.BrowserOpenURL === "function") {
+      event.preventDefault();
+      window.runtime.BrowserOpenURL(link.href);
+    }
+  });
+});
+
 if (!api()) {
-  message("Это исходник интерфейса. Откройте собранное приложение Zapret Desktop. В браузере управление движком недоступно.");
+  $("downloads").open = true;
+  message("Это HTML-превью. Скачайте приложение по ссылкам выше. Управление движком доступно в собранном приложении.");
   document.querySelectorAll("button,input,textarea,select").forEach((node) => { node.disabled = true; });
 } else {
   refresh();
