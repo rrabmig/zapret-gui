@@ -82,6 +82,10 @@ func TestArgumentGroupsPreserveLiteralWindowsPaths(t *testing.T) {
 	if args[0] != `--hostlist=C:\Users\A B\lists\file.txt` {
 		t.Fatalf("path mangled: %q", args[0])
 	}
+	args, err = splitArguments(`--dpi-desync-fake-tls=^! --hostlist="C:\Users\literal^!\list.txt"`)
+	if err != nil || args[0] != "--dpi-desync-fake-tls=!" || args[1] != `--hostlist=C:\Users\literal^!\list.txt` {
+		t.Fatalf("literal bang escape: %#v, %v", args, err)
+	}
 }
 
 func TestZIPRejectsTraversalLinksAndWindowsAliases(t *testing.T) {

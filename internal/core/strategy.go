@@ -134,10 +134,16 @@ func splitArguments(text string) ([]string, error) {
 			b.Reset()
 		}
 	}
-	for _, r := range text {
+	runes := []rune(text)
+	for i := 0; i < len(runes); i++ {
+		r := runes[i]
 		switch {
 		case r == '"':
 			quoted = !quoted
+		case !quoted && r == '^' && i+1 < len(runes) && runes[i+1] == '!':
+			// FAKE TLS AUTO uses cmd's ^! escape for the literal ! fake.
+			b.WriteRune('!')
+			i++
 		case r == 0 || r == '\r' || r == '\n':
 			return nil, errors.New("unexpected control character")
 		case !quoted && strings.ContainsRune("&|<>^", r):
