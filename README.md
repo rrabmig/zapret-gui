@@ -93,7 +93,7 @@ wails build
 wails build -tags webkit2_41
 ```
 
-Пакеты GUI пока без code signing / notarization и без автоматического обновления самой оболочки. Билд не запускает приложение. Полная проверка WinDivert, служб и обхода должна выполняться отдельно на личном Windows-устройстве: [docs/validation.md](docs/validation.md).
+Пакеты GUI пока без code signing / notarization и без автоматического обновления самой оболочки. Билд не открывает окно и не запускает движок; генерация Wails bindings использует отдельную точку входа без инициализации приложения. Полная проверка WinDivert, служб и обхода должна выполняться отдельно на личном Windows-устройстве: [docs/validation.md](docs/validation.md).
 
 ## Лицензии
 

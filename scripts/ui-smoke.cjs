@@ -64,7 +64,7 @@ const { pathToFileURL } = require('node:url');
   fs.mkdirSync(out, { recursive: true });
   for (const theme of ['light', 'dark']) {
     await page.evaluate(value => { document.documentElement.dataset.theme = value; }, theme);
-    await page.screenshot({ path: path.join(out, `overview-${theme}.png`), fullPage: true });
+    await page.screenshot({ path: path.join(out, `overview-${theme}.png`), fullPage: true, animations: 'disabled' });
   }
   await page.evaluate(() => { window.__fixture.engine.supported = false; window.__fixture.os = 'darwin'; });
   await page.getByRole('button', { name: 'Журнал', exact: true }).click();

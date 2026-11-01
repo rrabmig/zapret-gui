@@ -1,7 +1,8 @@
+//go:build !bindings
+
 package main
 
 import (
-	"embed"
 	"flag"
 	"fmt"
 	"io/fs"
@@ -14,11 +15,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
-
-//go:embed frontend/index.html frontend/style.css frontend/app.js
-var assets embed.FS
-
-var Version = "0.1.0-dev"
 
 func main() {
 	rootFlag := flag.String("data-dir", "", "GUI package and settings directory")
