@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useApp } from "../../app/AppProvider";
 import { policy } from "../../bridge/policy";
 import type { Config } from "../../bridge/types";
-import { Button } from "../Button/Button";
-import { Card, Section } from "../Card/Card";
-import { Field, Switch } from "../Field/Field";
+import { Button } from "../../components/Button/Button";
+import { Card, Section } from "../../components/Card/Card";
+import { Field, Switch } from "../../components/Field/Field";
 import styles from "../../design/Page.module.css";
 export function Settings() {
   const { state, act, confirm, dirty, hasEdits, notify } = useApp();

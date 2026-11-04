@@ -4,7 +4,8 @@
 
 React + TypeScript (strict), Vite, CSS Modules. Версии зависимостей зафиксированы в `frontend/package.json` и `package-lock.json`; установка — `npm ci --ignore-scripts`. Нет роутера, CSS-фреймворка и библиотеки глобального состояния. Полный бюджет production JS+CSS — 100 KiB gzip, проверяется `scripts/check-frontend-size.mjs`. Размер конкретной сборки печатается в CI.
 
-- `frontend/src/components/Component/Component.tsx` — компонент или экран.
+- `frontend/src/components/Component/Component.tsx` — переиспользуемый компонент дизайн-системы.
+- `frontend/src/screens/Screen/Screen.tsx` — экран приложения; его stories лежат в `Screen/stories/Screen.stories.tsx`.
 - `frontend/src/components/Component/Component.module.css` — локальные стили, когда нужны.
 - `frontend/src/components/Component/stories/Component.stories.tsx` — состояния компонента.
 - `frontend/src/design/tokens.css` — единые семантические цвета, отступы, шрифты и радиусы.
@@ -59,3 +60,9 @@ Chromium и инертный мост не подтверждают работу
 - Внутри preview работают нативные `Tab`, `Shift+Tab`, `Enter`, `Space`, стрелки для select/radio и `Escape` для диалога. Для просторного просмотра доступен **Open in isolation mode**.
 
 Оба addon — только devDependencies. Они не входят в production-бандл и не подключаются к Go.
+
+### Клавиатура и доступность самого приложения
+
+`Tab` и `Shift+Tab` проходят по нативным кнопкам и полям, `Enter`/`Space` активируют кнопки. В навигации разделов стрелки и Home/End переводят фокус и открывают раздел; в меню файлов стрелки перемещают фокус, а Enter/Space открывают файл, сохраняя подтверждение несохранённых изменений. Первая ссылка «Перейти к содержимому» позволяет пропустить боковую панель. У активного раздела есть `aria-current`, у полей — связанные подписи, у диалога — фокус на отмене и возврат при Escape.
+
+В CI `@axe-core/playwright` проверяет реальные экраны приложения в обеих темах (WCAG 2 A/AA, 2.1 A/AA, 2.2 AA), включая имена элементов управления и контраст. Это дополнение к настоящим клавиатурным действиям в сквозном сценарии; автоматический axe-аудит не заменяет ручную проверку скринридером.

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { scenarios } from "../src/testing/fixtures";
 async function open(page: Page, state = "idle") {
@@ -17,6 +18,22 @@ async function calls(page: Page) {
   return page.evaluate(() => window.__uiCalls ?? []);
 }
 
+async function accessible(page: Page) {
+  const { violations } = await new AxeBuilder({ page })
+    .include("#root")
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+    .analyze();
+  expect(
+    violations.map(({ id, nodes }) => ({
+      id,
+      nodes: nodes.map((node) => ({
+        target: node.target,
+        reason: node.failureSummary,
+      })),
+    })),
+  ).toEqual([]);
+}
+
 test("визуальные состояния приложения и все разделы", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -30,6 +47,7 @@ test("визуальные состояния приложения и все р�
       await expect(
         page.getByRole("button", { name: "Запустить", exact: true }),
       ).toBeDisabled();
+    await accessible(page);
     await expect(page).toHaveScreenshot(`overview-${state}.png`, {
       fullPage: true,
     });
@@ -50,11 +68,13 @@ test("визуальные состояния приложения и все р�
       await expect(
         page.getByRole("textbox", { name: "list-general-user.txt" }),
       ).toHaveValue(/example.org/);
+    await accessible(page);
     await expect(page).toHaveScreenshot(`page-${name}.png`, { fullPage: true });
   }
   await page.setViewportSize({ width: 760, height: 790 });
   for (const name of ["Обзор", "Списки", "Настройки"]) {
     await section(page, name);
+    await accessible(page);
     await expect(page).toHaveScreenshot(`compact-${name}.png`, {
       fullPage: true,
     });
@@ -75,6 +95,29 @@ test("действия через инертный мост, ошибки и к�
   page.on("pageerror", (e) => errors.push(e.message));
   await open(page);
   expect(await calls(page)).toEqual([]);
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("link", { name: "Перейти к содержимому" }),
+  ).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("main", { name: "Обзор" })).toBeFocused();
+  const appNav = page.getByRole("navigation", { name: "Разделы" });
+  await appNav.getByRole("button", { name: "Обзор", exact: true }).focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(
+    page.getByRole("heading", { name: "Стратегии", exact: true }),
+  ).toBeVisible();
+  await expect(
+    appNav.getByRole("button", { name: /^Стратегии/ }),
+  ).toBeFocused();
+  await page.keyboard.press("End");
+  await expect(
+    page.getByRole("heading", { name: "Журнал", exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press("Home");
+  await expect(
+    page.getByRole("heading", { name: "Обзор", exact: true }),
+  ).toBeVisible();
   await section(page, "Настройки");
   await page.getByRole("switch", { name: "Разрешить запуск движка" }).check();
   await page
@@ -130,6 +173,19 @@ test("действия через инертный мост, ошибки и к�
   await page.getByRole("button", { name: "Остановить", exact: true }).click();
   await section(page, "Списки");
   const editor = page.getByRole("textbox", { name: "list-general-user.txt" });
+  const listNav = page.getByRole("navigation", { name: "Файлы списков" });
+  await listNav.getByRole("button", { name: /^Домены/ }).focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(
+    listNav.getByRole("button", { name: /^Исключения доменов/ }),
+  ).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("textbox", { name: "list-exclude-user.txt" }),
+  ).toHaveValue(/example.org/);
+  await page.keyboard.press("Home");
+  await page.keyboard.press("Space");
+  await expect(editor).toHaveValue(/example.org/);
   await editor.fill("example.com\n");
   await page.getByRole("button", { name: "Исключения доменов" }).click();
   await page.getByRole("button", { name: "Отмена", exact: true }).click();

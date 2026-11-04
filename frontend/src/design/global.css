@@ -43,7 +43,7 @@ textarea {
   min-width: 0;
 }
 input[type="radio"] {
-  accent-color: var(--accent);
+  accent-color: var(--accent-text);
 }
 input:disabled,
 select:disabled,
@@ -67,7 +67,7 @@ pre {
   margin: 0;
 }
 a {
-  color: var(--accent);
+  color: var(--accent-text);
   text-underline-offset: 3px;
 }
 summary {

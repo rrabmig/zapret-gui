@@ -48,6 +48,7 @@ export function AppProvider({
   const reading = useRef<Promise<void> | null>(null);
   const active = useRef(true);
   const resolver = useRef<((value: boolean) => void) | null>(null);
+  const confirmationTrigger = useRef<HTMLElement | null>(null);
   const edits = useRef({ settings: false, lists: false });
   const notify = useCallback(
     (text: string, tone: Tone = "neutral") => setNotice({ text, tone }),
@@ -112,6 +113,11 @@ export function AppProvider({
     success = "",
   ): Promise<T | undefined> {
     if (pending.current || resolver.current) return undefined;
+    const previousFocus = document.querySelector("dialog[open]")
+      ? confirmationTrigger.current
+      : document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     pending.current = true;
     setBusy(true);
     notify("Выполняется…");
@@ -132,7 +138,17 @@ export function AppProvider({
       return undefined;
     } finally {
       pending.current = false;
-      if (active.current) setBusy(false);
+      if (active.current) {
+        setBusy(false);
+        requestAnimationFrame(() => {
+          if (
+            previousFocus?.isConnected &&
+            previousFocus.getClientRects().length &&
+            document.activeElement === document.body
+          )
+            previousFocus.focus();
+        });
+      }
     }
   }
   async function act(action: Action, payload = "", success = "Готово.") {
@@ -146,6 +162,10 @@ export function AppProvider({
   }
   function confirm(value: Confirmation) {
     if (pending.current || resolver.current) return Promise.resolve(false);
+    confirmationTrigger.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     setConfirmation(value);
     return new Promise<boolean>((resolve) => {
       resolver.current = resolve;

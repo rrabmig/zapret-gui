@@ -1,9 +1,9 @@
 import { useApp } from "../../app/AppProvider";
 import { policy } from "../../bridge/policy";
-import { Button } from "../Button/Button";
-import { Badge } from "../Badge/Badge";
-import { Card, Section } from "../Card/Card";
-import { Notice } from "../Notice/Notice";
+import { Button } from "../../components/Button/Button";
+import { Badge } from "../../components/Badge/Badge";
+import { Card, Section } from "../../components/Card/Card";
+import { Notice } from "../../components/Notice/Notice";
 import styles from "../../design/Page.module.css";
 export function Updates() {
   const { state, act } = useApp();

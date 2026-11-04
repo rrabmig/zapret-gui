@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { arrowNavigation } from "../../design/arrowNavigation";
 import {
   DashboardIcon,
   MixerHorizontalIcon,
@@ -10,8 +11,8 @@ import {
 } from "@radix-ui/react-icons";
 import { openBuilds } from "../../bridge/desktop";
 import { useApp } from "../../app/AppProvider";
-import { Button } from "../Button/Button";
-import { Notice } from "../Notice/Notice";
+import { Button } from "../../components/Button/Button";
+import { Notice } from "../../components/Notice/Notice";
 import { Overview } from "../Overview/Overview";
 import { Strategies } from "../Strategies/Strategies";
 import { Lists } from "../Lists/Lists";
@@ -38,6 +39,9 @@ export function AppShell() {
   const current = tabs.find((item) => item[0] === tab)!;
   return (
     <div className={styles.shell}>
+      <a className={styles.skipLink} href="#workspace">
+        Перейти к содержимому
+      </a>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
           zapret<span>desktop</span>
@@ -47,7 +51,11 @@ export function AppShell() {
           <br />
           Всё под контролем.
         </p>
-        <nav aria-label="Разделы" className={styles.nav}>
+        <nav
+          aria-label="Разделы"
+          className={styles.nav}
+          onKeyDown={(event) => arrowNavigation(event, true)}
+        >
           {tabs.map(([id, label, Icon]) => (
             <button
               key={id}
@@ -68,11 +76,16 @@ export function AppShell() {
           <code>{state.version}</code>
         </div>
       </aside>
-      <main className={styles.main}>
+      <main
+        id="workspace"
+        tabIndex={-1}
+        aria-labelledby="workspace-title"
+        className={styles.main}
+      >
         <header className={styles.header}>
           <div>
             <p className={styles.eyebrow}>Рабочее пространство</p>
-            <h1>{current[1]}</h1>
+            <h1 id="workspace-title">{current[1]}</h1>
             <p>{current[3]}</p>
           </div>
           <span className={styles.platform}>

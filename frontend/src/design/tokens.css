@@ -11,6 +11,7 @@
   --line: #e1e5ec;
   --line-strong: #c7cfdb;
   --accent: #255bcd;
+  --accent-text: #255bcd;
   --accent-hover: #1d4db1;
   --accent-soft: #e8efff;
   --on-accent: #fff;
@@ -45,8 +46,9 @@
   --faint: #8594aa;
   --line: #303b4b;
   --line-strong: #495970;
-  --accent: #477eea;
-  --accent-hover: #5b8df0;
+  --accent: #376bc9;
+  --accent-text: #91b6ff;
+  --accent-hover: #3b70d0;
   --accent-soft: #233858;
   --on-accent: #fff;
   --success: #89d4ab;

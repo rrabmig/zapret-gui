@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useApp } from "../../app/AppProvider";
 import { policy } from "../../bridge/policy";
-import { Badge } from "../Badge/Badge";
-import { Card, Section } from "../Card/Card";
+import { Badge } from "../../components/Badge/Badge";
+import { Card, Section } from "../../components/Card/Card";
 import styles from "../../design/Page.module.css";
 export function Strategies() {
   const { state, act, hasEdits, notify } = useApp();

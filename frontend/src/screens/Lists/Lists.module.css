@@ -22,7 +22,7 @@
 }
 .menu button[aria-current] {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .menu small {
   display: block;

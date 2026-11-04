@@ -7,10 +7,10 @@ import {
 import { useApp } from "../../app/AppProvider";
 import { policy } from "../../bridge/policy";
 import type { Action } from "../../bridge/types";
-import { ConnectionCard } from "../ConnectionCard/ConnectionCard";
-import { Button } from "../Button/Button";
-import { Badge } from "../Badge/Badge";
-import { Card, Section } from "../Card/Card";
+import { ConnectionCard } from "../../components/ConnectionCard/ConnectionCard";
+import { Button } from "../../components/Button/Button";
+import { Badge } from "../../components/Badge/Badge";
+import { Card, Section } from "../../components/Card/Card";
 import styles from "../../design/Page.module.css";
 export function Overview() {
   const { state, act, confirm } = useApp();

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { arrowNavigation } from "../../design/arrowNavigation";
 import { useApp } from "../../app/AppProvider";
 import { policy } from "../../bridge/policy";
-import { Button } from "../Button/Button";
-import { Card, Section } from "../Card/Card";
+import { Button } from "../../components/Button/Button";
+import { Card, Section } from "../../components/Card/Card";
 import styles from "./Lists.module.css";
 import page from "../../design/Page.module.css";
 const files = [
@@ -93,11 +94,15 @@ export function Lists({ active = true }: { active?: boolean }) {
         }
       >
         <div className={styles.layout}>
-          <nav className={styles.menu} aria-label="Файлы списков">
+          <nav
+            className={styles.menu}
+            aria-label="Файлы списков"
+            onKeyDown={(event) => arrowNavigation(event)}
+          >
             {files.map(([file, label]) => (
               <button
                 key={file}
-                disabled={reading}
+                aria-disabled={reading}
                 aria-current={file === name ? "page" : undefined}
                 onClick={() => void load(file)}
               >

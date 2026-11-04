@@ -1,6 +1,6 @@
 import { useApp } from "../../app/AppProvider";
-import { Button } from "../Button/Button";
-import { Card, Section } from "../Card/Card";
+import { Button } from "../../components/Button/Button";
+import { Card, Section } from "../../components/Card/Card";
 import styles from "../../design/Page.module.css";
 export function Journal() {
   const { state, refresh } = useApp();
