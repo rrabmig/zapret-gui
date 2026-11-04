@@ -1,8 +1,10 @@
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -30,30 +32,48 @@ export function renderText(value: Text, language: Language): string {
 const Context = createContext<{
   language: Language;
   setLanguage: (language: Language) => void;
+  isControlled: boolean;
 } | null>(null);
 export interface II18nProviderProps {
   children: ReactNode;
   language?: Language;
+  onLanguageChange?: (language: Language) => void;
 }
 export function I18nProvider({
   children,
   language: controlled,
+  onLanguageChange,
 }: II18nProviderProps) {
-  const [local, setLanguage] = useState<Language>("ru");
+  const [local, setLocal] = useState<Language>("ru");
+  const onChange = useRef(onLanguageChange);
+  onChange.current = onLanguageChange;
+  const setLanguage = useCallback((next: Language) => {
+    setLocal(next);
+    onChange.current?.(next);
+  }, []);
   const language = controlled ?? local;
   useEffect(() => {
     document.documentElement.lang = language;
   }, [language]);
   return (
-    <Context.Provider value={{ language, setLanguage }}>
+    <Context.Provider
+      value={{ language, setLanguage, isControlled: controlled !== undefined }}
+    >
       {children}
     </Context.Provider>
   );
 }
+const fallback: {
+  language: Language;
+  setLanguage: (language: Language) => void;
+  isControlled: boolean;
+} = {
+  language: "ru",
+  setLanguage: () => {},
+  isControlled: false,
+};
 export function useLanguage() {
-  return (
-    useContext(Context) ?? { language: "ru" as Language, setLanguage: () => {} }
-  );
+  return useContext(Context) ?? fallback;
 }
 export interface II18nRootProps {
   children: ReactNode;

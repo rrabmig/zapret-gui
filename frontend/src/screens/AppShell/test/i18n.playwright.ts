@@ -126,6 +126,7 @@ test("язык по умолчанию, черновики, фокус, выбр
 test("английские экраны, диалог, динамические статусы и ошибки", async ({
   page,
 }) => {
+  page.on("dialog", (dialog) => void dialog.accept());
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("http://127.0.0.1:4173/");

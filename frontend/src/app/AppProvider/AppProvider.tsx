@@ -54,7 +54,7 @@ export interface IAppProviderProps {
 }
 export function AppProvider({ bridge, children }: IAppProviderProps) {
   const i18n = useI18n(keyset);
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, isControlled } = useLanguage();
   const initializedLanguage = useRef(false);
   const languageWrites = useRef(Promise.resolve());
   const [state, setState] = useState<Snapshot>();
@@ -79,7 +79,8 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
         if (active.current) {
           if (!initializedLanguage.current) {
             initializedLanguage.current = true;
-            setLanguage(normalizeLanguage(next.config.language));
+            if (!isControlled)
+              setLanguage(normalizeLanguage(next.config.language));
           }
           setState(next);
         }
@@ -93,7 +94,7 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
     } finally {
       reading.current = null;
     }
-  }, [bridge, notify, setLanguage]);
+  }, [bridge, notify, setLanguage, isControlled]);
 
   useEffect(() => {
     active.current = true;

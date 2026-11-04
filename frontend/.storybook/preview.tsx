@@ -1,5 +1,6 @@
 import type { Preview } from "@storybook/react-vite";
 import { useEffect } from "react";
+import { useGlobals } from "storybook/preview-api";
 
 import { I18nProvider, normalizeLanguage } from "@lib/i18n";
 
@@ -40,13 +41,19 @@ const preview: Preview = {
   },
   initialGlobals: { language: "ru", theme: "light", a11y: { manual: true } },
   decorators: [
-    (Story, context) => (
-      <I18nProvider language={normalizeLanguage(context.globals.language)}>
-        <Theme theme={context.globals.theme}>
-          <Story />
-        </Theme>
-      </I18nProvider>
-    ),
+    (Story, context) => {
+      const [, updateGlobals] = useGlobals();
+      return (
+        <I18nProvider
+          language={normalizeLanguage(context.globals.language)}
+          onLanguageChange={(language) => updateGlobals({ language })}
+        >
+          <Theme theme={context.globals.theme}>
+            <Story />
+          </Theme>
+        </I18nProvider>
+      );
+    },
   ],
   parameters: {
     layout: "fullscreen",

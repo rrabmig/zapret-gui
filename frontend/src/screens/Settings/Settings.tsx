@@ -15,9 +15,9 @@ import styles from "../../design/Page.module.css";
 export interface ISettingsProps {}
 export function Settings(_props: ISettingsProps) {
   const i18n = useI18n(keyset);
-  const { state, act, confirm, dirty, hasEdits, notify } = useApp();
+  const { state, act, confirm, dirty, hasEdits, notify, changeLanguage } =
+    useApp();
   const { language } = useLanguage();
-  const { changeLanguage } = useApp();
   const p = policy(state);
   const [draft, setDraft] = useState(state.config);
   const [edited, setEdited] = useState(false);
@@ -80,7 +80,12 @@ export function Settings(_props: ISettingsProps) {
             aria-describedby={hintId}
             value={draft[key]}
             disabled={disabled}
-            onChange={(e) => change(key, e.target.value as Config[K])}
+            onChange={(e) => {
+              const option = options.find(
+                ([value]) => value === e.target.value,
+              );
+              if (option) change(key, option[0]);
+            }}
           >
             {options.map(([value, text]) => (
               <option key={value} value={value}>
@@ -94,7 +99,7 @@ export function Settings(_props: ISettingsProps) {
   }
   const fakeOptions: [string, string][] = [
     ["", i18n("Как в upstream")],
-    ...state.fakes.map((name) => [name, name] as [string, string]),
+    ...state.fakes.map((name): [string, string] => [name, name]),
   ];
   return (
     <div className={styles.stack}>
