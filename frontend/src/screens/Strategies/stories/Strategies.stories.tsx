@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Strategies } from "../Strategies";
+
 import { StoryProvider } from "../../../testing/StoryProvider";
+import { Strategies } from "../Strategies";
 const meta = {
   title: "Screens/Strategies",
   component: Strategies,

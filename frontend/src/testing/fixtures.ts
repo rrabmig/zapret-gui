@@ -1,5 +1,5 @@
 /** Imported only by Storybook/tests or Vite's explicit `fixtures` mode. All effects are in memory. */
-import type { Action, Bridge, Config, Snapshot } from "../lib/bridge/types";
+import type { Action, Bridge, Config, Snapshot } from "@lib/bridge/types";
 export const scenarios = [
   "idle",
   "running",

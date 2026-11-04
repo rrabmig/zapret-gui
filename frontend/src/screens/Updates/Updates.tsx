@@ -1,9 +1,12 @@
+import { policy } from "@lib/bridge/policy";
+
+import { Badge } from "@components/Badge/Badge";
+import { Button } from "@components/Button/Button";
+import { Card, Section } from "@components/Card/Card";
+import { Notice } from "@components/Notice/Notice";
+
 import { useApp } from "../../app/AppProvider";
-import { policy } from "../../lib/bridge/policy";
-import { Button } from "../../components/Button/Button";
-import { Badge } from "../../components/Badge/Badge";
-import { Card, Section } from "../../components/Card/Card";
-import { Notice } from "../../components/Notice/Notice";
+
 import styles from "../../design/Page.module.css";
 export interface IUpdatesProps {}
 export function Updates(_props: IUpdatesProps) {

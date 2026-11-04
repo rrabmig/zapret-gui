@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { arrowNavigation } from "../../lib/keyboard/arrowNavigation";
+
+import { policy } from "@lib/bridge/policy";
+import { arrowNavigation } from "@lib/keyboard/arrowNavigation";
+
+import { Button } from "@components/Button/Button";
+import { Card, Section } from "@components/Card/Card";
+
 import { useApp } from "../../app/AppProvider";
-import { policy } from "../../lib/bridge/policy";
-import { Button } from "../../components/Button/Button";
-import { Card, Section } from "../../components/Card/Card";
-import styles from "./Lists.module.css";
+
 import page from "../../design/Page.module.css";
+import styles from "./Lists.module.css";
 const files = [
   ["list-general-user.txt", "Домены"],
   ["list-exclude-user.txt", "Исключения доменов"],

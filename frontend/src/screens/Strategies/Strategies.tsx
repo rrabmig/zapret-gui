@@ -1,8 +1,12 @@
 import { useState } from "react";
+
+import { policy } from "@lib/bridge/policy";
+
+import { Badge } from "@components/Badge/Badge";
+import { Card, Section } from "@components/Card/Card";
+
 import { useApp } from "../../app/AppProvider";
-import { policy } from "../../lib/bridge/policy";
-import { Badge } from "../../components/Badge/Badge";
-import { Card, Section } from "../../components/Card/Card";
+
 import styles from "../../design/Page.module.css";
 export interface IStrategiesProps {}
 export function Strategies(_props: IStrategiesProps) {

@@ -1,7 +1,9 @@
-import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
+
+import { Button } from "@components/Button/Button";
+
 import { ConfirmDialog } from "../ConfirmDialog";
-import { Button } from "../../Button/Button";
 const meta = {
   title: "Design system/ConfirmDialog",
   component: ConfirmDialog,

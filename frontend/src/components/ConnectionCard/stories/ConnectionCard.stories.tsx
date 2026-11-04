@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ConnectionCard } from "../ConnectionCard";
+
 import { snapshot } from "../../../testing/fixtures";
+import { ConnectionCard } from "../ConnectionCard";
 const meta = {
   title: "Components/ConnectionCard",
   component: ConnectionCard,

@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
+
 import styles from "./Button.module.css";
 export interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "quiet";

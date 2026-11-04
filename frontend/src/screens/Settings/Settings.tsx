@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+
+import { policy } from "@lib/bridge/policy";
+import type { Config } from "@lib/bridge/types";
+
+import { Button } from "@components/Button/Button";
+import { Card, Section } from "@components/Card/Card";
+import { Field, Switch } from "@components/Field/Field";
+
 import { useApp } from "../../app/AppProvider";
-import { policy } from "../../lib/bridge/policy";
-import type { Config } from "../../lib/bridge/types";
-import { Button } from "../../components/Button/Button";
-import { Card, Section } from "../../components/Card/Card";
-import { Field, Switch } from "../../components/Field/Field";
+
 import styles from "../../design/Page.module.css";
 export interface ISettingsProps {}
 export function Settings(_props: ISettingsProps) {

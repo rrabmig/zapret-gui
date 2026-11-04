@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
-import { Button } from "../Button/Button";
+
+import { Button } from "@components/Button/Button";
+
 import styles from "./ConfirmDialog.module.css";
 export interface Confirmation {
   title: string;

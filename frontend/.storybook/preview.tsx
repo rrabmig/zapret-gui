@@ -1,5 +1,6 @@
-import { useEffect } from "react";
 import type { Preview } from "@storybook/react-vite";
+import { useEffect } from "react";
+
 import "../src/design/tokens.css";
 import "../src/design/global.css";
 interface IThemeProps {

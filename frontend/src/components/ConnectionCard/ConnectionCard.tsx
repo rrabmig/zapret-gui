@@ -1,8 +1,11 @@
-import { PlayIcon, StopIcon, LightningBoltIcon } from "@radix-ui/react-icons";
-import type { Snapshot } from "../../lib/bridge/types";
-import { policy } from "../../lib/bridge/policy";
-import { Button } from "../Button/Button";
-import { Badge } from "../Badge/Badge";
+import { LightningBoltIcon, PlayIcon, StopIcon } from "@radix-ui/react-icons";
+
+import { policy } from "@lib/bridge/policy";
+import type { Snapshot } from "@lib/bridge/types";
+
+import { Badge } from "@components/Badge/Badge";
+import { Button } from "@components/Button/Button";
+
 import styles from "./ConnectionCard.module.css";
 export interface IConnectionCardProps {
   state: Snapshot;

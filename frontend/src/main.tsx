@@ -1,6 +1,9 @@
 import { createRoot } from "react-dom/client";
+
+import { desktopBridge } from "@lib/bridge/desktop";
+
 import { App } from "./app/App";
-import { desktopBridge } from "./lib/bridge/desktop";
+
 import "./design/tokens.css";
 import "./design/global.css";
 async function main() {

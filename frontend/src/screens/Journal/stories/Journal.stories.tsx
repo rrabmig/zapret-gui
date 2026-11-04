@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Journal } from "../Journal";
+
 import { StoryProvider } from "../../../testing/StoryProvider";
+import { Journal } from "../Journal";
 const meta = {
   title: "Screens/Journal",
   component: Journal,

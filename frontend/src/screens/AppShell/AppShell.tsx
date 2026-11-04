@@ -1,24 +1,29 @@
-import { useState } from "react";
-import { arrowNavigation } from "../../lib/keyboard/arrowNavigation";
 import {
   DashboardIcon,
-  MixerHorizontalIcon,
-  FileTextIcon,
   DownloadIcon,
-  GearIcon,
-  ReaderIcon,
   ExternalLinkIcon,
+  FileTextIcon,
+  GearIcon,
+  MixerHorizontalIcon,
+  ReaderIcon,
 } from "@radix-ui/react-icons";
-import { openBuilds } from "../../lib/bridge/desktop";
+import { useState } from "react";
+
+import { openBuilds } from "@lib/bridge/desktop";
+import { arrowNavigation } from "@lib/keyboard/arrowNavigation";
+
+import { Button } from "@components/Button/Button";
+import { Notice } from "@components/Notice/Notice";
+
+import { Journal } from "@screens/Journal/Journal";
+import { Lists } from "@screens/Lists/Lists";
+import { Overview } from "@screens/Overview/Overview";
+import { Settings } from "@screens/Settings/Settings";
+import { Strategies } from "@screens/Strategies/Strategies";
+import { Updates } from "@screens/Updates/Updates";
+
 import { useApp } from "../../app/AppProvider";
-import { Button } from "../../components/Button/Button";
-import { Notice } from "../../components/Notice/Notice";
-import { Overview } from "../Overview/Overview";
-import { Strategies } from "../Strategies/Strategies";
-import { Lists } from "../Lists/Lists";
-import { Updates } from "../Updates/Updates";
-import { Settings } from "../Settings/Settings";
-import { Journal } from "../Journal/Journal";
+
 import styles from "./AppShell.module.css";
 const tabs = [
   ["overview", "Обзор", DashboardIcon, "Управляйте подключением"],

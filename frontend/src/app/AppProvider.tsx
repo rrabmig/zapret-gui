@@ -1,19 +1,22 @@
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
-import type { Action, Bridge, Snapshot } from "../lib/bridge/types";
+
+import type { Action, Bridge, Snapshot } from "@lib/bridge/types";
+
+import type { Tone } from "@components/Badge/Badge";
 import {
-  ConfirmDialog,
   type Confirmation,
-} from "../components/ConfirmDialog/ConfirmDialog";
-import { Notice } from "../components/Notice/Notice";
-import type { Tone } from "../components/Badge/Badge";
+  ConfirmDialog,
+} from "@components/ConfirmDialog/ConfirmDialog";
+import { Notice } from "@components/Notice/Notice";
+
 import styles from "./App.module.css";
 interface Model {
   state: Snapshot;

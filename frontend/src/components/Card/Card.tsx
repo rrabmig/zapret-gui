@@ -1,4 +1,5 @@
 import type { HTMLAttributes, ReactNode } from "react";
+
 import styles from "./Card.module.css";
 export interface ICardProps extends HTMLAttributes<HTMLDivElement> {}
 export function Card({ children, className = "", ...props }: ICardProps) {

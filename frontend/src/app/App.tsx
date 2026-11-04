@@ -1,9 +1,13 @@
-import type { Bridge } from "../lib/bridge/types";
-import { openBuilds } from "../lib/bridge/desktop";
-import { Button } from "../components/Button/Button";
-import { Notice } from "../components/Notice/Notice";
+import { openBuilds } from "@lib/bridge/desktop";
+import type { Bridge } from "@lib/bridge/types";
+
+import { Button } from "@components/Button/Button";
+import { Notice } from "@components/Notice/Notice";
+
+import { AppShell } from "@screens/AppShell/AppShell";
+
 import { AppProvider } from "./AppProvider";
-import { AppShell } from "../screens/AppShell/AppShell";
+
 import styles from "./App.module.css";
 export interface IAppProps {
   bridge?: Bridge;

@@ -1,6 +1,8 @@
-import type { ReactNode } from "react";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
-import type { Tone } from "../Badge/Badge";
+import type { ReactNode } from "react";
+
+import type { Tone } from "@components/Badge/Badge";
+
 import styles from "./Notice.module.css";
 export interface INoticeProps {
   children: ReactNode;

@@ -4,13 +4,17 @@ import {
   ReaderIcon,
   ResetIcon,
 } from "@radix-ui/react-icons";
+
+import { policy } from "@lib/bridge/policy";
+import type { Action } from "@lib/bridge/types";
+
+import { Badge } from "@components/Badge/Badge";
+import { Button } from "@components/Button/Button";
+import { Card, Section } from "@components/Card/Card";
+import { ConnectionCard } from "@components/ConnectionCard/ConnectionCard";
+
 import { useApp } from "../../app/AppProvider";
-import { policy } from "../../lib/bridge/policy";
-import type { Action } from "../../lib/bridge/types";
-import { ConnectionCard } from "../../components/ConnectionCard/ConnectionCard";
-import { Button } from "../../components/Button/Button";
-import { Badge } from "../../components/Badge/Badge";
-import { Card, Section } from "../../components/Card/Card";
+
 import styles from "../../design/Page.module.css";
 export interface IOverviewProps {}
 export function Overview(_props: IOverviewProps) {

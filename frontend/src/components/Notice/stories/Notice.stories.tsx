@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+
 import { Notice } from "../Notice";
 const meta = {
   title: "Design system/Notice",

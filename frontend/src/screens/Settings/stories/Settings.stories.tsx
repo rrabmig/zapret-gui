@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Settings } from "../Settings";
+
 import { StoryProvider } from "../../../testing/StoryProvider";
+import { Settings } from "../Settings";
 const meta = {
   title: "Screens/Settings",
   component: Settings,
