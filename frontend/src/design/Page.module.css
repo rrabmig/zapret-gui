@@ -1,0 +1,184 @@
+.stack {
+  display: grid;
+  gap: 28px;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.row:last-child {
+  border-bottom: 0;
+}
+.row p {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.row .actions {
+  justify-content: flex-end;
+}
+.toolGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.tool {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 14px;
+  padding: 18px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.tool:hover:not(:disabled) {
+  background: var(--hover);
+}
+.tool:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+.tool svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+}
+.tool strong {
+  display: block;
+  font-weight: 550;
+}
+.tool small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 3px;
+}
+.details {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  background: var(--surface);
+}
+.details pre {
+  margin-top: 12px;
+}
+.footnote {
+  color: var(--muted);
+  font-size: 11px;
+}
+.radioList {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+.strategy {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 17px 20px;
+  cursor: pointer;
+}
+.strategy > span:first-of-type {
+  flex: 1;
+}
+.strategy strong {
+  font-family: var(--mono);
+  font-weight: 500;
+}
+.strategy small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.selected {
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 var(--accent);
+}
+.empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--muted);
+}
+.release {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 24px;
+  padding: 24px;
+}
+.release span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+.release strong {
+  display: block;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  font-weight: 600;
+}
+.release p {
+  font-size: 12px;
+  padding-top: 6px;
+}
+.actionLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.actionLine p {
+  color: var(--muted);
+  font-size: 12px;
+}
+.log {
+  min-height: 360px;
+  max-height: 560px;
+  overflow: auto;
+  padding: 24px;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+@media (max-width: 1000px) {
+  .row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .row .actions {
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 650px) {
+  .toolGrid,
+  .release {
+    grid-template-columns: 1fr;
+  }
+  .actionLine {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

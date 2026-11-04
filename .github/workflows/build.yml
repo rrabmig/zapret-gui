@@ -6,6 +6,11 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      update_visual_baselines:
+        description: 'Regenerate screenshots for review (download artifact and commit intentionally)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -23,23 +28,41 @@ jobs:
       - uses: actions/setup-node@v7.1.0
         with:
           node-version: '24'
-      - name: JavaScript syntax
-        run: node --check frontend/app.js
-      - name: Install browser test tools on the runner
-        run: |
-          npm install --prefix "$RUNNER_TEMP/ui-check" --no-package-lock --no-save playwright@1.64.1
-          "$RUNNER_TEMP/ui-check/node_modules/.bin/playwright" install --with-deps chromium
-      - name: Test GUI with an inert bridge and capture both themes
-        env:
-          NODE_PATH: ${{ runner.temp }}/ui-check/node_modules
-          UI_SCREENSHOT_DIR: ${{ runner.temp }}/ui-screenshots
-        run: node scripts/ui-smoke.cjs
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked frontend tools (no lifecycle scripts)
+        run: npm ci --ignore-scripts
+        working-directory: frontend
+      - name: Typecheck and build production frontend (100 KiB gzip budget)
+        run: npm run build
+        working-directory: frontend
+      - name: Build component catalog
+        run: npm run build-storybook
+        working-directory: frontend
+      - name: Build isolated fixture application
+        run: npm run build:fixtures
+        working-directory: frontend
+      - name: Install Chromium on the runner
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Compare appearance and test inert application states
+        run: npm run test:ui
+        working-directory: frontend
+        if: ${{ !inputs.update_visual_baselines }}
+      - name: Generate reviewable visual baselines (explicit manual run only)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.update_visual_baselines }}
+        run: npm run test:ui -- --update-snapshots
+        working-directory: frontend
       - uses: actions/upload-artifact@v7.0.2
         if: always()
         with:
-          name: ui-screenshots-fixtures
-          path: ${{ runner.temp }}/ui-screenshots/*.png
-          if-no-files-found: ignore
+          name: frontend-review
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+            frontend/tests/__screenshots__/
+            frontend/storybook-static/
+          if-no-files-found: warn
           retention-days: 14
 
   core:
@@ -104,6 +127,11 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - name: Linux WebKit build dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config

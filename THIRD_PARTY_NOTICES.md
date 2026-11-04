@@ -25,3 +25,15 @@ with their own license terms.
 The UI uses system fonts. No corporate font files, report CSS, report data, or
 client scripts are included. Visual similarity follows the user's requested
 reference, with independently written markup and styles.
+
+Frontend runtime dependencies (exact versions in `frontend/package-lock.json`):
+
+- [React and React DOM](https://github.com/facebook/react): MIT,
+  Copyright (c) Meta Platforms, Inc. and affiliates.
+- [Radix Icons](https://github.com/radix-ui/icons): MIT,
+  Copyright (c) 2020 Modulz.
+
+Vite, TypeScript, Storybook and Playwright are development/build dependencies;
+Storybook and fixture code are excluded from the shipped frontend. Design craft
+references from [Stageshow](https://github.com/benjitaylor/skills) were consulted;
+its kit, examples and other assets are not copied into the application.
