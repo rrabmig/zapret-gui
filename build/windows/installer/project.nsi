@@ -13,11 +13,15 @@ Unicode true
 !include "nsDialogs.nsh"
 
 VIProductVersion "${INFO_PRODUCTVERSION}.0"
+VIFileVersion "${INFO_PRODUCTVERSION}.0"
+# Keep FileVersion in each string table as well as the fixed version block.
+VIAddVersionKey /LANG=1033 "FileVersion" "${INFO_PRODUCTVERSION}"
 VIAddVersionKey /LANG=1033 "CompanyName" "rrabmig"
 VIAddVersionKey /LANG=1033 "FileDescription" "Zapret Desktop Setup"
 VIAddVersionKey /LANG=1033 "ProductName" "Zapret Desktop"
 VIAddVersionKey /LANG=1033 "ProductVersion" "${INFO_PRODUCTVERSION}"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "${INFO_COPYRIGHT}"
+VIAddVersionKey /LANG=1049 "FileVersion" "${INFO_PRODUCTVERSION}"
 VIAddVersionKey /LANG=1049 "CompanyName" "rrabmig"
 VIAddVersionKey /LANG=1049 "FileDescription" "Zapret Desktop Setup"
 VIAddVersionKey /LANG=1049 "ProductName" "Zapret Desktop"
