@@ -3,11 +3,10 @@ $ErrorActionPreference = 'Stop'
 $setup = @(Get-ChildItem build/bin/GUIforzapret-Setup-*-x64.exe)
 if ($setup.Count -ne 1) { throw 'Expected one installer' }
 $installDir = Join-Path $env:LOCALAPPDATA 'Programs/GUIForZapret'
-$legacyInstallDir = Join-Path $env:LOCALAPPDATA 'Programs/ZapretDesktop'
 $exe = Join-Path $installDir 'GUIforzapret.exe'
 $uninstaller = Join-Path $installDir 'uninstall.exe'
 $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\rrabmig.ZapretDesktop'
-$dataDir = Join-Path $env:APPDATA 'ZapretDesktop'
+$dataDir = Join-Path $env:APPDATA 'GUIForZapret'
 function Run-Setup {
     $process = Start-Process $setup[0].FullName -ArgumentList '/S' -Wait -PassThru
     if ($process.ExitCode -ne 0) { throw "Installer exited $($process.ExitCode)" }
@@ -42,27 +41,7 @@ Set-Content "$dataDir/overrides/sentinel.txt" 'preserve me' -NoNewline
 Set-Content "$installDir/ZapretDesktop.exe" 'inert legacy GUI fixture' -NoNewline
 $oldShortcut = Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs/Zapret Desktop.lnk'
 Set-Content $oldShortcut 'inert legacy shortcut fixture' -NoNewline
-# Simulate the previous managed installation path without launching an old GUI.
-Move-Item $installDir $legacyInstallDir
-Set-ItemProperty 'HKCU:\Software\rrabmig\ZapretDesktop' -Name InstallDir -Value $legacyInstallDir
-$desktopShortcut = Join-Path ([Environment]::GetFolderPath('Desktop')) 'GUI for zapret.lnk'
-$shell = New-Object -ComObject WScript.Shell
-$shortcut = $shell.CreateShortcut($desktopShortcut)
-$shortcut.TargetPath = Join-Path $legacyInstallDir 'GUIforzapret.exe'
-$shortcut.Save()
-# A nonempty destination must abort without overwriting either directory.
-New-Item $installDir -ItemType Directory -Force | Out-Null
-Set-Content "$installDir/collision.txt" 'keep target' -NoNewline
-$blocked = Start-Process $setup[0].FullName -ArgumentList '/S' -Wait -PassThru
-if ($blocked.ExitCode -eq 0) { throw 'Directory collision was ignored' }
-if ((Get-Content "$legacyInstallDir/versions/fixture/sentinel.txt" -Raw) -ne 'preserve me') { throw 'Legacy data lost on failed move' }
-if ((Get-Content "$installDir/collision.txt" -Raw) -ne 'keep target') { throw 'Target data overwritten' }
-Remove-Item "$installDir/collision.txt"
-Remove-Item $installDir
 Run-Setup
-if ($shell.CreateShortcut($desktopShortcut).TargetPath -ne $exe) { throw 'Desktop shortcut was not retargeted' }
-if (Test-Path $legacyInstallDir) { throw 'Legacy installation directory was not moved' }
-if ((Get-ItemProperty 'HKCU:\Software\rrabmig\ZapretDesktop').InstallDir -ne $installDir) { throw 'InstallDir registration was not updated' }
 Assert-Preserved
 if ((Test-Path "$installDir/ZapretDesktop.exe") -or (Test-Path $oldShortcut)) { throw 'Legacy GUI entrypoints were not replaced' }
 # A running controller must block installation/removal. No GUI is launched.
@@ -82,10 +61,7 @@ try {
 $code = Run-Uninstall
 if ($code -ne 0 -or (Test-Path $exe) -or (Test-Path $key)) { throw 'Uninstall did not complete' }
 Assert-Preserved
-# Also preserve builds left in the old directory after an uninstall.
-Move-Item $installDir $legacyInstallDir
 Run-Setup
 Assert-Preserved
-if (Test-Path $legacyInstallDir) { throw 'Orphaned legacy versions were not moved' }
 if (Get-Process winws -ErrorAction SilentlyContinue) { throw 'Engine unexpectedly running' }
 Write-Output 'Installer, metadata, upgrade, reinstall, locks and data retention passed; no engine started.'

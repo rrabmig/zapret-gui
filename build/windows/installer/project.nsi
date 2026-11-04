@@ -31,7 +31,6 @@ ManifestDPIAware true
 Name "GUI for zapret"
 OutFile "..\..\bin\GUIforzapret-Setup-${INFO_PRODUCTVERSION}-x64.exe"
 InstallDir "$LOCALAPPDATA\Programs\GUIForZapret"
-InstallDirRegKey HKCU "Software\rrabmig\ZapretDesktop" "InstallDir"
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
 !define MUI_ABORTWARNING
@@ -52,9 +51,6 @@ LangString OptionsHint ${LANG_RUSSIAN} "Ярлык в меню «Пуск» со
 LangString DesktopShortcutLabel ${LANG_ENGLISH} "Create a desktop shortcut"
 LangString DesktopShortcutLabel ${LANG_RUSSIAN} "Создать ярлык на рабочем столе"
 
-LangString MoveFailed ${LANG_ENGLISH} "Unable to move the previous installation to $INSTDIR. Close GUI for zapret and its tools. The target folder must be absent or empty. Existing files have been kept."
-LangString MoveFailed ${LANG_RUSSIAN} "Не удалось перенести прежнюю установку в $INSTDIR. Закройте GUI for zapret и утилиты. Целевой каталог должен отсутствовать или быть пустым. Исходные файлы сохранены."
-
 LangString CloseApp ${LANG_ENGLISH} "Close GUI for zapret and the Flowseal utilities, then try again."
 LangString CloseApp ${LANG_RUSSIAN} "Закройте GUI for zapret и утилиты Flowseal, затем повторите попытку."
 LangString RemoveService ${LANG_ENGLISH} "A zapret service managed by this GUI is installed. Open GUI for zapret, stop and remove its service, then run the uninstaller again. No files have been deleted."
@@ -71,8 +67,6 @@ LangString DeleteSettings ${LANG_ENGLISH} "Delete settings, user lists and worki
 LangString DeleteSettings ${LANG_RUSSIAN} "Удалить настройки, пользовательские списки и рабочие копии"
 LangString LockedFile ${LANG_ENGLISH} "Application files are in use. Close the application and retry."
 LangString LockedFile ${LANG_RUSSIAN} "Файлы приложения используются. Закройте приложение и повторите попытку."
-
-Var LegacyInstallDir
 
 Var DesktopCheckbox
 Var DesktopShortcut
@@ -99,20 +93,6 @@ Var DeleteSettings
 !macroend
 
 Function .onInit
- StrCpy $LegacyInstallDir ""
- # InstallDirRegKey may contain our previous default directory. Honor custom paths.
- ${If} $INSTDIR == "$LOCALAPPDATA\Programs\ZapretDesktop"
-  StrCpy $LegacyInstallDir $INSTDIR
-  StrCpy $INSTDIR "$LOCALAPPDATA\Programs\GUIForZapret"
- ${ElseIf} $INSTDIR == "$LOCALAPPDATA\Programs\GUIForZapret"
-  # An uninstall which kept downloads leaves versions behind without a registry key.
-  IfFileExists "$INSTDIR\*.*" existingTarget noTarget
-  noTarget:
-   IfFileExists "$LOCALAPPDATA\Programs\ZapretDesktop\versions\*.*" orphanedVersions existingTarget
-  orphanedVersions:
-   StrCpy $LegacyInstallDir "$LOCALAPPDATA\Programs\ZapretDesktop"
-  existingTarget:
- ${EndIf}
  StrCpy $DesktopShortcut 0
  # Optional explicit language, also used by runner UI checks on both locales.
  ${GetParameters} $0
@@ -189,21 +169,6 @@ Section "Install"
  !insertmacro wails.setShellContext
  !insertmacro CheckClosed
  !insertmacro wails.webview2runtime
- ${If} $LegacyInstallDir != ""
-  IfFileExists "$LegacyInstallDir\*.*" moveLegacy noLegacy
-  moveLegacy:
-   # Sibling-directory rename preserves every downloaded build atomically.
-   # RMDir is deliberately non-recursive: a nonempty destination is never merged/deleted.
-   RMDir "$INSTDIR"
-   ClearErrors
-   Rename "$LegacyInstallDir" "$INSTDIR"
-   ${If} ${Errors}
-    MessageBox MB_OK|MB_ICONEXCLAMATION "$(MoveFailed)" /SD IDOK
-    SetErrorLevel 1
-    Abort
-   ${EndIf}
-  noLegacy:
- ${EndIf}
  SetOutPath $INSTDIR
  !insertmacro wails.files
  # Replace only the legacy GUI entrypoints; retain downloaded builds and data.
@@ -219,10 +184,6 @@ Section "Install"
  CreateDirectory "$INSTDIR\versions"
  CreateShortcut "$SMPROGRAMS\GUI for zapret.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
  ${If} $DesktopShortcut == ${BST_CHECKED}
-  CreateShortcut "$DESKTOP\GUI for zapret.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
- ${ElseIf} $LegacyInstallDir != ""
-  # Retarget an existing user shortcut after the directory move; do not create a new one.
-  IfFileExists "$DESKTOP\GUI for zapret.lnk" 0 +2
   CreateShortcut "$DESKTOP\GUI for zapret.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
  ${EndIf}
  WriteRegStr HKCU "Software\rrabmig\ZapretDesktop" "InstallDir" "$INSTDIR"
@@ -247,7 +208,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\versions"
  ${EndIf}
  ${If} $DeleteSettings == ${BST_CHECKED}
-  RMDir /r "$APPDATA\ZapretDesktop"
+  RMDir /r "$APPDATA\GUIForZapret"
  ${EndIf}
  Delete "$SMPROGRAMS\GUI for zapret.lnk"
  Delete "$DESKTOP\GUI for zapret.lnk"

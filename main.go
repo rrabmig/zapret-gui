@@ -14,6 +14,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			return
 		}
-		root = filepath.Join(base, "ZapretDesktop")
+		root = filepath.Join(base, "GUIForZapret")
 	}
 	root, err := filepath.Abs(root)
 	if err != nil {
@@ -65,6 +66,7 @@ func main() {
 	err = wails.Run(&options.App{
 		Title: "GUI for zapret", Width: 1100, Height: 790, MinWidth: 760, MinHeight: 600,
 		AssetServer:      &assetserver.Options{Assets: frontend},
+		Windows:          &windows.Options{WebviewUserDataPath: filepath.Join(root, "WebView2")},
 		BackgroundColour: &options.RGBA{R: 255, G: 255, B: 255, A: 255},
 		OnStartup:        app.startup, OnShutdown: app.shutdown,
 		Bind: []interface{}{app},

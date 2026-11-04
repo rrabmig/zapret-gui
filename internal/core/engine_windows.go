@@ -100,7 +100,7 @@ func secureServiceCopy(source string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dest := filepath.Join(programData, "ZapretDesktop")
+	dest := filepath.Join(programData, "GUIForZapret")
 	if info, err := os.Lstat(dest); err == nil && (!info.IsDir() || info.Mode()&os.ModeSymlink != 0) {
 		return "", NewMessageError("error037")
 	} else if err != nil && !errors.Is(err, os.ErrNotExist) {

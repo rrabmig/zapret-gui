@@ -15,7 +15,7 @@ export function snapshot(scenario = "idle"): Snapshot {
     version: "0.2.0 · UI fixture",
     os: "windows",
     arch: "amd64",
-    dataDir: "C:\\Users\\Personal\\AppData\\Roaming\\ZapretDesktop",
+    dataDir: "C:\\Users\\Personal\\AppData\\Roaming\\GUIForZapret",
     config: {
       schema: 1,
       language: "ru",
