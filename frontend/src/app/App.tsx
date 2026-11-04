@@ -7,8 +7,8 @@ import { Notice } from "@components/Notice/Notice";
 
 import { AppShell } from "@screens/AppShell/AppShell";
 
-import * as keyset from "./i18n";
 import { AppProvider } from "./AppProvider";
+import * as keyset from "./i18n";
 
 import styles from "./App.module.css";
 export interface IAppProps {
