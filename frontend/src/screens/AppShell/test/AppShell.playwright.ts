@@ -58,7 +58,7 @@ test("визуальные состояния приложения и все р�
   for (const name of [
     "Стратегии",
     "Списки",
-    "Обновления",
+    "Версии zapret",
     "Настройки",
     "Журнал",
   ]) {
@@ -70,7 +70,10 @@ test("визуальные состояния приложения и все р�
         page.getByRole("textbox", { name: "list-general-user.txt" }),
       ).toHaveValue(/example.org/);
     await accessible(page);
-    await expect(page).toHaveScreenshot(`page-${name}.png`, { fullPage: true });
+    await expect(page).toHaveScreenshot(
+      `page-${name === "Версии zapret" ? "Обновления" : name}.png`,
+      { fullPage: true },
+    );
   }
   await page.setViewportSize({ width: 760, height: 790 });
   for (const name of ["Обзор", "Списки", "Настройки"]) {

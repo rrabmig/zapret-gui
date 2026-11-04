@@ -15,3 +15,11 @@
 /frontend/storybook-static/
 /frontend/playwright-report/
 /frontend/test-results/
+
+# Own the installer and PE version resource; Wails generates the remaining assets.
+!/build/windows/
+/build/windows/*
+!/build/windows/info.json
+!/build/windows/installer/
+/build/windows/installer/*
+!/build/windows/installer/project.nsi

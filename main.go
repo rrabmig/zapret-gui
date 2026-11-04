@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	rootFlag := flag.String("data-dir", "", "GUI package and settings directory")
+	rootFlag := flag.String("data-dir", "", "GUI settings and working-copy directory")
 	waitLock := flag.Bool("wait-lock", false, "wait for an elevated GUI replacement")
 	flag.Parse()
 	root := *rootFlag
@@ -47,7 +47,12 @@ func main() {
 		return
 	}
 	defer unlock()
-	app, err := NewApp(root)
+	versionsDir, err := core.DefaultVersionsDir(root)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+	app, err := NewApp(root, versionsDir)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return

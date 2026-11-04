@@ -2,13 +2,13 @@ name: Build desktop
 
 on:
   push:
-    branches: [main, 'codex/**']
-    tags: ['v*']
+    branches: [main, "codex/**"]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
     inputs:
       update_visual_baselines:
-        description: 'Regenerate screenshots for review (download artifact and commit intentionally)'
+        description: "Regenerate screenshots for review (download artifact and commit intentionally)"
         type: boolean
         default: false
 
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Install locked frontend tools (no lifecycle scripts)
@@ -96,7 +96,7 @@ jobs:
           go-version-file: go.mod
       - uses: actions/setup-python@v7.1.0
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Download verified strategy text into runner temp
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -106,7 +106,6 @@ jobs:
 
   desktop:
     name: Build ${{ matrix.platform }}
-    needs: [core, interface]
     strategy:
       fail-fast: false
       matrix:
@@ -114,15 +113,15 @@ jobs:
           - os: windows-2022
             platform: windows/amd64
             artifact: zapret-gui-windows-amd64
-            flags: ''
+            flags: "-nsis -installscope user"
           - os: macos-15
             platform: darwin/universal
             artifact: zapret-gui-macos-universal
-            flags: ''
+            flags: ""
           - os: ubuntu-24.04
             platform: linux/amd64
             artifact: zapret-gui-linux-amd64
-            flags: '-tags webkit2_41'
+            flags: "-tags webkit2_41"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7.0.1
@@ -132,7 +131,7 @@ jobs:
           cache: true
       - uses: actions/setup-node@v7.1.0
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Linux WebKit build dependencies
@@ -140,6 +139,25 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
       - name: Install pinned GUI build tool
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
+      - name: Install Windows installer compiler
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install nsis --version=3.11 -y --no-progress
+          "C:\Program Files (x86)\NSIS" >> $env:GITHUB_PATH
+      - name: Set Windows resource and installer version
+        if: runner.os == 'Windows'
+        shell: python
+        run: |
+          import json, os, pathlib, re
+          p = pathlib.Path('wails.json')
+          data = json.loads(p.read_text())
+          tag = os.environ['GITHUB_REF_NAME'].removeprefix('v')
+          version = tag if os.environ['GITHUB_REF_TYPE'] == 'tag' else '0.1.0'
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version):
+              raise SystemExit('Windows release tags must be vMAJOR.MINOR.PATCH')
+          data['info']['productVersion'] = version
+          p.write_text(json.dumps(data, indent=2))
       - name: Compile GUI only
         shell: bash
         env:
@@ -149,6 +167,13 @@ jobs:
           version="${GITHUB_REF_NAME}"
           if [[ "$GITHUB_REF_TYPE" != "tag" ]]; then version="0.1.0-${GITHUB_SHA:0:8}"; fi
           wails build -clean -platform "$TARGET_PLATFORM" $BUILD_FLAGS -ldflags "-X main.Version=$version"
+      - name: Check Windows bridge lifecycle without starting the app
+        if: runner.os == 'Windows'
+        run: go test -tags bindings .
+      - name: Verify installer, upgrade and uninstall without starting the engine
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/check-windows-installer.ps1
       - name: Package application and documentation
         shell: bash
         env:
@@ -157,7 +182,15 @@ jobs:
           python - <<'PY'
           import os, pathlib, shutil
           dest = pathlib.Path('dist') / os.environ['ARTIFACT_NAME']
-          shutil.copytree('build/bin', dest)
+          if os.environ['RUNNER_OS'] == 'Windows':
+              installers = list(pathlib.Path('build/bin').glob('ZapretDesktop-Setup-*-x64.exe'))
+              if len(installers) != 1:
+                  raise SystemExit('Expected exactly one Windows installer')
+              dest.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(installers[0], dest.parent / installers[0].name)
+              raise SystemExit(0)
+          else:
+              shutil.copytree('build/bin', dest)
           for name in ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md']:
               shutil.copy2(name, dest / name)
           shutil.copytree('docs', dest / 'docs')
@@ -166,13 +199,15 @@ jobs:
       - uses: actions/upload-artifact@v7.0.2
         with:
           name: ${{ matrix.artifact }}
-          path: dist/*.zip
+          path: |
+            dist/*.zip
+            dist/*-Setup-*.exe
           if-no-files-found: error
           retention-days: 14
 
   draft-release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [desktop, compatibility]
+    needs: [core, interface, desktop, compatibility]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -181,7 +216,11 @@ jobs:
         with:
           path: dist
           merge-multiple: true
-      - name: Create private draft release
+      - name: Generate distribution checksums
+        run: |
+          cd dist
+          sha256sum *.zip *-Setup-*.exe > SHA256SUMS
+      - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "Zapret Desktop $GITHUB_REF_NAME"
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip dist/*-Setup-*.exe dist/SHA256SUMS --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "Zapret Desktop $GITHUB_REF_NAME"

@@ -1,0 +1,28 @@
+{
+  "fixed": {
+    "file_version": "{{.Info.ProductVersion}}",
+    "product_version": "{{.Info.ProductVersion}}"
+  },
+  "info": {
+    "0409": {
+      "ProductVersion": "{{.Info.ProductVersion}}",
+      "CompanyName": "{{.Info.CompanyName}}",
+      "FileDescription": "{{.Info.ProductName}}",
+      "LegalCopyright": "{{.Info.Copyright}}",
+      "ProductName": "{{.Info.ProductName}}",
+      "Comments": "{{.Info.Comments}}",
+      "FileVersion": "{{.Info.ProductVersion}}",
+      "OriginalFilename": "ZapretDesktop.exe"
+    },
+    "0419": {
+      "ProductVersion": "{{.Info.ProductVersion}}",
+      "CompanyName": "{{.Info.CompanyName}}",
+      "FileDescription": "{{.Info.ProductName}}",
+      "LegalCopyright": "{{.Info.Copyright}}",
+      "ProductName": "{{.Info.ProductName}}",
+      "Comments": "{{.Info.Comments}}",
+      "FileVersion": "{{.Info.ProductVersion}}",
+      "OriginalFilename": "ZapretDesktop.exe"
+    }
+  }
+}

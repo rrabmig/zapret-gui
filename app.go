@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -19,26 +18,28 @@ import (
 )
 
 type Snapshot struct {
-	Version     string           `json:"version"`
-	OS          string           `json:"os"`
-	Arch        string           `json:"arch"`
-	DataDir     string           `json:"dataDir"`
-	Config      core.Config      `json:"config"`
-	Engine      core.EngineState `json:"engine"`
-	Strategies  []core.Strategy  `json:"strategies"`
-	Packages    []string         `json:"packages"`
-	Fakes       []string         `json:"fakes"`
-	Logs        []core.LogEntry  `json:"logs"`
-	Checks      []core.Check     `json:"checks"`
-	Latest      *core.Release    `json:"latest"`
-	LastCheck   string           `json:"lastCheck"`
-	ToolSession bool             `json:"toolSession"`
+	Version     string                  `json:"version"`
+	OS          string                  `json:"os"`
+	Arch        string                  `json:"arch"`
+	DataDir     string                  `json:"dataDir"`
+	Config      core.Config             `json:"config"`
+	Engine      core.EngineState        `json:"engine"`
+	Strategies  []core.Strategy         `json:"strategies"`
+	Versions    []core.InstalledVersion `json:"versions"`
+	VersionsDir string                  `json:"versionsDir"`
+	Fakes       []string                `json:"fakes"`
+	Logs        []core.LogEntry         `json:"logs"`
+	Checks      []core.Check            `json:"checks"`
+	Latest      *core.Release           `json:"latest"`
+	LastCheck   string                  `json:"lastCheck"`
+	ToolSession bool                    `json:"toolSession"`
 }
 
 type App struct {
 	mu           sync.Mutex
 	ctx          context.Context
 	root         string
+	versionsDir  string
 	config       core.Config
 	engine       core.Engine
 	updater      *core.Updater
@@ -51,7 +52,7 @@ type App struct {
 	closed       bool
 }
 
-func NewApp(root string) (*App, error) {
+func NewApp(root, versionsDir string) (*App, error) {
 	c, err := core.LoadConfig(root)
 	if err != nil {
 		return nil, err
@@ -60,7 +61,7 @@ func NewApp(root string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	a := &App{root: root, config: c, engine: core.NewEngine(), updater: core.NewUpdater(), journal: j, checks: []core.Check{}}
+	a := &App{root: root, versionsDir: versionsDir, config: c, engine: core.NewEngine(), updater: core.NewUpdater(), journal: j, checks: []core.Check{}}
 	j.AddMessage(core.NewMessage("startup", Version))
 	return a, nil
 }
@@ -99,19 +100,22 @@ func (a *App) Snapshot() (Snapshot, error) {
 }
 
 func (a *App) snapshot() (Snapshot, error) {
-	s := Snapshot{Version: Version, OS: runtime.GOOS, Arch: runtime.GOARCH, DataDir: a.root, Config: a.config, Engine: a.engine.State(), Logs: a.journal.Lines(), Checks: a.checks, Latest: a.latest, LastCheck: a.lastCheck, ToolSession: a.toolSession, Packages: []string{}, Strategies: []core.Strategy{}, Fakes: []string{}}
-	entries, err := os.ReadDir(filepath.Join(a.root, "packages"))
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
+	s := Snapshot{Version: Version, OS: runtime.GOOS, Arch: runtime.GOARCH, DataDir: a.root, Config: a.config, Engine: a.engine.State(), Logs: a.journal.Lines(), Checks: a.checks, Latest: a.latest, LastCheck: a.lastCheck, ToolSession: a.toolSession, Versions: []core.InstalledVersion{}, VersionsDir: a.versionsDir, Strategies: []core.Strategy{}, Fakes: []string{}}
+	versions, err := core.ListVersions(a.versionsDir, a.config)
+	if err != nil {
 		return s, err
 	}
-	for _, entry := range entries {
-		if entry.IsDir() && !strings.HasPrefix(entry.Name(), ".") {
-			s.Packages = append(s.Packages, entry.Name())
+	s.Versions = versions
+	activeReady := false
+	for _, v := range versions {
+		if v.Tag == a.config.Active && v.Problem == "" {
+			activeReady = true
+			break
 		}
 	}
-	sort.Sort(sort.Reverse(sort.StringSlice(s.Packages)))
-	if a.config.Active != "" {
-		base := filepath.Join(a.root, "packages", a.config.Active)
+	// Keep the catalog usable when a selected package was damaged or removed.
+	if activeReady {
+		base := filepath.Join(a.versionsDir, a.config.Active)
 		s.Strategies, err = core.Strategies(base, a.config)
 		if err != nil {
 			return s, err
@@ -161,7 +165,7 @@ func (a *App) prepared() (string, []string, error) {
 	if err := a.idle(); err != nil {
 		return "", nil, err
 	}
-	root, err := core.PrepareRuntime(a.root, a.config)
+	root, err := core.PrepareRuntime(a.root, a.versionsDir, a.config)
 	if err != nil {
 		return "", nil, err
 	}
@@ -184,47 +188,12 @@ func (a *App) activate(tag string) error {
 	if err := a.idle(); err != nil {
 		return err
 	}
-	c := a.config
-	c.Active = tag
-	c.Previous = a.config.Active
-	if err := c.Validate(); err != nil {
-		return err
-	}
-	if tag == "" {
-		return core.NewMessageError("error004")
-	}
 	if tag == a.config.Active {
 		return nil
 	}
-	strategies, err := core.Strategies(filepath.Join(a.root, "packages", tag), c)
+	c, err := core.SelectVersion(a.versionsDir, tag, a.config)
 	if err != nil {
 		return err
-	}
-	found := false
-	for _, s := range strategies {
-		if s.Name == c.Strategy {
-			found = true
-		}
-	}
-	if !found {
-		c.Strategy = ""
-		for _, s := range strategies {
-			c.Strategy = s.Name
-			if s.Compatible {
-				break
-			}
-		}
-		if c.Strategy == "" {
-			return core.NewMessageError("error005")
-		}
-	}
-	// Fake names can disappear between releases. Use the upstream default then.
-	for _, p := range []*string{&c.DiscordFake, &c.GameFake} {
-		if *p != "" {
-			if _, err := os.Stat(filepath.Join(a.root, "packages", tag, "bin", *p)); err != nil {
-				*p = ""
-			}
-		}
 	}
 	if err := core.SaveConfig(a.root, c); err != nil {
 		return err
@@ -258,7 +227,7 @@ func (a *App) action(action, payload string) error {
 		return nil
 	case "check-updates":
 		return a.checkUpdates()
-	case "install-update":
+	case "download-version":
 		if err := a.idle(); err != nil {
 			return err
 		}
@@ -267,14 +236,41 @@ func (a *App) action(action, payload string) error {
 				return err
 			}
 		}
-		if _, err := os.Stat(filepath.Join(a.root, "packages", a.latest.Tag)); errors.Is(err, os.ErrNotExist) {
-			if err := a.updater.Install(a.ctx, a.root, *a.latest); err != nil {
+		if _, err := os.Stat(filepath.Join(a.versionsDir, a.latest.Tag)); errors.Is(err, os.ErrNotExist) {
+			if err := a.updater.Install(a.ctx, a.versionsDir, *a.latest); err != nil {
 				return err
 			}
 		} else if err != nil {
 			return err
 		}
-		return a.activate(a.latest.Tag)
+		a.journal.AddMessage(core.NewMessage("downloaded", a.latest.Tag))
+		return nil
+	case "open-versions":
+		if err := os.MkdirAll(a.versionsDir, 0700); err != nil {
+			return err
+		}
+		return core.OpenDirectory(a.versionsDir)
+	case "delete-version":
+		if err := a.idle(); err != nil {
+			return err
+		}
+		if payload == a.config.Active {
+			return core.NewMessageError("versionInUse")
+		}
+		// Clear the rollback pointer first, so interruption cannot leave it dangling.
+		if payload == a.config.Previous {
+			c := a.config
+			c.Previous = ""
+			if err := core.SaveConfig(a.root, c); err != nil {
+				return err
+			}
+			a.config = c
+		}
+		if err := core.DeleteVersion(a.versionsDir, payload); err != nil {
+			return err
+		}
+		a.journal.AddMessage(core.NewMessage("versionDeleted", payload))
+		return nil
 	case "activate":
 		return a.activate(payload)
 	case "rollback":
@@ -298,7 +294,7 @@ func (a *App) action(action, payload string) error {
 		}
 		if c.Active != "" {
 			if c.Strategy != a.config.Strategy {
-				if _, err := core.StrategyArgs(filepath.Join(a.root, "packages", c.Active), c.Strategy, c); err != nil {
+				if _, err := core.StrategyArgs(filepath.Join(a.versionsDir, c.Active), c.Strategy, c); err != nil {
 					return err
 				}
 			}
@@ -309,7 +305,7 @@ func (a *App) action(action, payload string) error {
 				if !strings.HasSuffix(name, ".bin") {
 					return core.NewMessageError("error006")
 				}
-				if _, err := os.Stat(filepath.Join(a.root, "packages", c.Active, "bin", name)); err != nil {
+				if _, err := os.Stat(filepath.Join(a.versionsDir, c.Active, "bin", name)); err != nil {
 					return err
 				}
 			}
@@ -361,7 +357,7 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		// Unlike normal start, the original menu remains usable if parser compatibility changes.
-		root, err := core.PrepareRuntime(a.root, a.config)
+		root, err := core.PrepareRuntime(a.root, a.versionsDir, a.config)
 		if err != nil {
 			return err
 		}

@@ -142,7 +142,7 @@ func TestHostsMergeIsIdempotentAndPreservesUserEntries(t *testing.T) {
 
 func TestRuntimeIsSeparateAndPreservesOverrides(t *testing.T) {
 	root := t.TempDir()
-	base := filepath.Join(root, "packages", "1.0.0")
+	base := filepath.Join(root, "versions", "1.0.0")
 	for name, content := range map[string]string{"general.bat": "original", "lists/ipset-all.txt": "192.0.2.0/24\n", "bin/fake.bin": "fake", "bin/ACTIVE_GAME_UDP.bin": "default", "utils/targets.txt": "example.com\n"} {
 		if err := AtomicWrite(filepath.Join(base, filepath.FromSlash(name)), []byte(content)); err != nil {
 			t.Fatal(err)
@@ -157,7 +157,7 @@ func TestRuntimeIsSeparateAndPreservesOverrides(t *testing.T) {
 	c := DefaultConfig()
 	c.Active = "1.0.0"
 	c.GameFake = "fake.bin"
-	run, err := PrepareRuntime(root, c)
+	run, err := PrepareRuntime(root, filepath.Join(root, "versions"), c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,7 +178,7 @@ func TestRuntimeIsSeparateAndPreservesOverrides(t *testing.T) {
 		t.Fatal("fake not applied")
 	}
 	c.IPSet = "none"
-	run, err = PrepareRuntime(root, c)
+	run, err = PrepareRuntime(root, filepath.Join(root, "versions"), c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,7 +187,7 @@ func TestRuntimeIsSeparateAndPreservesOverrides(t *testing.T) {
 		t.Fatal("wrong none semantics")
 	}
 	c.IPSet = "any"
-	run, err = PrepareRuntime(root, c)
+	run, err = PrepareRuntime(root, filepath.Join(root, "versions"), c)
 	if err != nil {
 		t.Fatal(err)
 	}

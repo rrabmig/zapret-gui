@@ -57,25 +57,25 @@ func TestInstallVerifiesArchiveAndDoesNotActivate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := u.Install(context.Background(), root, latest); err != nil {
+	if err := u.Install(context.Background(), filepath.Join(root, "versions"), latest); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(filepath.Join(root, "packages", "1.0.0", "service.bat")); err != nil {
+	if _, err := os.Stat(filepath.Join(root, "versions", "1.0.0", "service.bat")); err != nil {
 		t.Fatal(err)
 	}
 	c, err := LoadConfig(root)
 	if err != nil || c.Active != "" {
 		t.Fatalf("installation unexpectedly activated or changed settings: %v", err)
 	}
-	if err := u.Install(context.Background(), root, latest); err == nil {
+	if err := u.Install(context.Background(), filepath.Join(root, "versions"), latest); err == nil {
 		t.Fatal("overwrote an installed package")
 	}
 	badRoot := t.TempDir()
 	r.Assets[0].Digest = "sha256:" + strings.Repeat("0", 64)
-	if err := u.Install(context.Background(), badRoot, r); err == nil {
+	if err := u.Install(context.Background(), filepath.Join(badRoot, "versions"), r); err == nil {
 		t.Fatal("accepted mismatched checksum")
 	}
-	if _, err := os.Stat(filepath.Join(badRoot, "packages", "1.0.0")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(badRoot, "versions", "1.0.0")); !os.IsNotExist(err) {
 		t.Fatal("published corrupt package")
 	}
 }

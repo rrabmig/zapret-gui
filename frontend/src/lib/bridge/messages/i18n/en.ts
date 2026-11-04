@@ -1,4 +1,9 @@
 export const en = {
+  invalidVersion: "Version {value1} is damaged or has an unsupported structure.",
+  versionInUse: "Select another version first. The version in use cannot be deleted.",
+  downloaded: "Downloaded version {value1}; the selected version is unchanged.",
+  versionDeleted: "Deleted version {value1}.",
+
   error001:
     "Engine startup and system actions are disabled; enable them in Settings.",
   error002: "Could not read the engine state: {value1}",

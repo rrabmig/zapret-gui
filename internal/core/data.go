@@ -96,14 +96,14 @@ func CopyTree(source, dest string) error {
 
 // PrepareRuntime recreates a disposable execution tree from a pristine package.
 // Caller must ensure that no process or service is using this directory.
-func PrepareRuntime(root string, c Config) (string, error) {
+func PrepareRuntime(root, versionsDir string, c Config) (string, error) {
 	if err := c.Validate(); err != nil {
 		return "", err
 	}
 	if c.Active == "" {
 		return "", NewMessageError("error028")
 	}
-	base := filepath.Join(root, "packages", c.Active)
+	base := filepath.Join(versionsDir, c.Active)
 	run := filepath.Join(root, "runtime", c.Active)
 	if err := os.RemoveAll(run); err != nil {
 		return "", err
