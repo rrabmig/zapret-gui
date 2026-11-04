@@ -15,3 +15,9 @@ export const Danger: Story = {
 };
 export const Quiet: Story = { args: { variant: "quiet" } };
 export const Disabled: Story = { args: { variant: "primary", disabled: true } };
+
+export const Hover: Story = { parameters: { pseudo: { hover: true } } };
+export const KeyboardFocus: Story = {
+  args: { variant: "primary" },
+  parameters: { pseudo: { focusVisible: true } },
+};

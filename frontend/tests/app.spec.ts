@@ -88,8 +88,19 @@ test("действия через инертный мост, ошибки и к�
   await expect(
     page.getByRole("button", { name: "Запустить", exact: true }),
   ).toBeEnabled();
-  await page.getByRole("button", { name: "Проверка стратегий" }).click();
+  await page.getByRole("button", { name: "Проверка стратегий" }).press("Enter");
   await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Отмена", exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("button", { name: "Открыть утилиту", exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(
+    page.getByRole("button", { name: "Отмена", exact: true }),
+  ).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
   expect((await calls(page)).length).toBe(1);
@@ -185,5 +196,17 @@ test("действия через инертный мост, ошибки и к�
     await expect(page.locator("#storybook-root")).not.toBeEmpty();
     await expect(page.locator(".sb-errordisplay")).not.toBeVisible();
   }
+  await page.goto(
+    "http://127.0.0.1:6006/?path=/story/design-system-button--secondary",
+  );
+  await expect(
+    page.getByRole("tab", { name: "Accessibility", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /CSS pseudo states/ }),
+  ).toBeVisible();
+  await page.keyboard.press("ControlOrMeta+k");
+  await expect(page.locator("#storybook-explorer-searchfield")).toBeFocused();
+  await page.keyboard.press("Escape");
   expect(errors).toEqual([]);
 });

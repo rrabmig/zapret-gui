@@ -27,7 +27,7 @@ const preview: Preview = {
       },
     },
   },
-  initialGlobals: { theme: "light" },
+  initialGlobals: { theme: "light", a11y: { manual: true } },
   decorators: [
     (Story, context) => (
       <Theme theme={context.globals.theme}>
@@ -35,6 +35,10 @@ const preview: Preview = {
       </Theme>
     ),
   ],
-  parameters: { layout: "fullscreen", controls: { expanded: true } },
+  parameters: {
+    layout: "fullscreen",
+    controls: { expanded: true },
+    a11y: { context: "#storybook-root" },
+  },
 };
 export default preview;

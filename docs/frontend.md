@@ -50,3 +50,12 @@ npm run test:ui
 Для намеренного обновления дизайна запустить **Build desktop → Run workflow** на ветке PR с `update_visual_baselines: true`. Скачать `frontend-review`, просмотреть PNG из `tests/__screenshots__`, перенести их в репозиторий и закоммитить. Обычный PR-run не обновляет эталоны. Сборка desktop начинается после core и interface checks и создаёт пакеты Windows/macOS/Linux. Автоматического merge нет.
 
 Chromium и инертный мост не подтверждают работу WinDivert, UAC, Windows-службы и системного WebView. Реальный запуск проверяется отдельно на личном Windows-устройстве.
+
+### Accessibility и клавиатура в Storybook
+
+- **Accessibility** (`@storybook/addon-a11y`): в нижней панели нажать **Run accessibility scan** для axe-аудита текущей story. Анализ ограничен `#storybook-root`; автоматический запуск при переключении stories выключен, проверки запускаются по команде. В панели доступны найденные проблемы и подсветка элементов, в toolbar — симуляция особенностей зрения.
+- **Pseudo States** (`storybook-addon-pseudo-states`): в toolbar можно включить `hover`, `focus`, `focus-visible`, `active` и другие CSS-состояния. У Button есть отдельные stories Hover и KeyboardFocus. Это визуализация CSS, а не перемещение настоящего клавиатурного фокуса.
+- Штатные горячие клавиши Storybook включены. `Ctrl/Cmd+K` — поиск компонента; `Alt+←/→` — предыдущая/следующая story; `Alt+↑/↓` — компонент; `1`, `2`, `3` — фокус на дереве, preview и панели; `F6` / `Shift+F6` — переход между областями; `Alt+A` — показать/скрыть панель; `Alt+F` — полный экран. Комбинации можно менять в **Settings → Keyboard shortcuts** (`Ctrl/Cmd+Shift+,`).
+- Внутри preview работают нативные `Tab`, `Shift+Tab`, `Enter`, `Space`, стрелки для select/radio и `Escape` для диалога. Для просторного просмотра доступен **Open in isolation mode**.
+
+Оба addon — только devDependencies. Они не входят в production-бандл и не подключаются к Go.
