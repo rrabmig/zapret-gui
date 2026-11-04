@@ -20,7 +20,7 @@ Wails выполняет frontend install/build из `wails.json`. `assets.go` �
 
 Основа — системный шрифт, нейтральные серо-синие поверхности и один синий акцент. Статусы имеют отдельные семантические цвета. В тёмной теме глубина задаётся ступенями поверхностей. Анимации ограничены hover и переключателем; `prefers-reduced-motion` отключает переходы. Элементы управления сохраняют нативную клавиатуру, подписи и видимый фокус. Подтверждения используют `<dialog>` с фокусом на отмене и Escape.
 
-Компоненты: Button (primary/secondary/danger/quiet/disabled), Badge, Notice, Card/Section, Field/Switch, ConfirmDialog, ConnectionCard, AppShell и шесть рабочих разделов. Каждая папка компонента содержит stories. Storybook переключает обе темы через toolbar. Формы сохраняют черновики при навигации и polling; при переключении файла списка с изменениями требуется подтверждение.
+Компоненты: Button (primary/secondary/danger/quiet/disabled), Badge, Notice, Card/Section, Field/Switch, ConfirmDialog, ConnectionCard, AppShell и шесть рабочих разделов. Каждая папка компонента содержит stories. Storybook переключает язык RU/EN и обе темы через toolbar. Формы сохраняют черновики при навигации и polling; при переключении файла списка с изменениями требуется подтверждение.
 
 При оформлении использованы принципы [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) и его [Craft](https://github.com/benjitaylor/skills/blob/main/stageshow/references/craft.md): визуальная иерархия, системная типографика, согласованные отступы и ограниченная палитра. Это рабочее приложение, поэтому постановочные заглушки вместо текста и демонстрационный kit не используются. Иконки — Radix Icons; внешние шрифты и изображения отсутствуют.
 
@@ -46,7 +46,7 @@ npx playwright install --with-deps chromium
 npm run test:ui
 ```
 
-Два теста выполняются в светлой и тёмной теме: визуальный проход по состояниям и разделам; сквозное взаимодействие через mock Bridge, ошибки, production без моста и рендер каждой story. Эталоны лежат в `frontend/src/screens/AppShell/test/__screenshots__/{light,dark}`. Playwright сравнивает изображения, а не просто сохраняет новые; допустимое отличие — 0.2% пикселей. В CI загружается `frontend-review` с HTML-отчётом, traces при ошибках, PNG и статическим Storybook. Скачанный каталог Storybook можно открыть через HTTP-сервер на разрешённом устройстве.
+Шесть сценариев выполняются в светлой и тёмной теме (12 прогонов): визуальные состояния и разделы, сквозное взаимодействие через mock Bridge, ошибки, production без моста, рендер каждой story и проверки RU/EN — контрактов сообщений, сохранения языка и черновиков, динамических текстов и общего переключателя Storybook. 50 эталонов RU/EN лежат в `frontend/src/screens/AppShell/test/__screenshots__/{light,dark}`, включая английские диалоги и компактные экраны. Playwright сравнивает изображения, а не просто сохраняет новые; допустимое отличие — 0.2% пикселей. В CI загружается `frontend-review` с HTML-отчётом, traces при ошибках, PNG и статическим Storybook. Скачанный каталог Storybook можно открыть через HTTP-сервер на разрешённом устройстве.
 
 Для намеренного обновления дизайна запустить **Build desktop → Run workflow** на ветке PR с `update_visual_baselines: true`. Скачать `frontend-review`, просмотреть PNG из `src/screens/AppShell/test/__screenshots__`, перенести их в репозиторий и закоммитить. Обычный PR-run не обновляет эталоны. Сборка desktop начинается после core и interface checks и создаёт пакеты Windows/macOS/Linux. Автоматического merge нет.
 
