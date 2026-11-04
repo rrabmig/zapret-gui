@@ -208,7 +208,7 @@ jobs:
                   bundles = list(pathlib.Path('build/bin').glob('*.app'))
                   if len(bundles) != 1:
                       raise SystemExit('Expected one macOS GUI bundle')
-                  info = plistlib.loads((bundles[0] / 'Contents/Info.plist').read_bytes())
+                  info = plistlib.loads((bundles[0] / 'Contents/Info.plist').read_bytes(), fmt=plistlib.FMT_XML)
                   if info['CFBundleName'] != 'GUI for zapret' or info['CFBundleExecutable'] != 'GUIforzapret':
                       raise SystemExit('Incorrect macOS GUI branding')
                   bundles[0].rename(bundles[0].with_name('GUI for zapret.app'))
