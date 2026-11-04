@@ -20,8 +20,8 @@
   padding: 0 12px;
 }
 .tagline {
-  margin: 24px 12px 28px;
-  font-size: 11px;
+  margin: 24px 4px 28px 12px;
+  font-size: 10px;
   line-height: 1.7;
   color: var(--muted);
 }
@@ -175,7 +175,8 @@
 }
 
 .tagline a {
-  display: inline-block;
+  display: block;
+  width: fit-content;
   margin-inline: -8px;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
