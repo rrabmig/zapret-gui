@@ -127,7 +127,7 @@ func (u *Updater) Install(ctx context.Context, root string, release Release) err
 	if err != nil {
 		return err
 	}
-	if _, err := os.Stat(filepath.Join(root, "packages", release.Tag)); err == nil {
+	if _, err := os.Stat(filepath.Join(root, release.Tag)); err == nil {
 		return NewMessageError("error067")
 	}
 	resp, err := u.get(ctx, a.URL)
@@ -135,10 +135,10 @@ func (u *Updater) Install(ctx context.Context, root string, release Release) err
 		return err
 	}
 	defer resp.Body.Close()
-	if err := os.MkdirAll(filepath.Join(root, "packages"), 0700); err != nil {
+	if err := os.MkdirAll(root, 0700); err != nil {
 		return err
 	}
-	stage, err := os.MkdirTemp(filepath.Join(root, "packages"), ".stage-")
+	stage, err := os.MkdirTemp(root, ".stage-")
 	if err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ func (u *Updater) Install(ctx context.Context, root string, release Release) err
 	if err := AtomicWrite(filepath.Join(packageRoot, "release.json"), metadata); err != nil {
 		return err
 	}
-	return os.Rename(packageRoot, filepath.Join(root, "packages", release.Tag))
+	return os.Rename(packageRoot, filepath.Join(root, release.Tag))
 }
 
 func ExtractZIP(archive, dest string) error {

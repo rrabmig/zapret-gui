@@ -50,6 +50,13 @@ export interface Release {
     size: number;
   }[];
 }
+export interface InstalledVersion {
+  tag: string;
+  downloadedAt: string;
+  size: number;
+  strategy: string;
+  problem?: string;
+}
 export interface Snapshot {
   version: string;
   os: string;
@@ -58,7 +65,8 @@ export interface Snapshot {
   config: Config;
   engine: EngineState;
   strategies: Strategy[];
-  packages: string[];
+  versions: InstalledVersion[];
+  versionsDir: string;
   fakes: string[];
   logs:
     | {
@@ -82,7 +90,9 @@ export type Action =
   | "service-stop"
   | "service-remove"
   | "check-updates"
-  | "install-update"
+  | "download-version"
+  | "delete-version"
+  | "open-versions"
   | "activate"
   | "rollback"
   | "diagnostics"

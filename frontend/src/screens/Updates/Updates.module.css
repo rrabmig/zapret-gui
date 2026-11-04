@@ -1,0 +1,42 @@
+.stack {
+  composes: stack from "../../design/Page.module.css";
+}
+.row {
+  composes: row from "../../design/Page.module.css";
+}
+.actions {
+  composes: actions from "../../design/Page.module.css";
+}
+.release {
+  composes: release from "../../design/Page.module.css";
+}
+.actionLine {
+  composes: actionLine from "../../design/Page.module.css";
+}
+.empty {
+  composes: empty from "../../design/Page.module.css";
+}
+.selection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+.selection > div {
+  flex: 1;
+  min-width: 0;
+}
+.folder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.folder code {
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1 1 200px;
+  font-size: 11px;
+  color: var(--muted);
+}

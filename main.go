@@ -47,7 +47,12 @@ func main() {
 		return
 	}
 	defer unlock()
-	app, err := NewApp(root)
+	versionsDir, err := core.DefaultVersionsDir(root)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+	app, err := NewApp(root, versionsDir)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return

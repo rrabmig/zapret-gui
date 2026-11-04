@@ -57,7 +57,14 @@ export function snapshot(scenario = "idle"): Snapshot {
         problem: JSON.stringify({ code: "error051", params: {} }),
       },
     ],
-    packages: ["1.10.4", "1.10.3"],
+    versionsDir:
+      "C:\\Users\\Personal\\AppData\\Local\\Programs\\ZapretDesktop\\versions",
+    versions: ["1.10.4", "1.10.3"].map((tag) => ({
+      tag,
+      downloadedAt: "2026-01-01T12:00:00Z",
+      size: 10 * 1024 * 1024,
+      strategy: "general.bat",
+    })),
     fakes: ["quic_initial_www_google_com.bin"],
     logs: [
       {
@@ -97,7 +104,7 @@ export function snapshot(scenario = "idle"): Snapshot {
   if (scenario === "empty") {
     state.config.active = "";
     state.config.previous = "";
-    state.packages = [];
+    state.versions = [];
     state.strategies = [];
     state.fakes = [];
     state.logs = null;
@@ -170,7 +177,7 @@ export function createMockBridge(scenario = "idle"): MockBridge {
             detail: JSON.stringify({ code: "diagnosticsReadOnly", params: {} }),
           },
         ];
-      if (action === "check-updates" || action === "install-update")
+      if (action === "check-updates" || action === "download-version")
         state.latest = {
           tag_name: "1.10.5",
           html_url: "",
@@ -180,13 +187,20 @@ export function createMockBridge(scenario = "idle"): MockBridge {
           prerelease: false,
         };
       if (action === "check-updates") state.lastCheck = "2026-01-01T12:00:00Z";
-      if (action === "install-update") {
-        state.config.previous = state.config.active;
-        state.config.active = "1.10.5";
-        state.packages = [
-          "1.10.5",
-          ...state.packages.filter((tag) => tag !== "1.10.5"),
+      if (action === "download-version") {
+        state.versions = [
+          {
+            tag: "1.10.5",
+            downloadedAt: "2026-01-01T12:00:00Z",
+            size: 12 * 1024 * 1024,
+            strategy: "general.bat",
+          },
+          ...state.versions.filter((v) => v.tag !== "1.10.5"),
         ];
+      }
+      if (action === "delete-version") {
+        state.versions = state.versions.filter((v) => v.tag !== payload);
+        if (state.config.previous === payload) state.config.previous = "";
       }
       if (action === "activate" || action === "rollback") {
         const previous = state.config.active;

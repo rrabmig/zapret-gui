@@ -1,38 +1,123 @@
+import { useState } from "react";
+
+import { backendText } from "@lib/bridge/messages";
 import { policy } from "@lib/bridge/policy";
-import { useI18n, useLanguage } from "@lib/i18n";
+import type { InstalledVersion } from "@lib/bridge/types";
+import { renderText, useI18n, useLanguage } from "@lib/i18n";
 
 import { Badge } from "@components/Badge/Badge";
 import { Button } from "@components/Button/Button";
 import { Card, Section } from "@components/Card/Card";
+import { Field } from "@components/Field/Field";
 import { Notice } from "@components/Notice/Notice";
 
 import { useApp } from "../../app/AppProvider";
 import * as keyset from "./i18n";
 
-import styles from "../../design/Page.module.css";
+import styles from "./Updates.module.css";
 export interface IUpdatesProps {}
 export function Updates(_props: IUpdatesProps) {
   const i18n = useI18n(keyset);
-  const { state, act } = useApp();
+  const { state, act, confirm } = useApp();
   const { language } = useLanguage();
   const p = policy(state);
+  const [selection, setSelection] = useState("");
+  const selected = state.versions.some((v) => v.tag === selection)
+    ? selection
+    : state.config.active || state.versions.find((v) => !v.problem)?.tag || "";
+  const locale = language === "ru" ? "ru-RU" : "en-US";
+  const date = (value: string) => new Date(value).toLocaleDateString(locale);
+  async function activate(version: InstalledVersion | undefined) {
+    if (!version || version.problem) return;
+    if (
+      version.strategy !== state.config.strategy &&
+      !(await confirm({
+        title: i18n.message("Сменить стратегию?"),
+        body: i18n.message(
+          "В версии {tag} текущая стратегия недоступна. Будет выбрана {strategy}; отсутствующие fake-файлы заменятся стандартными.",
+          { tag: version.tag, strategy: version.strategy },
+        ),
+        label: i18n.message("Применить"),
+      }))
+    )
+      return;
+    await act(
+      "activate",
+      version.tag,
+      i18n.message("Версия выбрана. Движок не запущен."),
+    );
+    setSelection(version.tag);
+  }
+  async function remove(version: InstalledVersion) {
+    if (
+      await confirm({
+        title: i18n.message("Удалить версию {tag}?", { tag: version.tag }),
+        body: i18n.message(
+          "Пакет будет удалён. Настройки и пользовательские списки сохранятся. Для повторного использования потребуется скачать пакет заново.",
+        ),
+        label: i18n.message("Удалить"),
+      })
+    )
+      await act("delete-version", version.tag);
+  }
+  const blocked = state.engine.statusError
+    ? i18n("Не удалось определить состояние движка.")
+    : state.toolSession
+      ? i18n("Завершите сеанс оригинальных утилит.")
+      : state.engine.serviceInstalled || state.engine.foreignServiceInstalled
+        ? i18n(
+            "Остановите и удалите установленную службу перед изменением версий.",
+          )
+        : !p.idle
+          ? i18n("Остановите движок перед изменением версий.")
+          : "";
   return (
     <div className={styles.stack}>
       <Section
+        title={i18n("Используемая версия")}
+        description={i18n("Выбор версии не запускает движок.")}
+      >
+        <Card>
+          <div className={styles.selection}>
+            <Field label={i18n("Версия zapret")}>
+              {(id) => (
+                <select
+                  id={id}
+                  value={selected}
+                  disabled={!p.idle || !state.versions.length}
+                  onChange={(e) => setSelection(e.target.value)}
+                >
+                  {!state.config.active && (
+                    <option value="">{i18n("Не выбрана")}</option>
+                  )}
+                  {state.versions.map((v) => (
+                    <option key={v.tag} value={v.tag} disabled={!!v.problem}>
+                      {v.tag}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+            <Button
+              variant="primary"
+              disabled={
+                !p.idle || !selected || selected === state.config.active
+              }
+              onClick={() =>
+                void activate(state.versions.find((v) => v.tag === selected))
+              }
+            >
+              {i18n("Применить")}
+            </Button>
+          </div>
+        </Card>
+        {blocked && <Notice tone="warning">{blocked}</Notice>}
+      </Section>
+      <Section
         title={i18n("Официальный пакет")}
-        description={i18n(
-          "Flowseal / zapret-discord-youtube · стабильные релизы",
-        )}
+        description="Flowseal / zapret-discord-youtube"
         action={
-          <Button
-            onClick={() =>
-              void act(
-                "check-updates",
-                "",
-                i18n.message("Метаданные релиза обновлены."),
-              )
-            }
-          >
+          <Button onClick={() => void act("check-updates")}>
             {i18n("Проверить обновления")}
           </Button>
         }
@@ -40,8 +125,8 @@ export function Updates(_props: IUpdatesProps) {
         <Card>
           <div className={styles.release}>
             <div>
-              <span>{i18n("Установлено")}</span>
-              <strong>{state.config.active || i18n("Не установлен")}</strong>
+              <span>{i18n("Выбрана")}</span>
+              <strong>{state.config.active || i18n("Не выбрана")}</strong>
             </div>
             <div>
               <span>{i18n("Стабильный релиз")}</span>
@@ -51,9 +136,7 @@ export function Updates(_props: IUpdatesProps) {
               <span>{i18n("Последняя проверка")}</span>
               <p>
                 {state.lastCheck
-                  ? new Date(state.lastCheck).toLocaleString(
-                      language === "ru" ? "ru-RU" : "en-US",
-                    )
+                  ? date(state.lastCheck)
                   : i18n("Ещё не выполнялась")}
               </p>
             </div>
@@ -61,71 +144,90 @@ export function Updates(_props: IUpdatesProps) {
         </Card>
         <div className={styles.actionLine}>
           <p>
-            {i18n("Официальный ZIP с проверкой SHA-256.")}
-            <br />
-            {i18n("После установки движок остаётся выключен.")}
+            {i18n(
+              "Официальный ZIP с проверкой SHA-256. Скачивание не меняет выбранную версию.",
+            )}
           </p>
           <Button
-            variant="primary"
             disabled={
               !p.idle ||
-              (!!state.latest && state.latest.tag_name === state.config.active)
+              (!!state.latest &&
+                state.versions.some((v) => v.tag === state.latest?.tag_name))
             }
             onClick={() =>
               void act(
-                "install-update",
+                "download-version",
                 "",
-                i18n.message(
-                  "Официальный пакет установлен. Движок не запущен.",
-                ),
+                i18n.message("Версия скачана. Выберите её для использования."),
               )
             }
           >
-            {state.config.active
-              ? i18n("Скачать и обновить")
-              : i18n("Скачать и установить")}
+            {i18n("Скачать новую версию")}
           </Button>
         </div>
       </Section>
       <Section
-        title={i18n("Установленные версии")}
-        description={i18n("Предыдущие пакеты остаются для возврата.")}
+        title={i18n("Скачанные версии")}
         action={
           <Button
             disabled={!p.idle || !state.config.previous}
-            onClick={() => void act("rollback")}
+            onClick={() =>
+              void activate(
+                state.versions.find((v) => v.tag === state.config.previous),
+              )
+            }
           >
-            {i18n("Откатить версию")}
+            {i18n("Вернуться к предыдущей")}
           </Button>
         }
       >
         <Card>
-          {state.packages.map((tag) => (
-            <div key={tag} className={styles.row}>
-              <code>{tag}</code>
-              {state.config.active === tag ? (
-                <Badge tone="success">{i18n("Активна")}</Badge>
-              ) : (
-                <div className={styles.actions}>
-                  {state.config.previous === tag && (
-                    <Badge>{i18n("Предыдущая")}</Badge>
-                  )}
-                  <Button
-                    disabled={!p.idle}
-                    onClick={() => void act("activate", tag)}
-                  >
-                    {i18n("Использовать")}
-                  </Button>
-                </div>
-              )}
+          {state.versions.map((v) => (
+            <div key={v.tag} className={styles.row}>
+              <div>
+                <code>{v.tag}</code>
+                <p>
+                  {date(v.downloadedAt)} ·{" "}
+                  {new Intl.NumberFormat(locale, {
+                    maximumFractionDigits: 1,
+                  }).format(v.size / 1024 / 1024)}{" "}
+                  {i18n("МБ")}
+                </p>
+                {v.problem && (
+                  <p>{renderText(backendText(v.problem), language)}</p>
+                )}
+              </div>
+              <div className={styles.actions}>
+                {state.config.active === v.tag ? (
+                  <Badge tone="success">{i18n("Выбрана")}</Badge>
+                ) : (
+                  <>
+                    {state.config.previous === v.tag && (
+                      <Badge>{i18n("Предыдущая")}</Badge>
+                    )}
+                    <Button
+                      variant="danger"
+                      disabled={!p.idle}
+                      aria-label={i18n("Удалить версию {tag}", { tag: v.tag })}
+                      onClick={() => void remove(v)}
+                    >
+                      {i18n("Удалить")}
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           ))}
-          {!state.packages.length && (
-            <div className={styles.empty}>
-              {i18n("Пакеты ещё не установлены.")}
-            </div>
+          {!state.versions.length && (
+            <div className={styles.empty}>{i18n("Версии ещё не скачаны.")}</div>
           )}
         </Card>
+        <div className={styles.folder}>
+          <code>{state.versionsDir}</code>
+          <Button onClick={() => void act("open-versions")}>
+            {i18n("Открыть папку")}
+          </Button>
+        </div>
       </Section>
       <Notice>
         {i18n(

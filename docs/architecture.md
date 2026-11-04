@@ -32,7 +32,7 @@
 Wails window + React/TypeScript + CSS Modules (Vite dist)
           │ allowlisted Go methods
           ▼
-App: settings, lifecycle, interlocks, update/rollback pointer
+App: settings, lifecycle, interlocks, versions storage, selection/rollback pointer
    ├── core.Updater ── HTTPS ── official GitHub Releases
    ├── core.StrategyArgs ── read general*.bat as text
    ├── core.PrepareRuntime ── pristine package + persistent overrides
@@ -66,3 +66,11 @@ GUI находит `general*.bat` динамически и читает арг�
 Интерфейс использует общие токены цвета, типографики, радиусов и отступов, светлую/тёмную/системную тему и CSS Modules. Боковая навигация отделена от рабочих разделов; обзор выделяет состояние движка и ручной запуск. В production нет Storybook, фикстур, внешних шрифтов или веб-ресурсов.
 
 При обновлении дизайна использованы рекомендации [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) по визуальной иерархии, плотности, отступам и нейтральным поверхностям. Его демонстрационный kit и постановочные анимации не включаются в рабочее приложение; компоненты реализованы для настоящего ввода, клавиатуры и Go-моста. Подробности: [frontend.md](frontend.md).
+
+## Хранилище версий и установка
+
+`App` получает раздельные `root` (настройки/списки/runtime) и `versionsDir` (полные релизы). В Windows `versionsDir` определяется от фактического EXE независимо от cwd и `--data-dir`; на macOS/Linux — `<root>/versions`, вне app bundle. `Updater.Install` принимает непосредственно каталог версий; staging и публикация rename остаются на одном томе. Поддержки/миграции прежнего `packages` нет.
+
+`SelectVersion` вычисляет предложение конфигурации без записи и запуска, проверяет полноту релиза и совместимость стратегии. Каталог отдаёт это предложение UI; при смене недоступной стратегии требуется подтверждение. `download-version` сохраняет active/previous; `activate` атомарно сохраняет новый выбор. Все изменения версий используют существующие interlocks. Активную версию удалить нельзя, удаление previous сбрасывает указатель отката.
+
+NSIS устанавливает GUI per-user, используя стабильный ключ `rrabmig.ZapretDesktop`. Скрипт установки и ресурс `info.json` принадлежат репозиторию; Wails генерирует только остальные build assets. Обновление перезаписывает файлы GUI, а не дерево `versions`. Uninstaller проверяет mutex и установленную службу, сохраняет данные по умолчанию и никогда рекурсивно не удаляет корень установки.

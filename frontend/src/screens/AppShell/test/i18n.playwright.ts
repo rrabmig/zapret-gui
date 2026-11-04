@@ -145,13 +145,16 @@ test("английские экраны, диалог, динамические 
     "Overview",
     "Strategies",
     "Lists",
-    "Updates",
+    "zapret versions",
     "Settings",
     "Journal",
   ]) {
     await section(page, name, "en");
     await clean(page);
-    await expect(page).toHaveScreenshot(`en-${name}.png`, { fullPage: true });
+    await expect(page).toHaveScreenshot(
+      `en-${name === "zapret versions" ? "Updates" : name}.png`,
+      { fullPage: true },
+    );
   }
   await section(page, "Overview", "en");
   await page.getByRole("button", { name: /^Diagnostics/ }).click();

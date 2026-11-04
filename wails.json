@@ -7,13 +7,13 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "author": {
-    "name": "Kalinin Danila"
+    "name": "rrabmig"
   },
   "info": {
     "companyName": "rrabmig",
     "productName": "Zapret Desktop",
     "productVersion": "0.1.0",
-    "copyright": "Copyright 2026 Kalinin Danila",
+    "copyright": "Copyright 2026 rrabmig",
     "comments": "Independent GUI for Flowseal/zapret-discord-youtube"
   },
   "frontend:dev:serverUrl": "auto"

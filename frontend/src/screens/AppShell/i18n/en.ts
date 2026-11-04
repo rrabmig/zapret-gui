@@ -5,7 +5,7 @@ export const en = {
   "Выберите подходящую стратегию": "Choose a suitable strategy",
   Списки: "Lists",
   "Настройте, к чему применять фильтрацию": "Choose where filtering applies",
-  Обновления: "Updates",
+  Обновления: "zapret versions",
   "Официальные пакеты Flowseal": "Official Flowseal packages",
   Настройки: "Settings",
   "Поведение приложения и фильтрация": "Application behavior and filtering",
