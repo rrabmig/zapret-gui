@@ -45,6 +45,7 @@ export function AppProvider({
   const [notice, setNotice] = useState<{ text: string; tone: Tone }>();
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const pending = useRef(false);
+  const reading = useRef<Promise<void> | null>(null);
   const active = useRef(true);
   const resolver = useRef<((value: boolean) => void) | null>(null);
   const edits = useRef({ settings: false, lists: false });
@@ -53,19 +54,23 @@ export function AppProvider({
     [],
   );
   const refresh = useCallback(async () => {
-    if (pending.current || resolver.current) return;
-    pending.current = true;
-    try {
-      const next = await bridge.Snapshot();
-      if (active.current) {
-        setState(next);
+    if (pending.current || reading.current || resolver.current) return;
+    const read = (async () => {
+      try {
+        const next = await bridge.Snapshot();
+        if (active.current) setState(next);
+      } catch (error) {
+        if (active.current) notify(String(error), "danger");
       }
-    } catch (error) {
-      if (active.current) notify(String(error), "danger");
+    })();
+    reading.current = read;
+    try {
+      await read;
     } finally {
-      pending.current = false;
+      reading.current = null;
     }
   }, [bridge, notify]);
+
   useEffect(() => {
     active.current = true;
     void refresh();
@@ -111,6 +116,8 @@ export function AppProvider({
     setBusy(true);
     notify("Выполняется…");
     try {
+      // A click waits for an in-flight read rather than disappearing during polling.
+      await reading.current;
       const result = await work();
       if (active.current) notify(success, "success");
       return result;

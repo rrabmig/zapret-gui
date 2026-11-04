@@ -21,6 +21,7 @@ export function Lists({ active = true }: { active?: boolean }) {
   const [edited, setEdited] = useState(false);
   const [hosts, setHosts] = useState<string>();
   const loading = useRef(false);
+  const [reading, setReading] = useState(false);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
@@ -40,6 +41,7 @@ export function Lists({ active = true }: { active?: boolean }) {
     )
       return;
     loading.current = true;
+    setReading(true);
     try {
       const value = await bridge.ReadList(next);
       if (mounted.current) {
@@ -53,6 +55,7 @@ export function Lists({ active = true }: { active?: boolean }) {
       notify(String(error), "danger");
     } finally {
       loading.current = false;
+      if (mounted.current) setReading(false);
     }
   }
   useEffect(() => {
@@ -94,6 +97,7 @@ export function Lists({ active = true }: { active?: boolean }) {
             {files.map(([file, label]) => (
               <button
                 key={file}
+                disabled={reading}
                 aria-current={file === name ? "page" : undefined}
                 onClick={() => void load(file)}
               >
@@ -109,7 +113,7 @@ export function Lists({ active = true }: { active?: boolean }) {
                 id="list-content"
                 aria-describedby="list-note"
                 value={content}
-                disabled={!loaded || !p.idle}
+                disabled={reading || !loaded || !p.idle}
                 spellCheck={false}
                 onChange={(e) => {
                   setContent(e.target.value);
@@ -128,7 +132,7 @@ export function Lists({ active = true }: { active?: boolean }) {
                 </p>
                 <Button
                   variant="primary"
-                  disabled={!p.idle || !loaded}
+                  disabled={reading || !p.idle || !loaded}
                   onClick={() => void save()}
                 >
                   Сохранить список

@@ -1,4 +1,4 @@
-import { PlayIcon, StopIcon, PowerIcon } from "@radix-ui/react-icons";
+import { PlayIcon, StopIcon, LightningBoltIcon } from "@radix-ui/react-icons";
 import type { Snapshot } from "../../bridge/types";
 import { policy } from "../../bridge/policy";
 import { Button } from "../Button/Button";
@@ -32,7 +32,7 @@ export function ConnectionCard({
       </div>
       <div className={styles.body}>
         <div className={styles.power}>
-          <PowerIcon width={28} height={28} />
+          <LightningBoltIcon width={28} height={28} />
         </div>
         <div className={styles.copy}>
           <h2>{p.running ? "Движок работает" : "Движок не запущен"}</h2>
