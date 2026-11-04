@@ -26,7 +26,7 @@ func appVersion(t *testing.T, dir, tag string) {
 	b, _ := json.Marshal(core.Release{Tag: tag})
 	for name, value := range map[string]string{
 		"release.json": string(b), "service.bat": "inert", "general.bat": "start \"zapret\" /min \"%BIN%winws.exe\" --wf-tcp=443\n",
-		"bin/winws.exe": "inert", "lists/list-general.txt": "example.org", "utils/test zapret.ps1": "# inert", "LICENSE.txt": "fixture",
+		"bin/winws.exe": "inert", "lists/list-general.txt": "example.org", "utils/test zapret.ps1": "# inert",
 	} {
 		if err := core.AtomicWrite(filepath.Join(dir, tag, filepath.FromSlash(name)), []byte(value)); err != nil {
 			t.Fatal(err)

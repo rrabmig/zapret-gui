@@ -261,7 +261,9 @@ func findPackageRoot(root string) (string, error) {
 	if len(found) != 1 {
 		return "", NewMessageError("error076")
 	}
-	for _, name := range []string{"bin/winws.exe", "general.bat", "lists/list-general.txt", "utils/test zapret.ps1", "LICENSE.txt"} {
+	// Require runtime files only. Official release ZIPs may omit the repository
+	// license file; preserve any notices present without inventing archive contents.
+	for _, name := range []string{"bin/winws.exe", "general.bat", "lists/list-general.txt", "utils/test zapret.ps1"} {
 		if st, err := os.Stat(filepath.Join(found[0], filepath.FromSlash(name))); err != nil || !st.Mode().IsRegular() {
 			return "", NewMessageError("error077", fmt.Sprint(name))
 		}

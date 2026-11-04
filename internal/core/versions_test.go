@@ -17,7 +17,6 @@ func versionFixture(t *testing.T, dir, tag string) string {
 		"bin/winws.exe":          "inert, never executed",
 		"lists/list-general.txt": "example.org\n",
 		"utils/test zapret.ps1":  "# inert",
-		"LICENSE.txt":            "fixture",
 	}
 	b, _ := json.Marshal(Release{Tag: tag})
 	files["release.json"] = string(b)
