@@ -1,18 +1,25 @@
 import { useEffect, useState } from "react";
 
+import { useBackendI18n } from "@lib/bridge/messages";
 import { policy } from "@lib/bridge/policy";
 import type { Config } from "@lib/bridge/types";
+import { useI18n, useLanguage } from "@lib/i18n";
 
 import { Button } from "@components/Button/Button";
 import { Card, Section } from "@components/Card/Card";
 import { Field, Switch } from "@components/Field/Field";
 
 import { useApp } from "../../app/AppProvider";
+import * as keyset from "./i18n";
 
 import styles from "../../design/Page.module.css";
 export interface ISettingsProps {}
 export function Settings(_props: ISettingsProps) {
-  const { state, act, confirm, dirty, hasEdits, notify } = useApp();
+  const i18n = useI18n(keyset);
+  const backend = useBackendI18n();
+  const { state, act, confirm, dirty, hasEdits, notify, changeLanguage } =
+    useApp();
+  const { language } = useLanguage();
   const p = policy(state);
   const [draft, setDraft] = useState(state.config);
   const [edited, setEdited] = useState(false);
@@ -25,19 +32,30 @@ export function Settings(_props: ISettingsProps) {
     dirty("settings", true);
   }
   async function save() {
+    if (!draft.gameTCP.trim() || !draft.gameUDP.trim()) {
+      notify(backend.message("error020"), "danger");
+      const name = !draft.gameTCP.trim() ? "gameTCP" : "gameUDP";
+      document
+        .querySelector<HTMLInputElement>(`input[name="${name}"]`)
+        ?.focus();
+      return;
+    }
     if (
       draft.ipset === "any" &&
       state.config.ipset !== "any" &&
       !(await confirm({
-        title: "Фильтровать все IP?",
-        body: "Режим any может затронуть сайты, игры и приложения, которые работают без zapret.",
-        label: "Выбрать any",
+        title: i18n.message("Фильтровать все IP?"),
+        body: i18n.message(
+          "Режим any может затронуть сайты, игры и приложения, которые работают без zapret.",
+        ),
+        label: i18n.message("Выбрать any"),
       }))
     )
       return;
     // Package pointers and strategy can change independently while this form is open.
     const next = {
       ...draft,
+      language,
       active: state.config.active,
       previous: state.config.previous,
       strategy: state.config.strategy,
@@ -48,7 +66,7 @@ export function Settings(_props: ISettingsProps) {
       await act(
         "settings",
         JSON.stringify(next),
-        "Настройки сохранены. Движок не запущен автоматически.",
+        i18n.message("Настройки сохранены. Движок не запущен автоматически."),
       )
     ) {
       setEdited(false);
@@ -72,7 +90,12 @@ export function Settings(_props: ISettingsProps) {
             aria-describedby={hintId}
             value={draft[key]}
             disabled={disabled}
-            onChange={(e) => change(key, e.target.value as Config[K])}
+            onChange={(e) => {
+              const option = options.find(
+                ([value]) => value === e.target.value,
+              );
+              if (option) change(key, option[0]);
+            }}
           >
             {options.map(([value, text]) => (
               <option key={value} value={value}>
@@ -85,12 +108,13 @@ export function Settings(_props: ISettingsProps) {
     );
   }
   const fakeOptions: [string, string][] = [
-    ["", "Как в upstream"],
-    ...state.fakes.map((name) => [name, name] as [string, string]),
+    ["", i18n("Как в upstream")],
+    ...state.fakes.map((name): [string, string] => [name, name]),
   ];
   return (
     <div className={styles.stack}>
       <form
+        noValidate
         className={styles.stack}
         onSubmit={(e) => {
           e.preventDefault();
@@ -98,61 +122,83 @@ export function Settings(_props: ISettingsProps) {
         }}
       >
         <Section
-          title="Поведение приложения"
-          description="Изменения применяются после сохранения."
+          title={i18n("Поведение приложения")}
+          description={i18n("Изменения применяются после сохранения.")}
         >
           <Card>
+            <Field label={i18n("language")} hint={i18n("languageHint")}>
+              {(id, hintId) => (
+                <select
+                  id={id}
+                  aria-describedby={hintId}
+                  value={language}
+                  onChange={(event) =>
+                    changeLanguage(event.target.value === "en" ? "en" : "ru")
+                  }
+                >
+                  <option value="ru">Русский</option>
+                  <option value="en">English</option>
+                </select>
+              )}
+            </Field>
             <Switch
-              label="Разрешить запуск движка"
-              hint="Запуск, службы и системные действия на Windows."
+              label={i18n("Разрешить запуск движка")}
+              hint={i18n("Запуск, службы и системные действия на Windows.")}
               checked={draft.engineAllowed}
               disabled={!state.engine.supported}
               onChange={(value) => change("engineAllowed", value)}
             />
             <Switch
-              label="Проверять обновления при открытии"
-              hint="Только метаданные GitHub. Установка остаётся ручной."
+              label={i18n("Проверять обновления при открытии")}
+              hint={i18n(
+                "Только метаданные GitHub. Установка остаётся ручной.",
+              )}
               checked={draft.autoCheck}
               onChange={(value) => change("autoCheck", value)}
             />
             {select(
               "theme",
-              "Оформление",
-              "Светлая, тёмная или тема системы.",
+              i18n("Оформление"),
+              i18n("Светлая, тёмная или тема системы."),
               [
-                ["system", "Системная"],
-                ["light", "Светлая"],
-                ["dark", "Тёмная"],
+                ["system", i18n("Системная")],
+                ["light", i18n("Светлая")],
+                ["dark", i18n("Тёмная")],
               ],
             )}
           </Card>
         </Section>
         <Section
-          title="Фильтрация"
-          description="Остановите движок и удалите службу перед изменением фильтров."
+          title={i18n("Фильтрация")}
+          description={i18n(
+            "Остановите движок и удалите службу перед изменением фильтров.",
+          )}
         >
           <Card>
             {select(
               "gameMode",
               "Game Filter",
-              "Режим фильтрации игровых портов.",
+              i18n("Режим фильтрации игровых портов."),
               [
-                ["disabled", "Выключен"],
-                ["all", "TCP и UDP"],
-                ["tcp", "Только TCP"],
-                ["udp", "Только UDP"],
+                ["disabled", i18n("Выключен")],
+                ["all", i18n("TCP и UDP")],
+                ["tcp", i18n("Только TCP")],
+                ["udp", i18n("Только UDP")],
               ],
               !p.idle,
             )}
             {(["gameTCP", "gameUDP"] as const).map((key) => (
               <Field
                 key={key}
-                label={`Порты ${key === "gameTCP" ? "TCP" : "UDP"}`}
-                hint="Диапазоны и отдельные порты через запятую."
+                label={i18n("ports", {
+                  protocol: key === "gameTCP" ? "TCP" : "UDP",
+                })}
+                hint={i18n("Диапазоны и отдельные порты через запятую.")}
               >
                 {(id, hintId) => (
                   <input
                     id={id}
+                    name={key}
                     aria-describedby={hintId}
                     value={draft[key]}
                     disabled={!p.idle}
@@ -167,22 +213,24 @@ export function Settings(_props: ISettingsProps) {
               "ipset",
               "IPSet Filter",
               draft.ipset === "any"
-                ? "Все IP: может нарушать доступ к другим ресурсам."
+                ? i18n("Все IP: может нарушать доступ к другим ресурсам.")
                 : draft.ipset === "none"
-                  ? "Без фильтрации по списку IP."
-                  : "Только IP из загруженного списка.",
+                  ? i18n("Без фильтрации по списку IP.")
+                  : i18n("Только IP из загруженного списка."),
               [
-                ["loaded", "loaded · по списку"],
-                ["none", "none · без IP"],
-                ["any", "any · все IP"],
+                ["loaded", i18n("loaded · по списку")],
+                ["none", i18n("none · без IP")],
+                ["any", i18n("any · все IP")],
               ],
               !p.idle,
             )}
           </Card>
         </Section>
         <Section
-          title="Активные фейки"
-          description="Файлы из bin текущего релиза. Применяются в рабочей копии."
+          title={i18n("Активные фейки")}
+          description={i18n(
+            "Файлы из bin текущего релиза. Применяются в рабочей копии.",
+          )}
         >
           <Card>
             {select(
@@ -204,8 +252,8 @@ export function Settings(_props: ISettingsProps) {
         <div className={styles.actionLine}>
           <p>
             {edited
-              ? "Есть несохранённые изменения."
-              : "Все изменения сохранены."}
+              ? i18n("Есть несохранённые изменения.")
+              : i18n("Все изменения сохранены.")}
           </p>
           <div className={styles.actions}>
             {edited && (
@@ -216,18 +264,18 @@ export function Settings(_props: ISettingsProps) {
                   dirty("settings", false);
                 }}
               >
-                Отменить изменения
+                {i18n("Отменить изменения")}
               </Button>
             )}
             <Button type="submit" variant="primary">
-              Сохранить настройки
+              {i18n("Сохранить настройки")}
             </Button>
           </div>
         </div>
       </form>
       <Section
-        title="Права администратора"
-        description="Нужны для WinDivert, службы и системного hosts."
+        title={i18n("Права администратора")}
+        description={i18n("Нужны для WinDivert, службы и системного hosts.")}
         action={
           <Button
             disabled={
@@ -239,13 +287,15 @@ export function Settings(_props: ISettingsProps) {
             onClick={() => {
               if (hasEdits())
                 notify(
-                  "Сохраните изменения перед перезапуском с правами администратора.",
+                  i18n.message(
+                    "Сохраните изменения перед перезапуском с правами администратора.",
+                  ),
                   "warning",
                 );
               else void act("elevate");
             }}
           >
-            Запросить права
+            {i18n("Запросить права")}
           </Button>
         }
       >

@@ -22,32 +22,32 @@ export function policy(s: Snapshot) {
         ? allowed && !s.toolSession
         : allowed && !!s.config.active && idle),
     status: e.statusError
-      ? "Статус неизвестен"
+      ? "unknown"
       : running
-        ? "Работает"
+        ? "running"
         : !e.supported
-          ? "Только оболочка"
+          ? "unsupported"
           : s.config.engineAllowed
-            ? "Остановлен"
-            : "Режим просмотра",
-    description:
-      e.statusError ||
-      (!e.supported
-        ? e.message
+            ? "stopped"
+            : "inspection",
+    description: e.statusError
+      ? "statusError"
+      : !e.supported
+        ? "unsupportedHint"
         : !s.config.active
-          ? "Установите официальный пакет в разделе «Обновления»."
+          ? "installHint"
           : !s.config.engineAllowed
-            ? "Разрешите запуск движка в настройках, когда будете готовы."
+            ? "permissionHint"
             : e.foreignServiceInstalled
-              ? "Найдена служба другой установки zapret. Управляйте ею через оригинальную установку."
+              ? "foreignHint"
               : e.externalRunning && !e.serviceRunning
-                ? "Обнаружен сторонний winws. Завершите его перед запуском."
+                ? "externalHint"
                 : s.toolSession
-                  ? "Сначала завершите сеанс оригинальной утилиты."
+                  ? "toolsHint"
                   : running
-                    ? `Flowseal ${s.config.active} · ${s.config.strategy}`
+                    ? "runningHint"
                     : !e.elevated
-                      ? "Для запуска запросите права администратора в настройках."
-                      : "Всё готово. Запуск — только по вашей команде."),
-  };
+                      ? "elevateHint"
+                      : "readyHint",
+  } as const;
 }

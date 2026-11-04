@@ -25,10 +25,10 @@ func ValidateList(name string, data []byte) error {
 		found = true
 	}
 	if !found {
-		return errors.New("unknown list")
+		return NewMessageError("error023")
 	}
 	if len(data) > 8<<20 || strings.ContainsRune(string(data), 0) {
-		return errors.New("invalid list content or size")
+		return NewMessageError("error024")
 	}
 	for i, line := range strings.Split(string(data), "\n") {
 		v := strings.TrimSpace(strings.SplitN(line, "#", 2)[0])
@@ -38,11 +38,11 @@ func ValidateList(name string, data []byte) error {
 		if strings.HasPrefix(name, "ipset") {
 			if net.ParseIP(v) == nil {
 				if _, _, err := net.ParseCIDR(v); err != nil {
-					return fmt.Errorf("line %d: invalid IP address or CIDR", i+1)
+					return NewMessageError("error025", fmt.Sprint(i+1))
 				}
 			}
 		} else if len(v) > 253 || !domainName.MatchString(v) {
-			return fmt.Errorf("line %d: expected an ASCII domain name (use punycode for international domains)", i+1)
+			return NewMessageError("error026", fmt.Sprint(i+1))
 		}
 	}
 	return nil
@@ -84,7 +84,7 @@ func CopyTree(source, dest string) error {
 			return err
 		}
 		if !info.Mode().IsRegular() {
-			return errors.New("package contains a non-regular file")
+			return NewMessageError("error027")
 		}
 		b, err := os.ReadFile(p)
 		if err != nil {
@@ -101,7 +101,7 @@ func PrepareRuntime(root string, c Config) (string, error) {
 		return "", err
 	}
 	if c.Active == "" {
-		return "", errors.New("install an official release first")
+		return "", NewMessageError("error028")
 	}
 	base := filepath.Join(root, "packages", c.Active)
 	run := filepath.Join(root, "runtime", c.Active)
@@ -166,7 +166,7 @@ func PrepareRuntime(root string, c Config) (string, error) {
 		ipset = nil
 	case "loaded":
 		if len(strings.TrimSpace(string(ipset))) == 0 {
-			return "", errors.New("loaded IPSet cannot be empty")
+			return "", NewMessageError("error029")
 		}
 	}
 	if err := AtomicWrite(filepath.Join(run, "lists", "ipset-all.txt"), ipset); err != nil {
@@ -185,7 +185,7 @@ func PrepareRuntime(root string, c Config) (string, error) {
 			continue
 		}
 		if filepath.Base(source) != source || !strings.HasSuffix(source, ".bin") {
-			return "", errors.New("invalid fake file")
+			return "", NewMessageError("error006")
 		}
 		b, err := os.ReadFile(filepath.Join(base, "bin", source))
 		if err != nil {
@@ -203,7 +203,7 @@ const hostsEnd = "# END ZapretDesktop"
 
 func ValidateHosts(data []byte) error {
 	if len(data) == 0 || len(data) > 1<<20 {
-		return errors.New("invalid hosts data size")
+		return NewMessageError("error030")
 	}
 	for i, line := range strings.Split(string(data), "\n") {
 		fields := strings.Fields(strings.SplitN(line, "#", 2)[0])
@@ -211,11 +211,11 @@ func ValidateHosts(data []byte) error {
 			continue
 		}
 		if len(fields) < 2 || net.ParseIP(fields[0]) == nil {
-			return fmt.Errorf("hosts line %d: invalid address", i+1)
+			return NewMessageError("error031", fmt.Sprint(i+1))
 		}
 		for _, domain := range fields[1:] {
 			if !domainName.MatchString(domain) {
-				return fmt.Errorf("hosts line %d: invalid domain", i+1)
+				return NewMessageError("error032", fmt.Sprint(i+1))
 			}
 		}
 	}
@@ -233,19 +233,19 @@ func MergeHosts(existing, additions string) (string, error) {
 	for i, line := range lines {
 		if strings.TrimSpace(line) == hostsBegin {
 			if start >= 0 {
-				return "", errors.New("duplicate hosts marker")
+				return "", NewMessageError("error033")
 			}
 			start = i
 		}
 		if strings.TrimSpace(line) == hostsEnd {
 			if end >= 0 {
-				return "", errors.New("duplicate hosts marker")
+				return "", NewMessageError("error033")
 			}
 			end = i
 		}
 	}
 	if (start >= 0) != (end >= 0) || (start >= 0 && start > end) {
-		return "", errors.New("malformed hosts markers; repair the file manually")
+		return "", NewMessageError("error034")
 	}
 	if start >= 0 {
 		lines = append(lines[:start], lines[end+1:]...)

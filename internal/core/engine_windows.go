@@ -36,7 +36,7 @@ func (e *windowsEngine) State() EngineState {
 		pid = uint32(e.cmd.Process.Pid)
 	}
 	e.mu.Unlock()
-	s := EngineState{Supported: true, Elevated: windows.GetCurrentProcessToken().IsElevated(), Running: pid != 0, Message: "Готов к запуску"}
+	s := EngineState{Supported: true, Elevated: windows.GetCurrentProcessToken().IsElevated(), Running: pid != 0, Message: NewMessage("bfeRunning").Error()}
 	handle, err := windows.OpenSCManager(nil, nil, windows.SC_MANAGER_CONNECT)
 	if err != nil {
 		s.StatusError = err.Error()
@@ -77,7 +77,7 @@ func (e *windowsEngine) State() EngineState {
 		s.StatusError = err.Error()
 	}
 	if s.Running || s.ServiceRunning {
-		s.Message = "Работает"
+		s.Message = NewMessage("bfeRunning").Error()
 	}
 	return s
 }
@@ -102,7 +102,7 @@ func secureServiceCopy(source string) (string, error) {
 	}
 	dest := filepath.Join(programData, "ZapretDesktop")
 	if info, err := os.Lstat(dest); err == nil && (!info.IsDir() || info.Mode()&os.ModeSymlink != 0) {
-		return "", errors.New("unsafe service directory")
+		return "", NewMessageError("error037")
 	} else if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return "", err
 	}
@@ -142,12 +142,12 @@ func secureServiceCopy(source string) (string, error) {
 
 func (e *windowsEngine) Start(root string, args []string, output io.Writer) error {
 	if !windows.GetCurrentProcessToken().IsElevated() {
-		return errors.New("нужны права администратора; нажмите «Запросить права»")
+		return NewMessageError("error038")
 	}
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	if e.cmd != nil {
-		return errors.New("движок уже запущен")
+		return NewMessageError("error039")
 	}
 	cmd := exec.Command(filepath.Join(root, "bin", "winws.exe"), args...)
 	cmd.Dir = filepath.Join(root, "bin")
@@ -160,9 +160,9 @@ func (e *windowsEngine) Start(root string, args []string, output io.Writer) erro
 	go func() {
 		err := cmd.Wait()
 		if err != nil {
-			fmt.Fprintf(output, "\nwinws завершился: %v\n", err)
+			WriteMessage(output, NewMessage("winwsExited", fmt.Sprint(err)))
 		} else {
-			fmt.Fprintln(output, "\nwinws остановлен")
+			WriteMessage(output, NewMessage("winwsStopped"))
 		}
 		e.mu.Lock()
 		if e.cmd == cmd {
@@ -194,7 +194,7 @@ func (e *windowsEngine) Stop() error {
 		}
 		time.Sleep(25 * time.Millisecond)
 	}
-	return errors.New("ожидание остановки winws превысило 5 секунд")
+	return NewMessageError("error040")
 }
 
 func commandLine(args []string) string {
@@ -207,7 +207,7 @@ func commandLine(args []string) string {
 
 func (e *windowsEngine) Service(action, root string, args []string) error {
 	if !windows.GetCurrentProcessToken().IsElevated() {
-		return errors.New("нужны права администратора")
+		return NewMessageError("error041")
 	}
 	m, err := mgr.Connect()
 	if err != nil {
@@ -217,7 +217,7 @@ func (e *windowsEngine) Service(action, root string, args []string) error {
 	if action == "install" {
 		if existing, err := m.OpenService(serviceName); err == nil {
 			existing.Close()
-			return errors.New("служба уже существует")
+			return NewMessageError("error042")
 		} else if !errors.Is(err, windows.ERROR_SERVICE_DOES_NOT_EXIST) {
 			return err
 		}
@@ -265,7 +265,7 @@ func (e *windowsEngine) Service(action, root string, args []string) error {
 				time.Sleep(100 * time.Millisecond)
 			}
 			if status.State != svc.Stopped {
-				return errors.New("служба ещё останавливается; повторите после остановки")
+				return NewMessageError("error043")
 			}
 		}
 		if action == "remove" {
@@ -273,7 +273,7 @@ func (e *windowsEngine) Service(action, root string, args []string) error {
 		}
 		return nil
 	default:
-		return errors.New("unknown service action")
+		return NewMessageError("error044")
 	}
 }
 
@@ -296,7 +296,7 @@ func (e *windowsEngine) OpenTool(root, tool string) error {
 	case "tests":
 		return shellExecute("open", "powershell.exe", commandLine([]string{"-NoProfile", "-NoExit", "-File", filepath.Join(root, "utils", "test zapret.ps1")}), root)
 	default:
-		return errors.New("unknown upstream tool")
+		return NewMessageError("error045")
 	}
 }
 
@@ -323,7 +323,7 @@ func (e *windowsEngine) Diagnostics() []Check {
 	checks := []Check{}
 	handle, err := windows.OpenSCManager(nil, nil, windows.SC_MANAGER_CONNECT)
 	if err != nil {
-		return []Check{{Name: "Service manager", State: "error", Detail: err.Error()}}
+		return []Check{{Name: NewMessage("serviceManager").Error(), State: "error", Detail: err.Error()}}
 	}
 	m := &mgr.Mgr{Handle: handle}
 	defer m.Disconnect()
@@ -333,11 +333,11 @@ func (e *windowsEngine) Diagnostics() []Check {
 	} else {
 		status, err := bfe.Query()
 		bfe.Close()
-		state, detail := "ok", "Работает"
+		state, detail := "ok", NewMessage("bfeRunning").Error()
 		if err != nil {
 			state, detail = "error", err.Error()
 		} else if status.State != svc.Running {
-			state, detail = "error", "Служба BFE остановлена"
+			state, detail = "error", NewMessage("bfeStopped").Error()
 		}
 		checks = append(checks, Check{"Base Filtering Engine", state, detail})
 	}
@@ -349,22 +349,22 @@ func (e *windowsEngine) Diagnostics() []Check {
 		status, err := s.Query()
 		s.Close()
 		if err == nil && status.State == svc.Running {
-			checks = append(checks, Check{name, "warning", "Обнаружена активная служба; проверьте возможный конфликт"})
+			checks = append(checks, Check{name, "warning", NewMessage("conflict").Error()})
 		}
 	}
 	if text, err := query("netsh.exe", "interface", "tcp", "show", "global"); err == nil {
 		checks = append(checks, Check{"TCP / timestamps", "info", text})
 	}
 	if text, err := query("reg.exe", "query", `HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings`, "/v", "ProxyEnable"); err == nil {
-		checks = append(checks, Check{"System proxy", "info", text})
+		checks = append(checks, Check{NewMessage("proxy").Error(), "info", text})
 	}
-	checks = append(checks, Check{"Изменение настроек", "ok", "Диагностика только читает состояние. Расширенная диагностика и исправления доступны в оригинальном меню."})
+	checks = append(checks, Check{NewMessage("readOnly").Error(), "ok", NewMessage("diagnosticsReadOnly").Error()})
 	return checks
 }
 
 func (*windowsEngine) ApplyHosts(preview string) error {
 	if !windows.GetCurrentProcessToken().IsElevated() {
-		return errors.New("нужны права администратора")
+		return NewMessageError("error041")
 	}
 	if err := ValidateHosts([]byte(preview)); err != nil {
 		return err
@@ -386,7 +386,7 @@ func (*windowsEngine) ApplyHosts(preview string) error {
 	// Preserve the hosts file's existing ACL and attributes by writing it in place.
 	if err := os.WriteFile(hosts, []byte(merged), 0644); err != nil {
 		if restoreErr := os.WriteFile(hosts, original, 0644); restoreErr != nil {
-			return fmt.Errorf("write failed: %v; restore failed: %v; backup: %s", err, restoreErr, backup)
+			return NewMessageError("error046", fmt.Sprint(err), fmt.Sprint(restoreErr), fmt.Sprint(backup))
 		}
 		return err
 	}
@@ -405,15 +405,15 @@ func (*windowsEngine) ClearDiscordCache() (string, error) {
 			}
 			backup := p + ".zapret-desktop-" + time.Now().Format("20060102-150405.000000000")
 			if err := os.Rename(p, backup); err != nil {
-				return strings.Join(moved, "\n"), fmt.Errorf("закройте Discord и повторите: %w", err)
+				return strings.Join(moved, "\n"), NewMessageError("error047", fmt.Sprint(err))
 			}
 			moved = append(moved, backup)
 		}
 	}
 	if len(moved) == 0 {
-		return "Кэш Discord не найден", nil
+		return NewMessage("cacheMissing").Error(), nil
 	}
-	return "Кэш перемещён в резервные папки:\n" + strings.Join(moved, "\n"), nil
+	return NewMessage("cacheMoved", strings.Join(moved, "\n")).Error(), nil
 }
 
 func AcquireLock(root string) (func(), error) {
@@ -427,7 +427,7 @@ func AcquireLock(root string) (func(), error) {
 		if h != 0 {
 			windows.CloseHandle(h)
 		}
-		return nil, errors.New("Zapret Desktop is already open")
+		return nil, NewMessageError("error036")
 	}
 	if err != nil {
 		return nil, err

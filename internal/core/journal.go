@@ -1,6 +1,8 @@
 package core
 
 import (
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -8,10 +10,16 @@ import (
 	"time"
 )
 
+type LogEntry struct {
+	Time    string   `json:"time,omitempty"`
+	Text    string   `json:"text,omitempty"`
+	Message *Message `json:"message,omitempty"`
+}
+
 type Journal struct {
 	mu    sync.Mutex
 	file  *os.File
-	lines []string
+	lines []LogEntry
 }
 
 func NewJournal(root string) (*Journal, error) {
@@ -43,7 +51,7 @@ func (j *Journal) Write(b []byte) (int, error) {
 		if len(line) > 4096 {
 			line = line[:4096] + "…"
 		}
-		j.lines = append(j.lines, line)
+		j.lines = append(j.lines, LogEntry{Text: line})
 	}
 	if len(j.lines) > 250 {
 		j.lines = j.lines[len(j.lines)-250:]
@@ -54,9 +62,36 @@ func (j *Journal) Write(b []byte) (int, error) {
 func (j *Journal) Add(message string) {
 	j.Write([]byte(time.Now().Format("15:04:05") + "  " + message + "\n"))
 }
-func (j *Journal) Lines() []string {
+
+// AddMessage accepts only owned events. Write (external process output) always stays raw.
+func (j *Journal) AddMessage(message Message) {
 	j.mu.Lock()
 	defer j.mu.Unlock()
-	return append([]string{}, j.lines...)
+	at := time.Now().Format("15:04:05")
+	j.lines = append(j.lines, LogEntry{Time: at, Message: &message})
+	if len(j.lines) > 250 {
+		j.lines = j.lines[len(j.lines)-250:]
+	}
+	j.file.Write([]byte(at + "  " + message.Error() + "\n"))
+}
+func (j *Journal) AddError(err error) {
+	var message Message
+	if errors.As(err, &message) {
+		j.AddMessage(message)
+	} else {
+		j.Add(err.Error())
+	}
+}
+func WriteMessage(output io.Writer, message Message) {
+	if journal, ok := output.(interface{ AddMessage(Message) }); ok {
+		journal.AddMessage(message)
+	} else {
+		io.WriteString(output, message.Error()+"\n")
+	}
+}
+func (j *Journal) Lines() []LogEntry {
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	return append([]LogEntry{}, j.lines...)
 }
 func (j *Journal) Close() { j.mu.Lock(); defer j.mu.Unlock(); j.file.Close() }

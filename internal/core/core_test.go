@@ -230,3 +230,60 @@ func makeZIP(t *testing.T, files map[string]string) string {
 	}
 	return p
 }
+
+// Language changes are GUI preferences, with Russian as a migration fallback.
+func TestLanguagePersistence(t *testing.T) {
+	root := t.TempDir()
+	for _, language := range []string{"", "unknown", "ru", "en"} {
+		config := DefaultConfig()
+		config.Language = language
+		if err := SaveConfig(root, config); err != nil {
+			t.Fatal(err)
+		}
+		loaded, err := LoadConfig(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if loaded.Language != NormalizeLanguage(language) {
+			t.Fatalf("language %q: got %q", language, loaded.Language)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(root, "config.json"), []byte(`{"schema":1,"language":"invalid"}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := LoadConfig(root)
+	if err != nil || loaded.Language != "ru" {
+		t.Fatalf("unknown language: %+v, %v", loaded, err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "config.json"), []byte(`{"schema":1}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err = LoadConfig(root)
+	if err != nil || loaded.Language != "ru" {
+		t.Fatalf("legacy config: %+v, %v", loaded, err)
+	}
+}
+
+func TestJournalOwnMessagesAndExternalOutput(t *testing.T) {
+	journal, err := NewJournal(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer journal.Close()
+	external := NewMessage("error041").Error()
+	if _, err := journal.Write([]byte(external)); err != nil {
+		t.Fatal(err)
+	}
+	journal.AddMessage(NewMessage("started", "general.bat"))
+	journal.AddError(NewMessageError("error021", "443-1"))
+	lines := journal.Lines()
+	if len(lines) != 3 || lines[0].Text != external || lines[0].Message != nil {
+		t.Fatalf("external output was interpreted: %+v", lines)
+	}
+	if lines[1].Message == nil || lines[1].Message.Code != "started" || lines[1].Message.Params["value1"] != "general.bat" {
+		t.Fatal("owned event lost code or values")
+	}
+	if lines[2].Message == nil || lines[2].Message.Code != "error021" {
+		t.Fatal("structured error lost code")
+	}
+}

@@ -5,8 +5,12 @@ import {
   ResetIcon,
 } from "@radix-ui/react-icons";
 
+import { backendText, useBackendI18n } from "@lib/bridge/messages";
 import { policy } from "@lib/bridge/policy";
 import type { Action } from "@lib/bridge/types";
+import type { Text } from "@lib/i18n";
+import { renderText, useLanguage } from "@lib/i18n";
+import { useI18n } from "@lib/i18n";
 
 import { Badge } from "@components/Badge/Badge";
 import { Button } from "@components/Button/Button";
@@ -14,19 +18,18 @@ import { Card, Section } from "@components/Card/Card";
 import { ConnectionCard } from "@components/ConnectionCard/ConnectionCard";
 
 import { useApp } from "../../app/AppProvider";
+import * as keyset from "./i18n";
 
 import styles from "../../design/Page.module.css";
 export interface IOverviewProps {}
 export function Overview(_props: IOverviewProps) {
+  const i18n = useI18n(keyset);
   const { state, act, confirm } = useApp();
   const p = policy(state);
   const e = state.engine;
-  async function guarded(
-    action: Action,
-    title: string,
-    body: string,
-    label: string,
-  ) {
+  const backend = useBackendI18n();
+  const { language } = useLanguage();
+  async function guarded(action: Action, title: Text, body: Text, label: Text) {
     if (await confirm({ title, body, label })) await act(action);
   }
   return (
@@ -40,23 +43,25 @@ export function Overview(_props: IOverviewProps) {
         }
       />
       <Section
-        title="Служба и автозапуск"
-        description="Продолжает работать после закрытия приложения."
+        title={i18n("Служба и автозапуск")}
+        description={i18n("Продолжает работать после закрытия приложения.")}
         action={
           <Badge tone={e.serviceRunning ? "success" : "neutral"}>
             {e.serviceRunning
-              ? "Работает"
+              ? i18n("Работает")
               : e.serviceInstalled
-                ? "Установлена"
-                : "Не установлена"}
+                ? i18n("Установлена")
+                : i18n("Не установлена")}
           </Badge>
         }
       >
         <Card>
           <div className={styles.row}>
             <div>
-              <h3>Запуск вместе с Windows</h3>
-              <p>Служба ZapretDesktop · текущая стратегия и настройки</p>
+              <h3>{i18n("Запуск вместе с Windows")}</h3>
+              <p>
+                {i18n("Служба ZapretDesktop · текущая стратегия и настройки")}
+              </p>
             </div>
             <div className={styles.actions}>
               <Button
@@ -64,13 +69,15 @@ export function Overview(_props: IOverviewProps) {
                 onClick={() =>
                   void guarded(
                     "service-install",
-                    "Включить автозапуск?",
-                    "Будет создана и запущена служба ZapretDesktop. Она продолжит работать после закрытия GUI.",
-                    "Установить службу",
+                    i18n.message("Включить автозапуск?"),
+                    i18n.message(
+                      "Будет создана и запущена служба ZapretDesktop. Она продолжит работать после закрытия GUI.",
+                    ),
+                    i18n.message("Установить службу"),
                   )
                 }
               >
-                Установить
+                {i18n("Установить")}
               </Button>
               <Button
                 disabled={
@@ -82,17 +89,17 @@ export function Overview(_props: IOverviewProps) {
                   e.foreignServiceInstalled ||
                   state.toolSession
                 }
-                aria-label="Запустить службу"
+                aria-label={i18n("Запустить службу")}
                 onClick={() => void act("service-start")}
               >
-                Запустить
+                {i18n("Запустить")}
               </Button>
               <Button
                 disabled={!p.allowed || !e.serviceRunning || state.toolSession}
-                aria-label="Остановить службу"
+                aria-label={i18n("Остановить службу")}
                 onClick={() => void act("service-stop")}
               >
-                Остановить
+                {i18n("Остановить")}
               </Button>
               <Button
                 variant="danger"
@@ -102,21 +109,23 @@ export function Overview(_props: IOverviewProps) {
                 onClick={() =>
                   void guarded(
                     "service-remove",
-                    "Удалить службу?",
-                    "Служба ZapretDesktop будет остановлена и удалена. Другие службы оболочка не удаляет.",
-                    "Удалить",
+                    i18n.message("Удалить службу?"),
+                    i18n.message(
+                      "Служба ZapretDesktop будет остановлена и удалена. Другие службы оболочка не удаляет.",
+                    ),
+                    i18n.message("Удалить"),
                   )
                 }
               >
-                Удалить
+                {i18n("Удалить")}
               </Button>
             </div>
           </div>
         </Card>
       </Section>
       <Section
-        title="Инструменты"
-        description="Диагностика и оригинальные утилиты Flowseal."
+        title={i18n("Инструменты")}
+        description={i18n("Диагностика и оригинальные утилиты Flowseal.")}
       >
         <div className={styles.toolGrid}>
           <button
@@ -125,8 +134,8 @@ export function Overview(_props: IOverviewProps) {
           >
             <MagnifyingGlassIcon />
             <span>
-              <strong>Диагностика</strong>
-              <small>Чтение локального состояния</small>
+              <strong>{i18n("Диагностика")}</strong>
+              <small>{i18n("Чтение локального состояния")}</small>
             </span>
           </button>
           <button
@@ -135,16 +144,18 @@ export function Overview(_props: IOverviewProps) {
             onClick={() =>
               void guarded(
                 "tests",
-                "Запустить сетевые проверки?",
-                "Оригинальная утилита Flowseal запускает стратегии и обращается к внешним ресурсам: Standard tests и DPI checkers. Используйте на личном устройстве в подходящей сети.",
-                "Открыть утилиту",
+                i18n.message("Запустить сетевые проверки?"),
+                i18n.message(
+                  "Оригинальная утилита Flowseal запускает стратегии и обращается к внешним ресурсам: Standard tests и DPI checkers. Используйте на личном устройстве в подходящей сети.",
+                ),
+                i18n.message("Открыть утилиту"),
               )
             }
           >
             <PlayIcon />
             <span>
-              <strong>Проверка стратегий</strong>
-              <small>Standard tests и DPI checkers</small>
+              <strong>{i18n("Проверка стратегий")}</strong>
+              <small>{i18n("Standard tests и DPI checkers")}</small>
             </span>
           </button>
           <button
@@ -153,16 +164,18 @@ export function Overview(_props: IOverviewProps) {
             onClick={() =>
               void guarded(
                 "menu",
-                "Открыть оригинальное меню?",
-                "service.bat работает с правами администратора и может менять сеть, службы и файлы. Изменения в нём не переносятся в сохранённые настройки GUI.",
-                "Открыть service.bat",
+                i18n.message("Открыть оригинальное меню?"),
+                i18n.message(
+                  "service.bat работает с правами администратора и может менять сеть, службы и файлы. Изменения в нём не переносятся в сохранённые настройки GUI.",
+                ),
+                i18n.message("Открыть service.bat"),
               )
             }
           >
             <ReaderIcon />
             <span>
-              <strong>Оригинальное меню</strong>
-              <small>Все возможности service.bat</small>
+              <strong>{i18n("Оригинальное меню")}</strong>
+              <small>{i18n("Все возможности service.bat")}</small>
             </span>
           </button>
           <button
@@ -171,21 +184,26 @@ export function Overview(_props: IOverviewProps) {
             onClick={() =>
               void guarded(
                 "clear-discord-cache",
-                "Сбросить кэш Discord?",
-                "Сначала закройте Discord. Cache, Code Cache и GPUCache будут переименованы в резервные папки для Stable, PTB, Canary и Development.",
-                "Сохранить резервные копии",
+                i18n.message("Сбросить кэш Discord?"),
+                i18n.message(
+                  "Сначала закройте Discord. Cache, Code Cache и GPUCache будут переименованы в резервные папки для Stable, PTB, Canary и Development.",
+                ),
+                i18n.message("Сохранить резервные копии"),
               )
             }
           >
             <ResetIcon />
             <span>
-              <strong>Кэш Discord</strong>
-              <small>С резервной копией папок</small>
+              <strong>{i18n("Кэш Discord")}</strong>
+              <small>{i18n("С резервной копией папок")}</small>
             </span>
           </button>
         </div>
         {(state.checks ?? []).map((check) => (
-          <details className={styles.details} key={check.name}>
+          <details
+            className={styles.details}
+            key={renderText(backendText(check.name), language)}
+          >
             <summary>
               <Badge
                 tone={
@@ -196,16 +214,25 @@ export function Overview(_props: IOverviewProps) {
                       : "warning"
                 }
               >
-                {check.state}
+                {backend(
+                  check.state === "ok" ||
+                    check.state === "error" ||
+                    check.state === "warning" ||
+                    check.state === "unavailable"
+                    ? check.state
+                    : "info",
+                )}
               </Badge>{" "}
-              {check.name}
+              {renderText(backendText(check.name), language)}
             </summary>
-            <pre>{check.detail}</pre>
+            <pre>{renderText(backendText(check.detail), language)}</pre>
           </details>
         ))}
       </Section>
       <p className={styles.footnote}>
-        Закрытие GUI останавливает только процесс, запущенный этим приложением.
+        {i18n(
+          "Закрытие GUI останавливает только процесс, запущенный этим приложением.",
+        )}
       </p>
     </div>
   );

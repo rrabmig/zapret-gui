@@ -232,7 +232,7 @@ test("действия через инертный мост, ошибки и к�
     .click();
   await open(page, "bridge-error");
   await page.getByRole("button", { name: "Диагностика" }).click();
-  await expect(page.getByRole("alert")).toContainText("тестовая ошибка моста");
+  await expect(page.getByRole("alert")).toContainText("Строка fixture");
   await expect(page.getByRole("button", { name: "Диагностика" })).toBeEnabled();
   // The production build must fail closed without Wails, even with fixture URL parameters.
   await page.goto("http://127.0.0.1:4174/?state=running");

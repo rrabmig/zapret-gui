@@ -6,6 +6,7 @@ export interface Config {
   strategy: string;
   engineAllowed: boolean;
   autoCheck: boolean;
+  language?: "ru" | "en";
   theme: "system" | "light" | "dark";
   gameMode: "disabled" | "all" | "tcp" | "udp";
   gameTCP: string;
@@ -59,13 +60,20 @@ export interface Snapshot {
   strategies: Strategy[];
   packages: string[];
   fakes: string[];
-  logs: string[] | null;
+  logs:
+    | {
+        time?: string;
+        text?: string;
+        message?: { code: string; params: Record<string, string> };
+      }[]
+    | null;
   checks: Check[] | null;
   latest: Release | null;
   lastCheck: string;
   toolSession: boolean;
 }
 export type Action =
+  | "language"
   | "settings"
   | "start"
   | "stop"

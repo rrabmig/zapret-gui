@@ -11,9 +11,7 @@ async function walk(url) {
       const data = await readFile(file);
       total += gzipSync(data).length;
       if (
-        /UI fixture|__uiCalls|Пользовательский список|storybook/i.test(
-          data.toString(),
-        )
+        /UI fixture|__uiCalls|fixture-language|storybook/i.test(data.toString())
       )
         throw new Error("Test fixtures or Storybook leaked into production");
     }
