@@ -5,8 +5,11 @@ repository and its application archives do not contain zapret or WinDivert
 binaries. An official release is downloaded separately on the user's request.
 
 - [Flowseal/zapret-discord-youtube](https://github.com/Flowseal/zapret-discord-youtube):
-  MIT, Copyright (c) 2024–2026 Flowseal. Its complete `LICENSE.txt` is retained in
-  each downloaded package and working copy.
+  MIT, Copyright (c) 2024–2026 Flowseal. The repository's license is available
+  [here](https://github.com/Flowseal/zapret-discord-youtube/blob/main/LICENSE.txt).
+  Files and notices included in the official release ZIP are retained in the
+  downloaded package and working copy. The ZIP may omit the repository license;
+  the downloader does not require a particular license filename or alter the ZIP.
 - [bol-van/zapret](https://github.com/bol-van/zapret): MIT,
   Copyright (c) 2016–2026 bol-van. Flowseal includes its Windows binaries.
 - [WinDivert](https://github.com/basil00/WinDivert): distributed by upstream

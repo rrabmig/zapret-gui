@@ -1,4 +1,4 @@
-Unicode true
+﻿Unicode true
 !define INFO_COMPANYNAME "rrabmig"
 !define PRODUCT_EXECUTABLE "ZapretDesktop.exe"
 !define UNINST_KEY_NAME "rrabmig.ZapretDesktop"
@@ -36,6 +36,7 @@ InstallDirRegKey HKCU "Software\rrabmig\ZapretDesktop" "InstallDir"
 !define MUI_UNICON "..\icon.ico"
 !define MUI_ABORTWARNING
 !insertmacro MUI_PAGE_WELCOME
+Page custom OptionsPage OptionsLeave
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
@@ -43,6 +44,13 @@ UninstPage custom un.CleanupPage un.CleanupLeave
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "Russian"
+
+LangString OptionsTitle ${LANG_ENGLISH} "Installation options"
+LangString OptionsTitle ${LANG_RUSSIAN} "Параметры установки"
+LangString OptionsHint ${LANG_ENGLISH} "A Start menu shortcut is always created."
+LangString OptionsHint ${LANG_RUSSIAN} "Ярлык в меню «Пуск» создаётся автоматически."
+LangString DesktopShortcutLabel ${LANG_ENGLISH} "Create a desktop shortcut"
+LangString DesktopShortcutLabel ${LANG_RUSSIAN} "Создать ярлык на рабочем столе"
 
 LangString CloseApp ${LANG_ENGLISH} "Close Zapret Desktop and its upstream tools, then try again."
 LangString CloseApp ${LANG_RUSSIAN} "Закройте Zapret Desktop и оригинальные утилиты, затем повторите попытку."
@@ -60,6 +68,9 @@ LangString DeleteSettings ${LANG_ENGLISH} "Delete settings, user lists and worki
 LangString DeleteSettings ${LANG_RUSSIAN} "Удалить настройки, пользовательские списки и рабочие копии"
 LangString LockedFile ${LANG_ENGLISH} "Application files are in use. Close the application and retry."
 LangString LockedFile ${LANG_RUSSIAN} "Файлы приложения используются. Закройте приложение и повторите попытку."
+
+Var DesktopCheckbox
+Var DesktopShortcut
 
 Var VersionsCheckbox
 Var SettingsCheckbox
@@ -83,8 +94,35 @@ Var DeleteSettings
 !macroend
 
 Function .onInit
+ StrCpy $DesktopShortcut 0
+ # Optional explicit language, also used by runner UI checks on both locales.
+ ${GetParameters} $0
+ ClearErrors
+ ${GetOptions} $0 "/LANG=" $1
+ ${IfNot} ${Errors}
+  ${If} $1 == 1033
+  ${OrIf} $1 == 1049
+   StrCpy $LANGUAGE $1
+  ${EndIf}
+ ${EndIf}
  !insertmacro wails.checkArchitecture
  !insertmacro CheckClosed
+FunctionEnd
+
+Function OptionsPage
+ !insertmacro MUI_HEADER_TEXT "$(OptionsTitle)" "$(OptionsHint)"
+ nsDialogs::Create 1018
+ Pop $0
+ ${If} $0 == error
+  Abort
+ ${EndIf}
+ ${NSD_CreateCheckbox} 0 10u 100% 25u "$(DesktopShortcutLabel)"
+ Pop $DesktopCheckbox
+ ${NSD_SetState} $DesktopCheckbox $DesktopShortcut
+ nsDialogs::Show
+FunctionEnd
+Function OptionsLeave
+ ${NSD_GetState} $DesktopCheckbox $DesktopShortcut
 FunctionEnd
 
 Function un.onInit
@@ -142,10 +180,9 @@ Section "Install"
  SetOutPath $INSTDIR
  CreateDirectory "$INSTDIR\versions"
  CreateShortcut "$SMPROGRAMS\Zapret Desktop.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
- # Start menu entry is always installed. A desktop shortcut is deliberately optional.
- IfSilent +3
- MessageBox MB_YESNO "Create a desktop shortcut? / Создать ярлык на рабочем столе?" IDNO +2
- CreateShortcut "$DESKTOP\Zapret Desktop.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+ ${If} $DesktopShortcut == ${BST_CHECKED}
+  CreateShortcut "$DESKTOP\Zapret Desktop.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+ ${EndIf}
  WriteRegStr HKCU "Software\rrabmig\ZapretDesktop" "InstallDir" "$INSTDIR"
  !insertmacro wails.writeUninstaller
 SectionEnd

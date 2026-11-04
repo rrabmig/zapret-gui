@@ -19,12 +19,13 @@ type transportFunc func(*http.Request) (*http.Response, error)
 
 func (f transportFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 
-func TestInstallVerifiesArchiveAndDoesNotActivate(t *testing.T) {
+// Regression: the official 1.10.4 release ZIP does not contain LICENSE.txt.
+func TestInstallVerifiesLicenseLessArchiveAndDoesNotActivate(t *testing.T) {
 	archive := makeZIP(t, map[string]string{
 		"release/service.bat": "@echo off", "release/general.bat": "@echo off",
 		"release/bin/winws.exe":          "inert test fixture, never executable",
 		"release/lists/list-general.txt": "example.com\n",
-		"release/utils/test zapret.ps1":  "# inert fixture", "release/LICENSE.txt": "test license",
+		"release/utils/test zapret.ps1":  "# inert fixture",
 	})
 	b, err := os.ReadFile(archive)
 	if err != nil {

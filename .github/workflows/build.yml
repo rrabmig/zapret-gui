@@ -84,11 +84,15 @@ jobs:
       - name: Unit tests (no engine, no external network probes)
         run: go test -race ./internal/core
       - name: Vet core
-        run: go vet ./internal/core ./cmd/catalog-check
+        run: go vet ./internal/core ./cmd/catalog-check ./cmd/package-check
 
   compatibility:
-    name: Official strategy format (text only)
-    runs-on: ubuntu-24.04
+    name: Official release contract (${{ matrix.os }}, no execution)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-go@v7.0.0
@@ -98,11 +102,16 @@ jobs:
         with:
           python-version: "3.12"
       - name: Download verified strategy text into runner temp
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python scripts/fetch-upstream-fixtures.py "$RUNNER_TEMP/upstream-text"
       - name: Inspect every strategy without executing it
+        shell: bash
         run: go run ./cmd/catalog-check "$RUNNER_TEMP/upstream-text"
+      - name: Install, select and prepare the official ZIP without executing it
+        shell: bash
+        run: go run ./cmd/package-check "$RUNNER_TEMP/upstream-package"
 
   desktop:
     name: Build ${{ matrix.platform }}
@@ -170,6 +179,10 @@ jobs:
       - name: Check Windows bridge lifecycle without starting the app
         if: runner.os == 'Windows'
         run: go test -tags bindings .
+      - name: Inspect English and Russian installer options without installing
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/check-installer-dialogs.ps1
       - name: Verify installer, upgrade and uninstall without starting the engine
         if: runner.os == 'Windows'
         shell: pwsh
