@@ -35,7 +35,13 @@ export function ConnectionCard({
           <LightningBoltIcon width={28} height={28} />
         </div>
         <div className={styles.copy}>
-          <h2>{p.running ? "Движок работает" : "Движок не запущен"}</h2>
+          <h2>
+            {state.engine.statusError
+              ? "Состояние неизвестно"
+              : p.running
+                ? "Движок работает"
+                : "Движок не запущен"}
+          </h2>
           <p>{p.description}</p>
         </div>
       </div>

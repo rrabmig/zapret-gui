@@ -77,15 +77,17 @@ export function Overview() {
                   e.foreignServiceInstalled ||
                   state.toolSession
                 }
+                aria-label="Запустить службу"
                 onClick={() => void act("service-start")}
               >
-                Запустить службу
+                Запустить
               </Button>
               <Button
                 disabled={!p.allowed || !e.serviceRunning || state.toolSession}
+                aria-label="Остановить службу"
                 onClick={() => void act("service-stop")}
               >
-                Остановить службу
+                Остановить
               </Button>
               <Button
                 variant="danger"
