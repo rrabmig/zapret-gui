@@ -14,19 +14,10 @@
   height: 100vh;
 }
 .brand {
-  font-size: 27px;
+  font-size: 20px;
   font-weight: 650;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
   padding: 0 12px;
-}
-.brand span {
-  display: block;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-top: -3px;
 }
 .tagline {
   margin: 24px 12px 28px;
@@ -154,10 +145,6 @@
   .brand {
     font-size: 22px;
     padding: 0;
-  }
-  .brand span {
-    display: inline;
-    margin-left: 10px;
   }
   .tagline,
   .sidebarFooter {

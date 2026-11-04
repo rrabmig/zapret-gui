@@ -1,7 +1,7 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "zapret-gui",
-  "outputfilename": "ZapretDesktop",
+  "outputfilename": "GUIforzapret",
   "frontend:dir": "frontend",
   "frontend:install": "npm ci --ignore-scripts",
   "frontend:build": "npm run build",
@@ -11,10 +11,10 @@
   },
   "info": {
     "companyName": "rrabmig",
-    "productName": "Zapret Desktop",
+    "productName": "GUI for zapret",
     "productVersion": "0.1.0",
     "copyright": "Copyright 2026 rrabmig",
-    "comments": "Independent GUI for Flowseal/zapret-discord-youtube"
+    "comments": "Independent GUI by rrabmig for zapret by bol-van, using Flowseal release packages"
   },
   "frontend:dev:serverUrl": "auto"
 }

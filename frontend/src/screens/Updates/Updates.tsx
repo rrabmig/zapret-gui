@@ -36,7 +36,7 @@ export function Updates(_props: IUpdatesProps) {
       !(await confirm({
         title: i18n.message("Сменить стратегию?"),
         body: i18n.message(
-          "В версии {tag} текущая стратегия недоступна. Будет выбрана {strategy}; отсутствующие fake-файлы заменятся стандартными.",
+          "В сборке Flowseal {tag} текущая стратегия недоступна. Будет выбрана {strategy}; отсутствующие fake-файлы заменятся стандартными.",
           { tag: version.tag, strategy: version.strategy },
         ),
         label: i18n.message("Применить"),
@@ -46,7 +46,7 @@ export function Updates(_props: IUpdatesProps) {
     await act(
       "activate",
       version.tag,
-      i18n.message("Версия выбрана. Движок не запущен."),
+      i18n.message("Версия выбрана. zapret не запущен."),
     );
     setSelection(version.tag);
   }
@@ -63,7 +63,7 @@ export function Updates(_props: IUpdatesProps) {
       await act("delete-version", version.tag);
   }
   const blocked = state.engine.statusError
-    ? i18n("Не удалось определить состояние движка.")
+    ? i18n("Не удалось определить состояние zapret.")
     : state.toolSession
       ? i18n("Завершите сеанс оригинальных утилит.")
       : state.engine.serviceInstalled || state.engine.foreignServiceInstalled
@@ -71,17 +71,17 @@ export function Updates(_props: IUpdatesProps) {
             "Остановите и удалите установленную службу перед изменением версий.",
           )
         : !p.idle
-          ? i18n("Остановите движок перед изменением версий.")
+          ? i18n("Остановите zapret перед изменением версий.")
           : "";
   return (
     <div className={styles.stack}>
       <Section
-        title={i18n("Используемая версия")}
-        description={i18n("Выбор версии не запускает движок.")}
+        title={i18n("Выбранная сборка")}
+        description={i18n("Выбор версии не запускает zapret.")}
       >
         <Card>
           <div className={styles.selection}>
-            <Field label={i18n("Версия zapret")}>
+            <Field label={i18n("Сборка Flowseal")}>
               {(id) => (
                 <select
                   id={id}
@@ -116,7 +116,7 @@ export function Updates(_props: IUpdatesProps) {
         {blocked && <Notice tone="warning">{blocked}</Notice>}
       </Section>
       <Section
-        title={i18n("Официальный пакет")}
+        title={i18n("Пакет zapret от Flowseal")}
         description="Flowseal / zapret-discord-youtube"
         action={
           <Button onClick={() => void act("check-updates")}>
@@ -131,7 +131,7 @@ export function Updates(_props: IUpdatesProps) {
               <strong>{state.config.active || i18n("Не выбрана")}</strong>
             </div>
             <div>
-              <span>{i18n("Стабильный релиз")}</span>
+              <span>{i18n("Релиз Flowseal")}</span>
               <strong>{state.latest?.tag_name || i18n("Не проверен")}</strong>
             </div>
             <div>
@@ -147,7 +147,7 @@ export function Updates(_props: IUpdatesProps) {
         <div className={styles.actionLine}>
           <p>
             {i18n(
-              "Официальный ZIP с проверкой SHA-256. Скачивание не меняет выбранную версию.",
+              "ZIP из релизов Flowseal с проверкой SHA-256. Скачивание не меняет выбранную сборку.",
             )}
           </p>
           <Button
@@ -164,12 +164,12 @@ export function Updates(_props: IUpdatesProps) {
               )
             }
           >
-            {i18n("Скачать новую версию")}
+            {i18n("Скачать сборку Flowseal")}
           </Button>
         </div>
       </Section>
       <Section
-        title={i18n("Скачанные версии")}
+        title={i18n("Скачанные сборки")}
         action={
           <Button
             disabled={!p.idle || !state.config.previous}
@@ -221,7 +221,7 @@ export function Updates(_props: IUpdatesProps) {
             </div>
           ))}
           {!state.versions.length && (
-            <div className={styles.empty}>{i18n("Версии ещё не скачаны.")}</div>
+            <div className={styles.empty}>{i18n("Сборки ещё не скачаны.")}</div>
           )}
         </Card>
         <div className={styles.folder}>
@@ -233,7 +233,7 @@ export function Updates(_props: IUpdatesProps) {
       </Section>
       <Notice>
         {i18n(
-          "GUI и движок обновляются отдельно. Настройки и пользовательские списки сохраняются при обновлении и откате.",
+          "GUI for zapret обновляется отдельным установщиком. Здесь выбирается сборка Flowseal; настройки и списки сохраняются.",
         )}
       </Notice>
     </div>

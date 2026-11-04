@@ -27,13 +27,13 @@ function AppContent({ bridge }: IAppContentProps) {
   if (!bridge)
     return (
       <main className={styles.loading}>
-        <h1>Zapret Desktop</h1>
+        <h1>GUI for zapret</h1>
         <Notice>
           {i18n(
             "Go-мост недоступен. Управление доступно в установленном приложении.",
           )}
         </Notice>
-        <Button onClick={openBuilds}>{i18n("Скачать приложение")}</Button>
+        <Button onClick={openBuilds}>{i18n("Скачать GUI")}</Button>
       </main>
     );
   return (

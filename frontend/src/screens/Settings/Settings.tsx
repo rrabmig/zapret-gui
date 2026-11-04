@@ -66,7 +66,7 @@ export function Settings(_props: ISettingsProps) {
       await act(
         "settings",
         JSON.stringify(next),
-        i18n.message("Настройки сохранены. Движок не запущен автоматически."),
+        i18n.message("Настройки сохранены. zapret не запущен автоматически."),
       )
     ) {
       setEdited(false);
@@ -142,16 +142,16 @@ export function Settings(_props: ISettingsProps) {
               )}
             </Field>
             <Switch
-              label={i18n("Разрешить запуск движка")}
+              label={i18n("Разрешить запуск zapret")}
               hint={i18n("Запуск, службы и системные действия на Windows.")}
               checked={draft.engineAllowed}
               disabled={!state.engine.supported}
               onChange={(value) => change("engineAllowed", value)}
             />
             <Switch
-              label={i18n("Проверять обновления при открытии")}
+              label={i18n("Проверять обновления сборки Flowseal")}
               hint={i18n(
-                "Только метаданные GitHub. Установка остаётся ручной.",
+                "Проверяется пакет zapret от Flowseal на GitHub. GUI обновляется отдельным установщиком.",
               )}
               checked={draft.autoCheck}
               onChange={(value) => change("autoCheck", value)}
@@ -171,7 +171,7 @@ export function Settings(_props: ISettingsProps) {
         <Section
           title={i18n("Фильтрация")}
           description={i18n(
-            "Остановите движок и удалите службу перед изменением фильтров.",
+            "Остановите zapret и удалите службу перед изменением фильтров.",
           )}
         >
           <Card>

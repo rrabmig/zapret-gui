@@ -36,7 +36,7 @@ function InteractiveSwitch(_props: IInteractiveSwitchProps) {
   const [checked, setChecked] = useState(false);
   return (
     <Switch
-      label="Разрешить запуск движка"
+      label="Разрешить запуск zapret"
       hint="Только на Windows."
       checked={checked}
       onChange={setChecked}
@@ -47,7 +47,7 @@ export const Toggle: Story = { render: () => <InteractiveSwitch /> };
 export const Disabled: Story = {
   render: () => (
     <Switch
-      label="Разрешить запуск движка"
+      label="Разрешить запуск zapret"
       checked={false}
       disabled
       onChange={() => {}}

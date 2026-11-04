@@ -1,6 +1,8 @@
 # Third-party components
 
-Zapret Desktop is an independent GUI, not an official Flowseal release. The GUI
+GUI for zapret is an independent graphical interface maintained by rrabmig.
+zapret is developed by bol-van; Windows release packages and strategies come
+from Flowseal. This project is not an official interface of those projects. The GUI
 repository and its application archives do not contain zapret or WinDivert
 binaries. An official release is downloaded separately on the user's request.
 

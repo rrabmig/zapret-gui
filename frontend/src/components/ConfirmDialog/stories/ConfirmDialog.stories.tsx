@@ -22,7 +22,7 @@ function Example(_props: IExampleProps) {
           open
             ? {
                 title: "Удалить службу?",
-                body: "Служба ZapretDesktop будет остановлена и удалена.",
+                body: "Служба zapret, созданная этим GUI, будет остановлена и удалена.",
                 label: "Удалить",
               }
             : null

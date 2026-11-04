@@ -23,11 +23,11 @@ export const en = {
   "Применение — отдельным действием с резервной копией.":
     "Apply separately with a backup.",
   "Загрузить предпросмотр": "Load preview",
-  "Меняется только блок ZapretDesktop.":
-    "Only the ZapretDesktop block will change.",
+  "Меняются только записи hosts, добавленные этим GUI.":
+    "Only hosts entries added by this GUI will change.",
   "Обновить системный hosts?": "Update the system hosts file?",
-  "Показанные записи будут добавлены в отдельный блок ZapretDesktop. Остальное содержимое сохранится. Рядом с hosts появится резервная копия.":
-    "The displayed entries will be added to a separate ZapretDesktop block. Other content will be preserved. A backup will be saved next to hosts.",
+  "Показанные записи будут добавлены в отдельный блок hosts, управляемый GUI for zapret. Остальное содержимое сохранится. Рядом с hosts появится резервная копия.":
+    "The displayed entries will be added to a separate hosts block managed by GUI for zapret. Other content will be preserved. A backup will be saved next to hosts.",
   "Применить записи": "Apply entries",
   "Применить к hosts": "Apply to hosts",
   "Сначала загрузите записи upstream и просмотрите изменения.":

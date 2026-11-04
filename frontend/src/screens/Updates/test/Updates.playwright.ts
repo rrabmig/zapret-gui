@@ -6,15 +6,15 @@ test("download, apply, rollback and delete are separate operations", async ({
   await page.goto("http://127.0.0.1:4173/");
   await page
     .getByRole("navigation", { name: "Разделы" })
-    .getByRole("button", { name: "Версии zapret", exact: true })
+    .getByRole("button", { name: "Сборки Flowseal", exact: true })
     .click();
   const selector = page.getByRole("combobox", {
-    name: "Версия zapret",
+    name: "Сборка Flowseal",
     exact: true,
   });
   await expect(selector).toHaveValue("1.10.4");
   await page
-    .getByRole("button", { name: "Скачать новую версию", exact: true })
+    .getByRole("button", { name: "Скачать сборку Flowseal", exact: true })
     .click();
   await expect(selector.locator("option[value='1.10.5']")).toHaveCount(1);
   await expect(selector).toHaveValue("1.10.4");
@@ -69,13 +69,16 @@ test("version changes are blocked by the service and an upstream session", async
     await page.goto(`http://127.0.0.1:4173/?state=${scenario}`);
     await page
       .getByRole("navigation", { name: "Разделы" })
-      .getByRole("button", { name: "Версии zapret", exact: true })
+      .getByRole("button", { name: "Сборки Flowseal", exact: true })
       .click();
     await expect(
-      page.getByRole("combobox", { name: "Версия zapret", exact: true }),
+      page.getByRole("combobox", { name: "Сборка Flowseal", exact: true }),
     ).toBeDisabled();
     await expect(
-      page.getByRole("button", { name: "Скачать новую версию", exact: true }),
+      page.getByRole("button", {
+        name: "Скачать сборку Flowseal",
+        exact: true,
+      }),
     ).toBeDisabled();
     expect(await page.evaluate(() => window.__uiCalls ?? [])).toEqual([]);
   }

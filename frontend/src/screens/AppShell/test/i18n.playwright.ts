@@ -80,7 +80,7 @@ test("язык по умолчанию, черновики, фокус, выбр
   ).toHaveValue("ALT2");
   await expect(page.getByRole("radio")).toHaveCount(1);
   await expect(
-    page.getByText("Strategies in the official package: 4."),
+    page.getByText("Strategies in the selected Flowseal build: 4."),
   ).toBeVisible();
   await section(page, "Lists", "en");
   await expect(editor).toHaveValue("unsaved.example\n");
@@ -145,14 +145,14 @@ test("английские экраны, диалог, динамические 
     "Overview",
     "Strategies",
     "Lists",
-    "zapret versions",
+    "Flowseal builds",
     "Settings",
     "Journal",
   ]) {
     await section(page, name, "en");
     await clean(page);
     await expect(page).toHaveScreenshot(
-      `en-${name === "zapret versions" ? "Updates" : name}.png`,
+      `en-${name === "Flowseal builds" ? "Updates" : name}.png`,
       { fullPage: true },
     );
   }

@@ -12,7 +12,7 @@
       "ProductName": "{{.Info.ProductName}}",
       "Comments": "{{.Info.Comments}}",
       "FileVersion": "{{.Info.ProductVersion}}",
-      "OriginalFilename": "ZapretDesktop.exe"
+      "OriginalFilename": "GUIforzapret.exe"
     },
     "0419": {
       "ProductVersion": "{{.Info.ProductVersion}}",
@@ -22,7 +22,7 @@
       "ProductName": "{{.Info.ProductName}}",
       "Comments": "{{.Info.Comments}}",
       "FileVersion": "{{.Info.ProductVersion}}",
-      "OriginalFilename": "ZapretDesktop.exe"
+      "OriginalFilename": "GUIforzapret.exe"
     }
   }
 }

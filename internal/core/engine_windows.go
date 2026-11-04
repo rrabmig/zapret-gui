@@ -229,7 +229,7 @@ func (e *windowsEngine) Service(action, root string, args []string) error {
 		for i, arg := range serviceArgs {
 			serviceArgs[i] = strings.ReplaceAll(arg, root+string(os.PathSeparator), secured+string(os.PathSeparator))
 		}
-		s, err := m.CreateService(serviceName, filepath.Join(secured, "bin", "winws.exe"), mgr.Config{DisplayName: "Zapret Desktop", Description: "Flowseal strategy managed by Zapret Desktop", StartType: mgr.StartAutomatic}, serviceArgs...)
+		s, err := m.CreateService(serviceName, filepath.Join(secured, "bin", "winws.exe"), mgr.Config{DisplayName: "zapret (GUI for zapret)", Description: "Runs zapret from a Flowseal build; managed by GUI for zapret", StartType: mgr.StartAutomatic}, serviceArgs...)
 		if err != nil {
 			return err
 		}

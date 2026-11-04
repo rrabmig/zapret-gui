@@ -207,7 +207,7 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
   if (!state)
     return (
       <div className={styles.loading} role="status">
-        <h1>Zapret Desktop</h1>
+        <h1>GUI for zapret</h1>
         <p>
           {notice
             ? renderText(notice.text, language)
