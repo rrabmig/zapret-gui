@@ -25,7 +25,7 @@ public static class SetupControls {
     }
 }
 '@
-$setup = @(Get-ChildItem build/bin/ZapretDesktop-Setup-*-x64.exe)
+$setup = @(Get-ChildItem build/bin/GUIforzapret-Setup-*-x64.exe)
 if ($setup.Count -ne 1) { throw 'Expected one installer' }
 $labels = @{
     1033 = 'Create a desktop shortcut'
@@ -41,6 +41,7 @@ foreach ($lang in @(1033,1049)) {
             $window = $process.MainWindowHandle
         } while (!$window -and !$process.HasExited -and [DateTime]::UtcNow -lt $deadline)
         if (!$window) { throw "Setup has no window for language $lang" }
+        if (!$process.MainWindowTitle.Contains('GUI for zapret')) { throw 'Wrong Setup window title' }
         $next = [SetupControls]::GetDlgItem($window,1)
         if (!$next) { throw 'Setup has no Next button' }
         # BM_CLICK: advance only from Welcome to the options page.

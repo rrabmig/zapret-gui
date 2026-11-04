@@ -64,7 +64,7 @@ export function Strategies(_props: IStrategiesProps) {
                       ...state.config,
                       strategy: strategy.name,
                     }),
-                    i18n.message("Стратегия выбрана. Движок не запущен."),
+                    i18n.message("Стратегия выбрана. zapret не запущен."),
                   );
                 }}
               />
@@ -92,13 +92,13 @@ export function Strategies(_props: IStrategiesProps) {
           {state.strategies.length
             ? i18n("По запросу ничего не найдено.")
             : i18n(
-                "Сначала установите официальный пакет в разделе «Обновления».",
+                "Сначала скачайте и выберите сборку в разделе «Сборки Flowseal».",
               )}
         </div>
       )}
       <p className={styles.footnote}>
         {i18n(
-          "Выбор сохраняется без запуска движка. Для изменения остановите движок, удалите службу и завершите оригинальные утилиты.",
+          "Выбор сохраняется без запуска zapret. Для изменения остановите zapret, удалите службу и завершите оригинальные утилиты.",
         )}
       </p>
     </Section>

@@ -1,16 +1,16 @@
 export const en = {
-  "Служба и автозапуск": "Service and automatic startup",
-  "Продолжает работать после закрытия приложения.":
+  "Автозапуск zapret": "Service and automatic startup",
+  "zapret продолжает работать после закрытия GUI.":
     "Keeps running after the application closes.",
   Работает: "Running",
   Установлена: "Installed",
   "Не установлена": "Not installed",
   "Запуск вместе с Windows": "Start with Windows",
-  "Служба ZapretDesktop · текущая стратегия и настройки":
-    "ZapretDesktop service · current strategy and settings",
+  "Служба zapret под управлением GUI for zapret":
+    "zapret service managed by the GUI",
   "Включить автозапуск?": "Enable automatic startup?",
-  "Будет создана и запущена служба ZapretDesktop. Она продолжит работать после закрытия GUI.":
-    "The ZapretDesktop service will be created and started. It will keep running after the GUI closes.",
+  "GUI создаст и запустит службу для zapret. zapret продолжит работать после закрытия GUI.":
+    "The GUI will create and start a service for zapret. zapret will keep running after the GUI closes.",
   "Установить службу": "Install service",
   Установить: "Install",
   "Запустить службу": "Start service",
@@ -18,8 +18,8 @@ export const en = {
   "Остановить службу": "Stop service",
   Остановить: "Stop",
   "Удалить службу?": "Remove service?",
-  "Служба ZapretDesktop будет остановлена и удалена. Другие службы оболочка не удаляет.":
-    "The ZapretDesktop service will be stopped and removed. The GUI does not remove other services.",
+  "Служба zapret, созданная этим GUI, будет остановлена и удалена. Другие службы сохранятся.":
+    "The zapret service created by this GUI will be stopped and removed. Other services will be kept.",
   Удалить: "Remove",
   Инструменты: "Tools",
   "Диагностика и оригинальные утилиты Flowseal.":
@@ -37,7 +37,7 @@ export const en = {
     "service.bat runs with administrator privileges and can change the network, services and files. Its changes are not copied to saved GUI settings.",
   "Открыть service.bat": "Open service.bat",
   "Оригинальное меню": "Original menu",
-  "Все возможности service.bat": "All service.bat features",
+  "Утилита service.bat из сборки Flowseal": "All service.bat features",
   "Сбросить кэш Discord?": "Reset Discord cache?",
   "Сначала закройте Discord. Cache, Code Cache и GPUCache будут переименованы в резервные папки для Stable, PTB, Canary и Development.":
     "Close Discord first. Cache, Code Cache and GPUCache will be renamed as backup folders for Stable, PTB, Canary and Development.",

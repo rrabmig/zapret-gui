@@ -14,7 +14,7 @@ import zipfile
 
 
 def fetch(url):
-    headers = {"User-Agent": "ZapretDesktop-Compatibility/0.1"}
+    headers = {"User-Agent": "GUIforzapret-Compatibility/0.1"}
     if os.environ.get("GITHUB_TOKEN") and url.startswith("https://api.github.com/"):
         headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
     request = urllib.request.Request(url, headers=headers)

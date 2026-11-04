@@ -1,9 +1,9 @@
 # Runs only on an ephemeral Windows runner. Never launches GUI, winws or upstream tools.
 $ErrorActionPreference = 'Stop'
-$setup = @(Get-ChildItem build/bin/ZapretDesktop-Setup-*-x64.exe)
+$setup = @(Get-ChildItem build/bin/GUIforzapret-Setup-*-x64.exe)
 if ($setup.Count -ne 1) { throw 'Expected one installer' }
 $installDir = Join-Path $env:LOCALAPPDATA 'Programs/ZapretDesktop'
-$exe = Join-Path $installDir 'ZapretDesktop.exe'
+$exe = Join-Path $installDir 'GUIforzapret.exe'
 $uninstaller = Join-Path $installDir 'uninstall.exe'
 $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\rrabmig.ZapretDesktop'
 $dataDir = Join-Path $env:APPDATA 'ZapretDesktop'
@@ -27,16 +27,23 @@ foreach ($file in @($exe, $setup[0].FullName)) {
     $metadata = [Diagnostics.FileVersionInfo]::GetVersionInfo($file)
     Write-Output "Metadata: $file / CompanyName='$($metadata.CompanyName)' / FileVersion='$($metadata.FileVersion)'"
     if ($metadata.CompanyName -ne 'rrabmig') { throw "Missing CompanyName on $file" }
+    if ($metadata.ProductName -ne 'GUI for zapret') { throw "Wrong product name on $file" }
 }
 $registration = Get-ItemProperty $key
 if ($registration.Publisher -ne 'rrabmig') { throw 'Wrong publisher' }
-if (!(Test-Path (Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs/Zapret Desktop.lnk'))) { throw 'Missing Start menu entry' }
+if ($registration.DisplayName -ne 'GUI for zapret') { throw 'Wrong installed application name' }
+if (!(Test-Path (Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs/GUI for zapret.lnk'))) { throw 'Missing Start menu entry' }
 New-Item "$installDir/versions/fixture" -ItemType Directory -Force | Out-Null
 New-Item "$dataDir/overrides" -ItemType Directory -Force | Out-Null
 Set-Content "$installDir/versions/fixture/sentinel.txt" 'preserve me' -NoNewline
 Set-Content "$dataDir/overrides/sentinel.txt" 'preserve me' -NoNewline
+# Seed only inert files representing an existing GUI installation's old entrypoints.
+Set-Content "$installDir/ZapretDesktop.exe" 'inert legacy GUI fixture' -NoNewline
+$oldShortcut = Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs/Zapret Desktop.lnk'
+Set-Content $oldShortcut 'inert legacy shortcut fixture' -NoNewline
 Run-Setup
 Assert-Preserved
+if ((Test-Path "$installDir/ZapretDesktop.exe") -or (Test-Path $oldShortcut)) { throw 'Legacy GUI entrypoints were not replaced' }
 # A running controller must block installation/removal. No GUI is launched.
 $mutex = [Threading.Mutex]::new($false, 'Local\rrabmig.ZapretDesktop')
 try {

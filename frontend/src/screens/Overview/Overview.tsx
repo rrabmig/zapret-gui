@@ -43,8 +43,8 @@ export function Overview(_props: IOverviewProps) {
         }
       />
       <Section
-        title={i18n("Служба и автозапуск")}
-        description={i18n("Продолжает работать после закрытия приложения.")}
+        title={i18n("Автозапуск zapret")}
+        description={i18n("zapret продолжает работать после закрытия GUI.")}
         action={
           <Badge tone={e.serviceRunning ? "success" : "neutral"}>
             {e.serviceRunning
@@ -59,9 +59,7 @@ export function Overview(_props: IOverviewProps) {
           <div className={styles.row}>
             <div>
               <h3>{i18n("Запуск вместе с Windows")}</h3>
-              <p>
-                {i18n("Служба ZapretDesktop · текущая стратегия и настройки")}
-              </p>
+              <p>{i18n("Служба zapret под управлением GUI for zapret")}</p>
             </div>
             <div className={styles.actions}>
               <Button
@@ -71,7 +69,7 @@ export function Overview(_props: IOverviewProps) {
                     "service-install",
                     i18n.message("Включить автозапуск?"),
                     i18n.message(
-                      "Будет создана и запущена служба ZapretDesktop. Она продолжит работать после закрытия GUI.",
+                      "GUI создаст и запустит службу для zapret. zapret продолжит работать после закрытия GUI.",
                     ),
                     i18n.message("Установить службу"),
                   )
@@ -111,7 +109,7 @@ export function Overview(_props: IOverviewProps) {
                     "service-remove",
                     i18n.message("Удалить службу?"),
                     i18n.message(
-                      "Служба ZapretDesktop будет остановлена и удалена. Другие службы оболочка не удаляет.",
+                      "Служба zapret, созданная этим GUI, будет остановлена и удалена. Другие службы сохранятся.",
                     ),
                     i18n.message("Удалить"),
                   )
@@ -175,7 +173,7 @@ export function Overview(_props: IOverviewProps) {
             <ReaderIcon />
             <span>
               <strong>{i18n("Оригинальное меню")}</strong>
-              <small>{i18n("Все возможности service.bat")}</small>
+              <small>{i18n("Утилита service.bat из сборки Flowseal")}</small>
             </span>
           </button>
           <button

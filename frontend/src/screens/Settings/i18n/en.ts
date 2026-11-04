@@ -3,25 +3,25 @@ export const en = {
   "Режим any может затронуть сайты, игры и приложения, которые работают без zapret.":
     "The any mode may affect sites, games and applications that work without zapret.",
   "Выбрать any": "Select any",
-  "Настройки сохранены. Движок не запущен автоматически.":
-    "Settings saved. The engine was not started automatically.",
+  "Настройки сохранены. zapret не запущен автоматически.":
+    "Settings saved. zapret was not started automatically.",
   "Как в upstream": "Upstream default",
   "Поведение приложения": "Application behavior",
   "Изменения применяются после сохранения.": "Changes apply after saving.",
-  "Разрешить запуск движка": "Allow engine startup",
+  "Разрешить запуск zapret": "Allow zapret startup",
   "Запуск, службы и системные действия на Windows.":
     "Startup, services and system actions on Windows.",
-  "Проверять обновления при открытии": "Check for updates on opening",
-  "Только метаданные GitHub. Установка остаётся ручной.":
-    "GitHub metadata only. Installation remains manual.",
+  "Проверять обновления сборки Flowseal": "Check for Flowseal build updates",
+  "Проверяется пакет zapret от Flowseal на GitHub. GUI обновляется отдельным установщиком.":
+    "Checks the Flowseal zapret package on GitHub. Update the GUI with its separate installer.",
   Оформление: "Appearance",
   "Светлая, тёмная или тема системы.": "Light, dark or system theme.",
   Системная: "System",
   Светлая: "Light",
   Тёмная: "Dark",
   Фильтрация: "Filtering",
-  "Остановите движок и удалите службу перед изменением фильтров.":
-    "Stop the engine and remove the service before changing filters.",
+  "Остановите zapret и удалите службу перед изменением фильтров.":
+    "Stop zapret and remove the service before changing filters.",
   "Режим фильтрации игровых портов.": "Game port filtering mode.",
   Выключен: "Disabled",
   "TCP и UDP": "TCP and UDP",

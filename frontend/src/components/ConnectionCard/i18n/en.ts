@@ -1,8 +1,8 @@
 export const en = {
   "не установлен": "not installed",
   "Состояние неизвестно": "State unknown",
-  "Движок работает": "Engine running",
-  "Движок не запущен": "Engine stopped",
+  "zapret работает": "zapret running",
+  "zapret не запущен": "zapret stopped",
   "Текущая стратегия": "Current strategy",
   Остановить: "Stop",
   Запустить: "Start",
@@ -11,15 +11,15 @@ export const en = {
   unsupported: "GUI only",
   stopped: "Stopped",
   inspection: "Inspection mode",
-  statusError: "Could not read the engine state. Details: {detail}",
-  unsupportedHint: "The Flowseal engine is unavailable on {os}.",
-  installHint: "Install an official package in Updates.",
-  permissionHint: "Allow engine startup in Settings when you are ready.",
+  statusError: "Could not read zapret state. Details: {detail}",
+  unsupportedHint: "The zapret in the Flowseal build is unavailable on {os}.",
+  installHint: "Download and select a build in Flowseal builds.",
+  permissionHint: "Allow zapret startup in Settings when you are ready.",
   foreignHint:
     "A service from another zapret installation was found. Manage it through that installation.",
   externalHint:
     "An external winws process was detected. Close it before starting.",
   toolsHint: "Finish the original utility session first.",
   elevateHint: "Request administrator privileges in Settings before starting.",
-  readyHint: "Ready. The engine starts only on your command.",
+  readyHint: "Ready. zapret starts only on your command.",
 };

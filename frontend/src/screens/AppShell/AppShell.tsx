@@ -32,7 +32,12 @@ export interface IAppShellProps {}
 export function AppShell(_props: IAppShellProps) {
   const i18n = useI18n(keyset);
   const tabs = [
-    ["overview", i18n("Обзор"), DashboardIcon, i18n("Управляйте подключением")],
+    [
+      "overview",
+      i18n("Обзор"),
+      DashboardIcon,
+      i18n("Управляйте zapret через GUI"),
+    ],
     [
       "strategies",
       i18n("Стратегии"),
@@ -49,7 +54,7 @@ export function AppShell(_props: IAppShellProps) {
       "updates",
       i18n("Обновления"),
       DownloadIcon,
-      i18n("Официальные пакеты Flowseal"),
+      i18n("Сборки zapret от Flowseal"),
     ],
     [
       "settings",
@@ -68,13 +73,11 @@ export function AppShell(_props: IAppShellProps) {
         {i18n("Перейти к содержимому")}
       </a>
       <aside className={styles.sidebar}>
-        <div className={styles.brand}>
-          zapret<span>desktop</span>
-        </div>
+        <div className={styles.brand}>GUI for zapret</div>
         <p className={styles.tagline}>
-          {i18n("Оригинальный движок.")}
+          {i18n("Графический интерфейс.")}
           <br />
-          {i18n("Всё под контролем.")}
+          {i18n("Сборки от Flowseal.")}
         </p>
         <nav
           aria-label={i18n("Разделы")}
@@ -94,9 +97,9 @@ export function AppShell(_props: IAppShellProps) {
           ))}
         </nav>
         <div className={styles.sidebarFooter}>
-          <span>{i18n("Независимый GUI для Flowseal")}</span>
+          <span>{i18n("zapret — bol-van · GUI — rrabmig")}</span>
           <Button variant="quiet" onClick={openBuilds}>
-            {i18n("Скачать приложение")}
+            {i18n("Скачать GUI")}
             <ExternalLinkIcon />
           </Button>
           <code>{state.version}</code>
@@ -122,7 +125,7 @@ export function AppShell(_props: IAppShellProps) {
           {!state.engine.supported && (
             <Notice tone="warning">
               {i18n(
-                "На этой ОС доступны пакеты, списки и настройки. Запуск движка Flowseal, службы и сетевые тесты требуют Windows и WinDivert.",
+                "На этой ОС доступны пакеты, списки и настройки. Запуск zapret из сборки Flowseal, службы и сетевые тесты требуют Windows и WinDivert.",
               )}
             </Notice>
           )}
@@ -160,7 +163,7 @@ export function AppShell(_props: IAppShellProps) {
         </div>
         <footer className={styles.footer}>
           <span>{i18n("Без автоматического запуска")}</span>
-          <span>{i18n("Официальные релизы · ваши настройки")}</span>
+          <span>{i18n("zapret — bol-van · сборки — Flowseal")}</span>
         </footer>
       </main>
     </div>

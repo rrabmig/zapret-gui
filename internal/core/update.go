@@ -65,7 +65,7 @@ func (u *Updater) get(ctx context.Context, target string) (*http.Response, error
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "ZapretDesktop/0.1")
+	req.Header.Set("User-Agent", "GUIforzapret/0.1")
 	req.Header.Set("Accept", "application/vnd.github+json")
 	resp, err := u.client.Do(req)
 	if err != nil {

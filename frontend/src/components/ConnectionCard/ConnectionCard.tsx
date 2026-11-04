@@ -44,8 +44,8 @@ export function ConnectionCard({ state, onToggle }: IConnectionCardProps) {
             {state.engine.statusError
               ? i18n("Состояние неизвестно")
               : p.running
-                ? i18n("Движок работает")
-                : i18n("Движок не запущен")}
+                ? i18n("zapret работает")
+                : i18n("zapret не запущен")}
           </h2>
           <p>
             {p.description === "runningHint"

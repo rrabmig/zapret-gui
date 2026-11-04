@@ -1,6 +1,6 @@
 ﻿Unicode true
 !define INFO_COMPANYNAME "rrabmig"
-!define PRODUCT_EXECUTABLE "ZapretDesktop.exe"
+!define PRODUCT_EXECUTABLE "GUIforzapret.exe"
 !define UNINST_KEY_NAME "rrabmig.ZapretDesktop"
 !ifndef WAILS_INSTALL_SCOPE
 !define WAILS_INSTALL_SCOPE "user"
@@ -17,19 +17,19 @@ VIFileVersion "${INFO_PRODUCTVERSION}.0"
 # Keep FileVersion in each string table as well as the fixed version block.
 VIAddVersionKey /LANG=1033 "FileVersion" "${INFO_PRODUCTVERSION}"
 VIAddVersionKey /LANG=1033 "CompanyName" "rrabmig"
-VIAddVersionKey /LANG=1033 "FileDescription" "Zapret Desktop Setup"
-VIAddVersionKey /LANG=1033 "ProductName" "Zapret Desktop"
+VIAddVersionKey /LANG=1033 "FileDescription" "GUI for zapret Setup"
+VIAddVersionKey /LANG=1033 "ProductName" "GUI for zapret"
 VIAddVersionKey /LANG=1033 "ProductVersion" "${INFO_PRODUCTVERSION}"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "${INFO_COPYRIGHT}"
 VIAddVersionKey /LANG=1049 "FileVersion" "${INFO_PRODUCTVERSION}"
 VIAddVersionKey /LANG=1049 "CompanyName" "rrabmig"
-VIAddVersionKey /LANG=1049 "FileDescription" "Zapret Desktop Setup"
-VIAddVersionKey /LANG=1049 "ProductName" "Zapret Desktop"
+VIAddVersionKey /LANG=1049 "FileDescription" "GUI for zapret Setup"
+VIAddVersionKey /LANG=1049 "ProductName" "GUI for zapret"
 VIAddVersionKey /LANG=1049 "ProductVersion" "${INFO_PRODUCTVERSION}"
 VIAddVersionKey /LANG=1049 "LegalCopyright" "${INFO_COPYRIGHT}"
 ManifestDPIAware true
-Name "Zapret Desktop"
-OutFile "..\..\bin\ZapretDesktop-Setup-${INFO_PRODUCTVERSION}-x64.exe"
+Name "GUI for zapret"
+OutFile "..\..\bin\GUIforzapret-Setup-${INFO_PRODUCTVERSION}-x64.exe"
 InstallDir "$LOCALAPPDATA\Programs\ZapretDesktop"
 InstallDirRegKey HKCU "Software\rrabmig\ZapretDesktop" "InstallDir"
 !define MUI_ICON "..\icon.ico"
@@ -52,10 +52,10 @@ LangString OptionsHint ${LANG_RUSSIAN} "Ярлык в меню «Пуск» со
 LangString DesktopShortcutLabel ${LANG_ENGLISH} "Create a desktop shortcut"
 LangString DesktopShortcutLabel ${LANG_RUSSIAN} "Создать ярлык на рабочем столе"
 
-LangString CloseApp ${LANG_ENGLISH} "Close Zapret Desktop and its upstream tools, then try again."
-LangString CloseApp ${LANG_RUSSIAN} "Закройте Zapret Desktop и оригинальные утилиты, затем повторите попытку."
-LangString RemoveService ${LANG_ENGLISH} "The ZapretDesktop service is installed. Open Zapret Desktop, stop and remove its service, then run the uninstaller again. No files have been deleted."
-LangString RemoveService ${LANG_RUSSIAN} "Установлена служба ZapretDesktop. Откройте Zapret Desktop, остановите и удалите его службу, затем повторите удаление приложения. Файлы не удалены."
+LangString CloseApp ${LANG_ENGLISH} "Close GUI for zapret and the Flowseal utilities, then try again."
+LangString CloseApp ${LANG_RUSSIAN} "Закройте GUI for zapret и утилиты Flowseal, затем повторите попытку."
+LangString RemoveService ${LANG_ENGLISH} "A zapret service managed by this GUI is installed. Open GUI for zapret, stop and remove its service, then run the uninstaller again. No files have been deleted."
+LangString RemoveService ${LANG_RUSSIAN} "Установлена служба zapret под управлением этого GUI. Откройте GUI for zapret, остановите и удалите его службу, затем повторите удаление приложения. Файлы не удалены."
 LangString StateUnknown ${LANG_ENGLISH} "Unable to check the engine or service state. Uninstallation was cancelled without deleting files."
 LangString StateUnknown ${LANG_RUSSIAN} "Не удалось проверить состояние движка или службы. Удаление отменено без удаления файлов."
 LangString CleanupTitle ${LANG_ENGLISH} "Saved versions and settings"
@@ -172,6 +172,10 @@ Section "Install"
  !insertmacro wails.webview2runtime
  SetOutPath $INSTDIR
  !insertmacro wails.files
+ # Replace only the legacy GUI entrypoints; retain downloaded builds and data.
+ Delete "$INSTDIR\ZapretDesktop.exe"
+ Delete "$SMPROGRAMS\Zapret Desktop.lnk"
+ Delete "$DESKTOP\Zapret Desktop.lnk"
  File "..\..\..\README.md"
  File "..\..\..\LICENSE"
  File "..\..\..\THIRD_PARTY_NOTICES.md"
@@ -179,9 +183,9 @@ Section "Install"
  File /r "..\..\..\docs\*"
  SetOutPath $INSTDIR
  CreateDirectory "$INSTDIR\versions"
- CreateShortcut "$SMPROGRAMS\Zapret Desktop.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+ CreateShortcut "$SMPROGRAMS\GUI for zapret.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
  ${If} $DesktopShortcut == ${BST_CHECKED}
-  CreateShortcut "$DESKTOP\Zapret Desktop.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+  CreateShortcut "$DESKTOP\GUI for zapret.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
  ${EndIf}
  WriteRegStr HKCU "Software\rrabmig\ZapretDesktop" "InstallDir" "$INSTDIR"
  !insertmacro wails.writeUninstaller
@@ -207,8 +211,8 @@ Section "Uninstall"
  ${If} $DeleteSettings == ${BST_CHECKED}
   RMDir /r "$APPDATA\ZapretDesktop"
  ${EndIf}
- Delete "$SMPROGRAMS\Zapret Desktop.lnk"
- Delete "$DESKTOP\Zapret Desktop.lnk"
+ Delete "$SMPROGRAMS\GUI for zapret.lnk"
+ Delete "$DESKTOP\GUI for zapret.lnk"
  !insertmacro wails.deleteUninstaller
  DeleteRegKey HKCU "Software\rrabmig\ZapretDesktop"
  # Never recursively delete the installation root: downloads survive reinstall.

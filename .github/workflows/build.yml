@@ -196,13 +196,22 @@ jobs:
           import os, pathlib, shutil
           dest = pathlib.Path('dist') / os.environ['ARTIFACT_NAME']
           if os.environ['RUNNER_OS'] == 'Windows':
-              installers = list(pathlib.Path('build/bin').glob('ZapretDesktop-Setup-*-x64.exe'))
+              installers = list(pathlib.Path('build/bin').glob('GUIforzapret-Setup-*-x64.exe'))
               if len(installers) != 1:
                   raise SystemExit('Expected exactly one Windows installer')
               dest.parent.mkdir(parents=True, exist_ok=True)
               shutil.copy2(installers[0], dest.parent / installers[0].name)
               raise SystemExit(0)
           else:
+              if os.environ['RUNNER_OS'] == 'macOS':
+                  import plistlib
+                  bundles = list(pathlib.Path('build/bin').glob('*.app'))
+                  if len(bundles) != 1:
+                      raise SystemExit('Expected one macOS GUI bundle')
+                  info = plistlib.loads((bundles[0] / 'Contents/Info.plist').read_bytes())
+                  if info['CFBundleName'] != 'GUI for zapret' or info['CFBundleExecutable'] != 'GUIforzapret':
+                      raise SystemExit('Incorrect macOS GUI branding')
+                  bundles[0].rename(bundles[0].with_name('GUI for zapret.app'))
               shutil.copytree('build/bin', dest)
           for name in ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md']:
               shutil.copy2(name, dest / name)
@@ -236,4 +245,4 @@ jobs:
       - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.zip dist/*-Setup-*.exe dist/SHA256SUMS --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "Zapret Desktop $GITHUB_REF_NAME"
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip dist/*-Setup-*.exe dist/SHA256SUMS --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "GUI for zapret $GITHUB_REF_NAME"

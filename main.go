@@ -63,7 +63,7 @@ func main() {
 		return
 	}
 	err = wails.Run(&options.App{
-		Title: "Zapret Desktop", Width: 1100, Height: 790, MinWidth: 760, MinHeight: 600,
+		Title: "GUI for zapret", Width: 1100, Height: 790, MinWidth: 760, MinHeight: 600,
 		AssetServer:      &assetserver.Options{Assets: frontend},
 		BackgroundColour: &options.RGBA{R: 255, G: 255, B: 255, A: 255},
 		OnStartup:        app.startup, OnShutdown: app.shutdown,

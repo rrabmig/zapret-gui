@@ -55,10 +55,14 @@ test("визуальные состояния приложения и все р�
     expect(await calls(page)).toEqual([]);
   }
   await open(page);
+  await expect(page).toHaveTitle("GUI for zapret");
+  await expect(
+    page.getByText("GUI for zapret", { exact: true }).first(),
+  ).toBeVisible();
   for (const name of [
     "Стратегии",
     "Списки",
-    "Версии zapret",
+    "Сборки Flowseal",
     "Настройки",
     "Журнал",
   ]) {
@@ -71,7 +75,7 @@ test("визуальные состояния приложения и все р�
       ).toHaveValue(/example.org/);
     await accessible(page);
     await expect(page).toHaveScreenshot(
-      `page-${name === "Версии zapret" ? "Обновления" : name}.png`,
+      `page-${name === "Сборки Flowseal" ? "Обновления" : name}.png`,
       { fullPage: true },
     );
   }
@@ -123,7 +127,7 @@ test("действия через инертный мост, ошибки и к�
     page.getByRole("heading", { name: "Обзор", exact: true }),
   ).toBeVisible();
   await section(page, "Настройки");
-  await page.getByRole("switch", { name: "Разрешить запуск движка" }).check();
+  await page.getByRole("switch", { name: "Разрешить запуск zapret" }).check();
   await page
     .getByRole("button", { name: "Сохранить настройки", exact: true })
     .click();

@@ -181,7 +181,9 @@ export function Lists({ active = true }: IListsProps) {
             <div className={styles.editor}>
               <pre>{hosts}</pre>
               <div className={styles.footer}>
-                <p>{i18n("Меняется только блок ZapretDesktop.")}</p>
+                <p>
+                  {i18n("Меняются только записи hosts, добавленные этим GUI.")}
+                </p>
                 <Button
                   variant="primary"
                   disabled={!p.allowed}
@@ -190,7 +192,7 @@ export function Lists({ active = true }: IListsProps) {
                       await confirm({
                         title: i18n.message("Обновить системный hosts?"),
                         body: i18n.message(
-                          "Показанные записи будут добавлены в отдельный блок ZapretDesktop. Остальное содержимое сохранится. Рядом с hosts появится резервная копия.",
+                          "Показанные записи будут добавлены в отдельный блок hosts, управляемый GUI for zapret. Остальное содержимое сохранится. Рядом с hosts появится резервная копия.",
                         ),
                         label: i18n.message("Применить записи"),
                       })

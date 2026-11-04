@@ -44,7 +44,7 @@ export function ConfirmDialog({
           onResolve(true);
         }}
       >
-        <p className={styles.eyebrow}>Zapret Desktop</p>
+        <p className={styles.eyebrow}>GUI for zapret</p>
         <h2 id="confirmation-title">
           {confirmation && renderText(confirmation.title, language)}
         </h2>
