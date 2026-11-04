@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { useBackendI18n } from "@lib/bridge/messages";
 import { policy } from "@lib/bridge/policy";
 import type { Config } from "@lib/bridge/types";
 import { useI18n, useLanguage } from "@lib/i18n";
@@ -15,6 +16,7 @@ import styles from "../../design/Page.module.css";
 export interface ISettingsProps {}
 export function Settings(_props: ISettingsProps) {
   const i18n = useI18n(keyset);
+  const backend = useBackendI18n();
   const { state, act, confirm, dirty, hasEdits, notify, changeLanguage } =
     useApp();
   const { language } = useLanguage();
@@ -30,6 +32,14 @@ export function Settings(_props: ISettingsProps) {
     dirty("settings", true);
   }
   async function save() {
+    if (!draft.gameTCP.trim() || !draft.gameUDP.trim()) {
+      notify(backend.message("error020"), "danger");
+      const name = !draft.gameTCP.trim() ? "gameTCP" : "gameUDP";
+      document
+        .querySelector<HTMLInputElement>(`input[name="${name}"]`)
+        ?.focus();
+      return;
+    }
     if (
       draft.ipset === "any" &&
       state.config.ipset !== "any" &&
@@ -104,6 +114,7 @@ export function Settings(_props: ISettingsProps) {
   return (
     <div className={styles.stack}>
       <form
+        noValidate
         className={styles.stack}
         onSubmit={(e) => {
           e.preventDefault();
@@ -187,6 +198,7 @@ export function Settings(_props: ISettingsProps) {
                 {(id, hintId) => (
                   <input
                     id={id}
+                    name={key}
                     aria-describedby={hintId}
                     value={draft[key]}
                     disabled={!p.idle}

@@ -67,6 +67,13 @@ test("язык по умолчанию, черновики, фокус, выбр
   await expect(
     page.getByText("You have unsaved changes.", { exact: true }),
   ).toBeVisible();
+  await page.getByRole("textbox", { name: "TCP ports" }).fill("");
+  await page
+    .getByRole("button", { name: "Save settings", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("Port list must contain");
+  await expect(page.getByRole("textbox", { name: "TCP ports" })).toBeFocused();
+  await page.getByRole("textbox", { name: "TCP ports" }).fill("443");
   await section(page, "Strategies", "en");
   await expect(
     page.getByRole("searchbox", { name: "Search strategies" }),
@@ -98,6 +105,9 @@ test("язык по умолчанию, черновики, фокус, выбр
     .getByRole("combobox", { name: "Language", exact: true })
     .selectOption("ru");
   await expect(page.locator("html")).toHaveAttribute("lang", "ru");
+  await expect(page.getByRole("alert")).toContainText(
+    "Список портов должен содержать",
+  );
   await expect(page.getByRole("textbox", { name: "Порты TCP" })).toHaveValue(
     "443",
   );
