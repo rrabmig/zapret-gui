@@ -24,7 +24,9 @@ function Assert-Preserved {
 }
 Run-Setup
 foreach ($file in @($exe, $setup[0].FullName)) {
-    if ([Diagnostics.FileVersionInfo]::GetVersionInfo($file).CompanyName -ne 'rrabmig') { throw "Missing CompanyName on $file" }
+    $metadata = [Diagnostics.FileVersionInfo]::GetVersionInfo($file)
+    Write-Output "Metadata: $file / CompanyName='$($metadata.CompanyName)' / FileVersion='$($metadata.FileVersion)'"
+    if ($metadata.CompanyName -ne 'rrabmig') { throw "Missing CompanyName on $file" }
 }
 $registration = Get-ItemProperty $key
 if ($registration.Publisher -ne 'rrabmig') { throw 'Wrong publisher' }
