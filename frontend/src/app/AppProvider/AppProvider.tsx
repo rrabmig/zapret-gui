@@ -8,7 +8,16 @@ import {
   useState,
 } from "react";
 
+import { bridgeError } from "@lib/bridge/messages";
 import type { Action, Bridge, Snapshot } from "@lib/bridge/types";
+import {
+  type Language,
+  normalizeLanguage,
+  renderText,
+  type Text,
+  useLanguage,
+} from "@lib/i18n";
+import { useI18n } from "@lib/i18n";
 
 import type { Tone } from "@components/Badge/Badge";
 import {
@@ -17,18 +26,21 @@ import {
 } from "@components/ConfirmDialog/ConfirmDialog";
 import { Notice } from "@components/Notice/Notice";
 
-import styles from "./App.module.css";
+import * as keyset from "./.i18n";
+
+import styles from "../App.module.css";
 interface Model {
   state: Snapshot;
   bridge: Bridge;
   busy: boolean;
-  act(action: Action, payload?: string, success?: string): Promise<boolean>;
-  task<T>(work: () => Promise<T>, success?: string): Promise<T | undefined>;
+  changeLanguage(language: Language): void;
+  act(action: Action, payload?: string, success?: Text): Promise<boolean>;
+  task<T>(work: () => Promise<T>, success?: Text): Promise<T | undefined>;
   refresh(): Promise<void>;
   confirm(confirmation: Confirmation): Promise<boolean>;
   dirty: (kind: "settings" | "lists", value: boolean) => void;
   hasEdits(): boolean;
-  notify(text: string, tone?: Tone): void;
+  notify(text: Text, tone?: Tone): void;
 }
 const Context = createContext<Model | null>(null);
 export function useApp() {
@@ -41,9 +53,13 @@ export interface IAppProviderProps {
   children: ReactNode;
 }
 export function AppProvider({ bridge, children }: IAppProviderProps) {
+  const i18n = useI18n(keyset);
+  const { language, setLanguage } = useLanguage();
+  const initializedLanguage = useRef(false);
+  const languageWrites = useRef(Promise.resolve());
   const [state, setState] = useState<Snapshot>();
   const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState<{ text: string; tone: Tone }>();
+  const [notice, setNotice] = useState<{ text: Text; tone: Tone }>();
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const pending = useRef(false);
   const reading = useRef<Promise<void> | null>(null);
@@ -52,7 +68,7 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
   const confirmationTrigger = useRef<HTMLElement | null>(null);
   const edits = useRef({ settings: false, lists: false });
   const notify = useCallback(
-    (text: string, tone: Tone = "neutral") => setNotice({ text, tone }),
+    (text: Text, tone: Tone = "neutral") => setNotice({ text, tone }),
     [],
   );
   const refresh = useCallback(async () => {
@@ -60,9 +76,15 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
     const read = (async () => {
       try {
         const next = await bridge.Snapshot();
-        if (active.current) setState(next);
+        if (active.current) {
+          if (!initializedLanguage.current) {
+            initializedLanguage.current = true;
+            setLanguage(normalizeLanguage(next.config.language));
+          }
+          setState(next);
+        }
       } catch (error) {
-        if (active.current) notify(String(error), "danger");
+        if (active.current) notify(bridgeError(error), "danger");
       }
     })();
     reading.current = read;
@@ -71,7 +93,7 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
     } finally {
       reading.current = null;
     }
-  }, [bridge, notify]);
+  }, [bridge, notify, setLanguage]);
 
   useEffect(() => {
     active.current = true;
@@ -111,7 +133,7 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
   }, [state?.config.theme]);
   async function task<T>(
     work: () => Promise<T>,
-    success = "",
+    success: Text = "",
   ): Promise<T | undefined> {
     if (pending.current || resolver.current) return undefined;
     const previousFocus = document.querySelector("dialog[open]")
@@ -121,7 +143,7 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
         : null;
     pending.current = true;
     setBusy(true);
-    notify("Выполняется…");
+    notify(i18n.message("Выполняется…"));
     try {
       // A click waits for an in-flight read rather than disappearing during polling.
       await reading.current;
@@ -129,7 +151,7 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
       if (active.current) notify(success, "success");
       return result;
     } catch (error) {
-      if (active.current) notify(String(error), "danger");
+      if (active.current) notify(bridgeError(error), "danger");
       try {
         const next = await bridge.Snapshot();
         if (active.current) setState(next);
@@ -152,7 +174,11 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
       }
     }
   }
-  async function act(action: Action, payload = "", success = "Готово.") {
+  async function act(
+    action: Action,
+    payload = "",
+    success: Text = i18n.message("Готово."),
+  ) {
     return (
       (await task(async () => {
         const next = await bridge.Action(action, payload);
@@ -181,8 +207,12 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
     return (
       <div className={styles.loading} role="status">
         <h1>Zapret Desktop</h1>
-        <p>{notice?.text ?? "Загружаем состояние приложения…"}</p>
-        <button onClick={() => void refresh()}>Повторить</button>
+        <p>
+          {notice
+            ? renderText(notice.text, language)
+            : i18n("Загружаем состояние приложения…")}
+        </p>
+        <button onClick={() => void refresh()}>{i18n("Повторить")}</button>
       </div>
     );
   return (
@@ -191,6 +221,16 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
         state,
         bridge,
         busy,
+        changeLanguage: (next) => {
+          setLanguage(next);
+          languageWrites.current = languageWrites.current.then(async () => {
+            try {
+              await bridge.Action("language", next);
+            } catch (error) {
+              notify(bridgeError(error), "danger");
+            }
+          });
+        },
         act,
         task,
         refresh,
@@ -205,7 +245,9 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
       <fieldset disabled={busy} className={styles.boundary} aria-busy={busy}>
         {notice?.text && (
           <div className={styles.notification}>
-            <Notice tone={notice.tone}>{notice.text}</Notice>
+            <Notice tone={notice.tone}>
+              {renderText(notice.text, language)}
+            </Notice>
           </div>
         )}
         {children}

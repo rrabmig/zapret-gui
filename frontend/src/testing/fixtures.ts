@@ -18,6 +18,7 @@ export function snapshot(scenario = "idle"): Snapshot {
     dataDir: "C:\\Users\\Personal\\AppData\\Roaming\\ZapretDesktop",
     config: {
       schema: 1,
+      language: "ru",
       active: "1.10.4",
       previous: "1.10.3",
       strategy: "general.bat",
@@ -39,7 +40,7 @@ export function snapshot(scenario = "idle"): Snapshot {
       serviceRunning: false,
       externalRunning: false,
       foreignServiceInstalled: false,
-      message: "Готов к ручному запуску",
+      message: JSON.stringify({ code: "bfeRunning", params: {} }),
     },
     strategies: [
       { name: "general.bat", label: "general", compatible: true },
@@ -53,15 +54,15 @@ export function snapshot(scenario = "idle"): Snapshot {
         name: "general (NEW).bat",
         label: "general (NEW)",
         compatible: false,
-        problem: "Новый формат аргументов. Используйте оригинальное меню.",
+        problem: JSON.stringify({ code: "error051", params: {} }),
       },
     ],
     packages: ["1.10.4", "1.10.3"],
     fakes: ["quic_initial_www_google_com.bin"],
     logs: [
-      "12:00:00  Zapret Desktop · автоматический запуск выключен",
-      "12:00:01  Официальный пакет 1.10.4 готов",
-      "12:00:01  Выбрана стратегия general.bat",
+      '12:00:00  {"code":"fixtureStartup","params":{}}',
+      '12:00:01  {"code":"fixturePackage","params":{"value1":"1.10.4"}}',
+      '12:00:01  {"code":"fixtureStrategy","params":{"value1":"general.bat"}}',
     ],
     checks: [],
     latest: null,
@@ -81,7 +82,7 @@ export function snapshot(scenario = "idle"): Snapshot {
     state.os = "darwin";
     state.arch = "arm64";
     state.engine.supported = false;
-    state.engine.message = "Windows-движок недоступен на macOS.";
+    state.engine.message = JSON.stringify({ code: "error035", params: {} });
   }
   if (scenario === "empty") {
     state.config.active = "";
@@ -93,8 +94,7 @@ export function snapshot(scenario = "idle"): Snapshot {
     state.checks = null;
   }
   if (scenario === "status-error") {
-    state.engine.statusError =
-      "Не удалось прочитать состояние службы. Проверьте права доступа.";
+    state.engine.statusError = "Access denied (fixture)";
     state.config.engineAllowed = true;
   }
   if (scenario === "tool-session") {
@@ -113,6 +113,9 @@ export interface MockBridge extends Bridge {
 }
 export function createMockBridge(scenario = "idle"): MockBridge {
   const state = snapshot(scenario);
+  const stored = localStorage.getItem("fixture-language");
+  if (stored === "en") state.config.language = "en";
+  else if (stored) state.config.language = "ru";
   const calls: MockBridge["calls"] = [];
   window.__uiCalls = calls;
   const lists = new Map<string, string>();
@@ -123,8 +126,16 @@ export function createMockBridge(scenario = "idle"): MockBridge {
     Action: async (action: Action, payload: string) => {
       calls.push({ action, payload });
       if (scenario === "bridge-error")
-        throw new Error("Не удалось сохранить: тестовая ошибка моста");
-      if (action === "settings") state.config = JSON.parse(payload) as Config;
+        throw new Error(JSON.stringify({ code: "fixtureError", params: {} }));
+      if (action === "language") {
+        state.config.language = payload === "en" ? "en" : "ru";
+        localStorage.setItem("fixture-language", state.config.language);
+      }
+      if (action === "settings")
+        state.config = {
+          ...(JSON.parse(payload) as Config),
+          language: state.config.language,
+        };
       if (action === "start") state.engine.running = true;
       if (action === "stop") state.engine.running = false;
       if (action === "service-install") {
@@ -142,10 +153,9 @@ export function createMockBridge(scenario = "idle"): MockBridge {
       if (action === "diagnostics")
         state.checks = [
           {
-            name: "Официальный пакет",
+            name: "Flowseal",
             state: "ok",
-            detail:
-              "Файлы доступны. Инертный пример: системные и сетевые вызовы отсутствуют.",
+            detail: JSON.stringify({ code: "fixtureDiagnostic", params: {} }),
           },
         ];
       if (action === "check-updates" || action === "install-update")
@@ -177,7 +187,7 @@ export function createMockBridge(scenario = "idle"): MockBridge {
     ReadList: async (name) =>
       name === "hosts-preview"
         ? "# BEGIN ZapretDesktop\n127.0.0.1 example.org\n# END ZapretDesktop"
-        : (lists.get(name) ?? "# Пользовательский список\nexample.org\n"),
+        : (lists.get(name) ?? "# User list\nexample.org\n"),
     SaveList: async (name, content) => {
       calls.push({ action: "save-list", payload: name });
       lists.set(name, content);

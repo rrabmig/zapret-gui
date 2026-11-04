@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -46,16 +45,16 @@ type Updater struct {
 func NewUpdater() *Updater {
 	client := &http.Client{Timeout: 90 * time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error {
 		if len(via) >= 10 {
-			return errors.New("too many download redirects")
+			return NewMessageError("error056")
 		}
 		if req.URL.Scheme != "https" {
-			return errors.New("refusing an insecure download redirect")
+			return NewMessageError("error057")
 		}
 		switch req.URL.Host {
 		case "github.com", "api.github.com", "raw.githubusercontent.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com":
 			return nil
 		default:
-			return errors.New("unexpected download redirect host")
+			return NewMessageError("error058")
 		}
 	}}
 	return &Updater{client: client, apiURL: "https://api.github.com/repos/" + Repository + "/releases/latest"}
@@ -74,7 +73,7 @@ func (u *Updater) get(ctx context.Context, target string) (*http.Response, error
 	}
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		return nil, fmt.Errorf("GitHub returned HTTP %d (rate limit or upstream unavailable); the installed version is unchanged", resp.StatusCode)
+		return nil, NewMessageError("error059", fmt.Sprint(resp.StatusCode))
 	}
 	return resp, nil
 }
@@ -90,7 +89,7 @@ func (u *Updater) Latest(ctx context.Context) (Release, error) {
 		return r, err
 	}
 	if !safeID.MatchString(r.Tag) || r.Draft || r.Prerelease {
-		return r, errors.New("invalid stable release metadata")
+		return r, NewMessageError("error060")
 	}
 	return r, nil
 }
@@ -102,34 +101,34 @@ func zipAsset(r Release) (Asset, error) {
 		}
 		u, err := url.Parse(a.URL)
 		if err != nil || u.Scheme != "https" || u.Host != "github.com" || u.User != nil || !strings.HasPrefix(u.Path, "/"+Repository+"/releases/download/"+r.Tag+"/") {
-			return a, errors.New("unexpected release asset URL")
+			return a, NewMessageError("error061")
 		}
 		if a.Size <= 0 || a.Size > maxArchive {
-			return a, errors.New("release archive exceeds download limits")
+			return a, NewMessageError("error062")
 		}
 		if !strings.HasPrefix(a.Digest, "sha256:") || len(a.Digest) != 71 {
-			return a, errors.New("upstream did not provide a SHA-256 digest; automatic installation is unavailable")
+			return a, NewMessageError("error063")
 		}
 		if _, err := hex.DecodeString(strings.TrimPrefix(a.Digest, "sha256:")); err != nil {
-			return a, errors.New("invalid archive checksum")
+			return a, NewMessageError("error064")
 		}
 		return a, nil
 	}
-	return Asset{}, errors.New("no supported official ZIP asset in this release")
+	return Asset{}, NewMessageError("error065")
 }
 
 // Install stages and verifies a complete official asset. It never activates it,
 // executes its code, edits the active package, or falls back to a moving branch.
 func (u *Updater) Install(ctx context.Context, root string, release Release) error {
 	if !safeID.MatchString(release.Tag) {
-		return errors.New("invalid release tag")
+		return NewMessageError("error066")
 	}
 	a, err := zipAsset(release)
 	if err != nil {
 		return err
 	}
 	if _, err := os.Stat(filepath.Join(root, "packages", release.Tag)); err == nil {
-		return errors.New("this release is already installed; use its existing copy")
+		return NewMessageError("error067")
 	}
 	resp, err := u.get(ctx, a.URL)
 	if err != nil {
@@ -158,10 +157,10 @@ func (u *Updater) Install(ctx context.Context, root string, release Release) err
 		return closeErr
 	}
 	if n != a.Size || n > maxArchive {
-		return errors.New("archive size does not match release metadata")
+		return NewMessageError("error068")
 	}
 	if hex.EncodeToString(hash.Sum(nil)) != strings.TrimPrefix(a.Digest, "sha256:") {
-		return errors.New("SHA-256 mismatch; package was not installed")
+		return NewMessageError("error069")
 	}
 	unpacked := filepath.Join(stage, "unpacked")
 	if err := ExtractZIP(filepath.Join(stage, "release.zip"), unpacked); err != nil {
@@ -185,7 +184,7 @@ func ExtractZIP(archive, dest string) error {
 	}
 	defer z.Close()
 	if len(z.File) > 4096 {
-		return errors.New("too many ZIP entries")
+		return NewMessageError("error070")
 	}
 	var expanded uint64
 	seen := map[string]bool{}
@@ -193,21 +192,21 @@ func ExtractZIP(archive, dest string) error {
 		name := strings.ReplaceAll(f.Name, `\`, "/")
 		clean := path.Clean(name)
 		if clean == "." || path.IsAbs(clean) || strings.HasPrefix(clean, "../") || clean == ".." || strings.ContainsAny(clean, ":\x00") || f.Mode()&os.ModeSymlink != 0 || (!f.FileInfo().IsDir() && !f.Mode().IsRegular()) {
-			return fmt.Errorf("unsafe ZIP entry %q", f.Name)
+			return NewMessageError("error071", fmt.Sprint(f.Name))
 		}
 		for _, part := range strings.Split(clean, "/") {
 			upper := strings.ToUpper(strings.SplitN(part, ".", 2)[0])
 			if strings.HasSuffix(part, ".") || strings.HasSuffix(part, " ") || upper == "CON" || upper == "PRN" || upper == "AUX" || upper == "NUL" || (len(upper) == 4 && (strings.HasPrefix(upper, "COM") || strings.HasPrefix(upper, "LPT")) && upper[3] >= '0' && upper[3] <= '9') {
-				return errors.New("unsafe Windows ZIP file name")
+				return NewMessageError("error072")
 			}
 		}
 		key := strings.ToLower(clean)
 		if seen[key] {
-			return fmt.Errorf("duplicate ZIP entry %q", f.Name)
+			return NewMessageError("error073", fmt.Sprint(f.Name))
 		}
 		seen[key] = true
 		if f.UncompressedSize64 > maxExpanded || expanded > maxExpanded-f.UncompressedSize64 {
-			return errors.New("ZIP expansion limit exceeded")
+			return NewMessageError("error074")
 		}
 		expanded += f.UncompressedSize64
 		target := filepath.Join(dest, filepath.FromSlash(clean))
@@ -239,7 +238,7 @@ func ExtractZIP(archive, dest string) error {
 			return closeErr
 		}
 		if uint64(n) != f.UncompressedSize64 {
-			return errors.New("invalid ZIP entry size")
+			return NewMessageError("error075")
 		}
 	}
 	return nil
@@ -260,11 +259,11 @@ func findPackageRoot(root string) (string, error) {
 		return "", err
 	}
 	if len(found) != 1 {
-		return "", errors.New("unexpected release structure: expected one service.bat")
+		return "", NewMessageError("error076")
 	}
 	for _, name := range []string{"bin/winws.exe", "general.bat", "lists/list-general.txt", "utils/test zapret.ps1", "LICENSE.txt"} {
 		if st, err := os.Stat(filepath.Join(found[0], filepath.FromSlash(name))); err != nil || !st.Mode().IsRegular() {
-			return "", fmt.Errorf("release is missing %s", name)
+			return "", NewMessageError("error077", fmt.Sprint(name))
 		}
 	}
 	return found[0], nil
@@ -273,7 +272,7 @@ func findPackageRoot(root string) (string, error) {
 // FetchData is restricted to the two non-executable upstream data endpoints.
 func (u *Updater) FetchData(ctx context.Context, name string) ([]byte, error) {
 	if name != "ipset-service.txt" && name != "hosts" {
-		return nil, errors.New("unsupported data resource")
+		return nil, NewMessageError("error078")
 	}
 	resp, err := u.get(ctx, "https://raw.githubusercontent.com/"+Repository+"/main/.service/"+name)
 	if err != nil {
@@ -285,7 +284,7 @@ func (u *Updater) FetchData(ctx context.Context, name string) ([]byte, error) {
 		return nil, err
 	}
 	if len(b) == 0 || len(b) > 8<<20 {
-		return nil, errors.New("unexpected data resource size")
+		return nil, NewMessageError("error079")
 	}
 	return b, nil
 }

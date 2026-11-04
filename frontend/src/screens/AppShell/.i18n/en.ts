@@ -1,0 +1,28 @@
+export const en = {
+  Обзор: "Overview",
+  "Управляйте подключением": "Manage your connection",
+  Стратегии: "Strategies",
+  "Выберите подходящую стратегию": "Choose a suitable strategy",
+  Списки: "Lists",
+  "Настройте, к чему применять фильтрацию": "Choose where filtering applies",
+  Обновления: "Updates",
+  "Официальные пакеты Flowseal": "Official Flowseal packages",
+  Настройки: "Settings",
+  "Поведение приложения и фильтрация": "Application behavior and filtering",
+  Журнал: "Journal",
+  "События и диагностика": "Events and diagnostics",
+  "Перейти к содержимому": "Skip to content",
+  "Оригинальный движок.": "Original engine.",
+  "Всё под контролем.": "Everything under control.",
+  Разделы: "Sections",
+  "Независимый GUI для Flowseal": "Independent GUI for Flowseal",
+  "Скачать приложение": "Download application",
+  "Рабочее пространство": "Workspace",
+  "На этой ОС доступны пакеты, списки и настройки. Запуск движка Flowseal, службы и сетевые тесты требуют Windows и WinDivert.":
+    "Packages, lists and settings are available on this OS. The Flowseal engine, services and network tests require Windows and WinDivert.",
+  "Открыто оригинальное окно upstream. Закройте его после завершения работы.":
+    "An original upstream window is open. Close it when you finish.",
+  "Сеанс завершён": "Session finished",
+  "Без автоматического запуска": "No automatic startup",
+  "Официальные релизы · ваши настройки": "Official releases · your settings",
+};

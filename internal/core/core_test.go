@@ -230,3 +230,36 @@ func makeZIP(t *testing.T, files map[string]string) string {
 	}
 	return p
 }
+
+// Language changes are GUI preferences, with Russian as a migration fallback.
+func TestLanguagePersistence(t *testing.T) {
+	root := t.TempDir()
+	for _, language := range []string{"", "unknown", "ru", "en"} {
+		config := DefaultConfig()
+		config.Language = language
+		if err := SaveConfig(root, config); err != nil {
+			t.Fatal(err)
+		}
+		loaded, err := LoadConfig(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if loaded.Language != NormalizeLanguage(language) {
+			t.Fatalf("language %q: got %q", language, loaded.Language)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(root, "config.json"), []byte(`{"schema":1,"language":"invalid"}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := LoadConfig(root)
+	if err != nil || loaded.Language != "ru" {
+		t.Fatalf("unknown language: %+v, %v", loaded, err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "config.json"), []byte(`{"schema":1}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err = LoadConfig(root)
+	if err != nil || loaded.Language != "ru" {
+		t.Fatalf("legacy config: %+v, %v", loaded, err)
+	}
+}

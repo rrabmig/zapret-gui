@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 
 import { openBuilds } from "@lib/bridge/desktop";
+import { useI18n } from "@lib/i18n";
 import { arrowNavigation } from "@lib/keyboard/arrowNavigation";
 
 import { Button } from "@components/Button/Button";
@@ -23,42 +24,60 @@ import { Strategies } from "@screens/Strategies/Strategies";
 import { Updates } from "@screens/Updates/Updates";
 
 import { useApp } from "../../app/AppProvider";
+import * as keyset from "./.i18n";
 
 import styles from "./AppShell.module.css";
-const tabs = [
-  ["overview", "Обзор", DashboardIcon, "Управляйте подключением"],
-  [
-    "strategies",
-    "Стратегии",
-    MixerHorizontalIcon,
-    "Выберите подходящую стратегию",
-  ],
-  ["lists", "Списки", FileTextIcon, "Настройте, к чему применять фильтрацию"],
-  ["updates", "Обновления", DownloadIcon, "Официальные пакеты Flowseal"],
-  ["settings", "Настройки", GearIcon, "Поведение приложения и фильтрация"],
-  ["journal", "Журнал", ReaderIcon, "События и диагностика"],
-] as const;
+
 export interface IAppShellProps {}
 export function AppShell(_props: IAppShellProps) {
+  const i18n = useI18n(keyset);
+  const tabs = [
+    ["overview", i18n("Обзор"), DashboardIcon, i18n("Управляйте подключением")],
+    [
+      "strategies",
+      i18n("Стратегии"),
+      MixerHorizontalIcon,
+      i18n("Выберите подходящую стратегию"),
+    ],
+    [
+      "lists",
+      i18n("Списки"),
+      FileTextIcon,
+      i18n("Настройте, к чему применять фильтрацию"),
+    ],
+    [
+      "updates",
+      i18n("Обновления"),
+      DownloadIcon,
+      i18n("Официальные пакеты Flowseal"),
+    ],
+    [
+      "settings",
+      i18n("Настройки"),
+      GearIcon,
+      i18n("Поведение приложения и фильтрация"),
+    ],
+    ["journal", i18n("Журнал"), ReaderIcon, i18n("События и диагностика")],
+  ] as const;
   const [tab, setTab] = useState<string>("overview");
   const { state, act } = useApp();
   const current = tabs.find((item) => item[0] === tab)!;
   return (
     <div className={styles.shell}>
       <a className={styles.skipLink} href="#workspace">
-        Перейти к содержимому
+        {i18n("Перейти к содержимому")}
       </a>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
           zapret<span>desktop</span>
         </div>
         <p className={styles.tagline}>
-          Оригинальный движок.
+          {i18n("Оригинальный движок.")}
           <br />
-          Всё под контролем.
+          {i18n("Всё под контролем.")}
         </p>
         <nav
-          aria-label="Разделы"
+          aria-label={i18n("Разделы")}
           className={styles.nav}
           onKeyDown={(event) => arrowNavigation(event, true)}
         >
@@ -75,9 +94,10 @@ export function AppShell(_props: IAppShellProps) {
           ))}
         </nav>
         <div className={styles.sidebarFooter}>
-          <span>Независимый GUI для Flowseal</span>
+          <span>{i18n("Независимый GUI для Flowseal")}</span>
           <Button variant="quiet" onClick={openBuilds}>
-            Скачать приложение <ExternalLinkIcon />
+            {i18n("Скачать приложение")}
+            <ExternalLinkIcon />
           </Button>
           <code>{state.version}</code>
         </div>
@@ -90,7 +110,7 @@ export function AppShell(_props: IAppShellProps) {
       >
         <header className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>Рабочее пространство</p>
+            <p className={styles.eyebrow}>{i18n("Рабочее пространство")}</p>
             <h1 id="workspace-title">{current[1]}</h1>
             <p>{current[3]}</p>
           </div>
@@ -101,19 +121,21 @@ export function AppShell(_props: IAppShellProps) {
         <div className={styles.content}>
           {!state.engine.supported && (
             <Notice tone="warning">
-              На этой ОС доступны пакеты, списки и настройки. Запуск движка
-              Flowseal, службы и сетевые тесты требуют Windows и WinDivert.
+              {i18n(
+                "На этой ОС доступны пакеты, списки и настройки. Запуск движка Flowseal, службы и сетевые тесты требуют Windows и WinDivert.",
+              )}
             </Notice>
           )}
           {state.toolSession && (
             <Notice tone="warning">
-              Открыто оригинальное окно upstream. Закройте его после завершения
-              работы.{" "}
+              {i18n(
+                "Открыто оригинальное окно upstream. Закройте его после завершения работы.",
+              )}{" "}
               <Button
                 variant="quiet"
                 onClick={() => void act("tools-finished")}
               >
-                Сеанс завершён
+                {i18n("Сеанс завершён")}
               </Button>
             </Notice>
           )}
@@ -137,8 +159,8 @@ export function AppShell(_props: IAppShellProps) {
           </div>
         </div>
         <footer className={styles.footer}>
-          <span>Без автоматического запуска</span>
-          <span>Официальные релизы · ваши настройки</span>
+          <span>{i18n("Без автоматического запуска")}</span>
+          <span>{i18n("Официальные релизы · ваши настройки")}</span>
         </footer>
       </main>
     </div>

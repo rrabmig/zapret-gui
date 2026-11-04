@@ -1,7 +1,6 @@
 package core
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -62,7 +61,7 @@ func naturalLess(a, b string) bool {
 // or source a downloaded batch file to obtain arguments.
 func StrategyArgs(root, name string, config Config) ([]string, error) {
 	if filepath.Base(name) != name || strings.ContainsAny(name, `/\:`) || !strings.HasPrefix(strings.ToLower(name), "general") || !strings.HasSuffix(strings.ToLower(name), ".bat") {
-		return nil, errors.New("not an upstream strategy")
+		return nil, NewMessageError("error048")
 	}
 	b, err := os.ReadFile(filepath.Join(root, name))
 	if err != nil {
@@ -77,12 +76,12 @@ func StrategyArgs(root, name string, config Config) ([]string, error) {
 			continue
 		}
 		if block != "" {
-			return nil, errors.New("multiple engine commands; use the upstream menu")
+			return nil, NewMessageError("error049")
 		}
 		block = strings.TrimSpace(line[i+len(`winws.exe"`):])
 	}
 	if block == "" {
-		return nil, errors.New("winws argument block not found; use the upstream menu")
+		return nil, NewMessageError("error050")
 	}
 	// Resolve only variables in the known upstream contract.
 	tcp, udp := "12", "12"
@@ -110,14 +109,14 @@ func StrategyArgs(root, name string, config Config) ([]string, error) {
 		return s
 	})
 	if unresolved {
-		return nil, errors.New("unknown upstream variable; update the GUI or use the upstream menu")
+		return nil, NewMessageError("error051")
 	}
 	args, err := splitArguments(block)
 	if err != nil {
 		return nil, err
 	}
 	if len(args) == 0 || !strings.HasPrefix(args[0], "--wf-") {
-		return nil, errors.New("unexpected winws command format")
+		return nil, NewMessageError("error052")
 	}
 	return args, nil
 }
@@ -145,9 +144,9 @@ func splitArguments(text string) ([]string, error) {
 			b.WriteRune('!')
 			i++
 		case r == 0 || r == '\r' || r == '\n':
-			return nil, errors.New("unexpected control character")
+			return nil, NewMessageError("error053")
 		case !quoted && strings.ContainsRune("&|<>^", r):
-			return nil, fmt.Errorf("unexpected batch operator %q", r)
+			return nil, NewMessageError("error054", fmt.Sprint(r))
 		case !quoted && unicode.IsSpace(r):
 			flush()
 		default:
@@ -155,7 +154,7 @@ func splitArguments(text string) ([]string, error) {
 		}
 	}
 	if quoted {
-		return nil, errors.New("unterminated argument quote")
+		return nil, NewMessageError("error055")
 	}
 	flush()
 	return args, nil

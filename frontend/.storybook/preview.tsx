@@ -1,6 +1,8 @@
 import type { Preview } from "@storybook/react-vite";
 import { useEffect } from "react";
 
+import { I18nProvider, normalizeLanguage } from "@lib/i18n";
+
 import "../src/design/tokens.css";
 import "../src/design/global.css";
 interface IThemeProps {
@@ -15,6 +17,16 @@ function Theme({ theme, children }: IThemeProps) {
 }
 const preview: Preview = {
   globalTypes: {
+    language: {
+      description: "Language / Язык",
+      toolbar: {
+        icon: "globe",
+        items: [
+          { value: "ru", title: "Русский" },
+          { value: "en", title: "English" },
+        ],
+      },
+    },
     theme: {
       description: "Оформление",
       toolbar: {
@@ -26,12 +38,14 @@ const preview: Preview = {
       },
     },
   },
-  initialGlobals: { theme: "light", a11y: { manual: true } },
+  initialGlobals: { language: "ru", theme: "light", a11y: { manual: true } },
   decorators: [
     (Story, context) => (
-      <Theme theme={context.globals.theme}>
-        <Story />
-      </Theme>
+      <I18nProvider language={normalizeLanguage(context.globals.language)}>
+        <Theme theme={context.globals.theme}>
+          <Story />
+        </Theme>
+      </I18nProvider>
     ),
   ],
   parameters: {

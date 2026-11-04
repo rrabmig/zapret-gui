@@ -6,6 +6,7 @@ export interface Config {
   strategy: string;
   engineAllowed: boolean;
   autoCheck: boolean;
+  language?: "ru" | "en";
   theme: "system" | "light" | "dark";
   gameMode: "disabled" | "all" | "tcp" | "udp";
   gameTCP: string;
@@ -66,6 +67,7 @@ export interface Snapshot {
   toolSession: boolean;
 }
 export type Action =
+  | "language"
   | "settings"
   | "start"
   | "stop"

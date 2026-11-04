@@ -61,7 +61,7 @@ func NewApp(root string) (*App, error) {
 		return nil, err
 	}
 	a := &App{root: root, config: c, engine: core.NewEngine(), updater: core.NewUpdater(), journal: j, checks: []core.Check{}}
-	j.Add("Zapret Desktop " + Version + "; automatic engine startup is disabled")
+	j.Add(core.NewMessage("startup", Version).Error())
 	return a, nil
 }
 
@@ -87,7 +87,7 @@ func (a *App) shutdown(context.Context) {
 	defer a.mu.Unlock()
 	a.closed = true
 	if err := a.engine.Stop(); err != nil {
-		a.journal.Add("Shutdown: " + err.Error())
+		a.journal.Add(err.Error())
 	}
 	a.journal.Close()
 }
@@ -131,14 +131,14 @@ func (a *App) snapshot() (Snapshot, error) {
 
 func (a *App) enginePermission() error {
 	if !a.config.EngineAllowed {
-		return errors.New("запуск движка и системные действия выключены; включите их в настройках")
+		return core.NewMessageError("error001")
 	}
 	s := a.engine.State()
 	if !s.Supported {
 		return errors.New(s.Message)
 	}
 	if s.StatusError != "" {
-		return fmt.Errorf("не удалось прочитать состояние движка: %s", s.StatusError)
+		return core.NewMessageError("error002", fmt.Sprint(s.StatusError))
 	}
 	return nil
 }
@@ -146,10 +146,10 @@ func (a *App) enginePermission() error {
 func (a *App) idle() error {
 	s := a.engine.State()
 	if s.StatusError != "" {
-		return errors.New("статус движка неизвестен: " + s.StatusError)
+		return core.NewMessageError("error002", s.StatusError)
 	}
 	if s.Running || s.ServiceRunning || s.ExternalRunning || s.ServiceInstalled || s.ForeignServiceInstalled || a.toolSession {
-		return errors.New("сначала остановите движок, удалите службу автозапуска и завершите оригинальные утилиты; файлы работающего движка не меняются")
+		return core.NewMessageError("error003")
 	}
 	return nil
 }
@@ -176,7 +176,7 @@ func (a *App) checkUpdates() error {
 	}
 	a.latest = &r
 	a.lastCheck = time.Now().Format(time.RFC3339)
-	a.journal.Add("Official stable release: " + r.Tag)
+	a.journal.Add(core.NewMessage("release", r.Tag).Error())
 	return nil
 }
 
@@ -191,7 +191,7 @@ func (a *App) activate(tag string) error {
 		return err
 	}
 	if tag == "" {
-		return errors.New("нет версии для отката")
+		return core.NewMessageError("error004")
 	}
 	if tag == a.config.Active {
 		return nil
@@ -215,7 +215,7 @@ func (a *App) activate(tag string) error {
 			}
 		}
 		if c.Strategy == "" {
-			return errors.New("в релизе не найдены стратегии")
+			return core.NewMessageError("error005")
 		}
 	}
 	// Fake names can disappear between releases. Use the upstream default then.
@@ -230,7 +230,7 @@ func (a *App) activate(tag string) error {
 		return err
 	}
 	a.config = c
-	a.journal.Add("Active package: " + tag + "; engine has not been started")
+	a.journal.Add(core.NewMessage("activated", tag).Error())
 	return nil
 }
 
@@ -240,7 +240,7 @@ func (a *App) Action(action, payload string) (Snapshot, error) {
 	defer a.mu.Unlock()
 	err := a.action(action, payload)
 	if err != nil {
-		a.journal.Add(action + ": " + err.Error())
+		a.journal.Add(err.Error())
 		return Snapshot{}, err
 	}
 	return a.snapshot()
@@ -248,6 +248,14 @@ func (a *App) Action(action, payload string) (Snapshot, error) {
 
 func (a *App) action(action, payload string) error {
 	switch action {
+	case "language":
+		c := a.config
+		c.Language = core.NormalizeLanguage(payload)
+		if err := core.SaveConfig(a.root, c); err != nil {
+			return err
+		}
+		a.config = c
+		return nil
 	case "check-updates":
 		return a.checkUpdates()
 	case "install-update":
@@ -276,6 +284,7 @@ func (a *App) action(action, payload string) error {
 		if err := json.Unmarshal([]byte(payload), &c); err != nil {
 			return err
 		}
+		c.Language = a.config.Language
 		c.Active, c.Previous, c.Schema = a.config.Active, a.config.Previous, 1
 		if err := c.Validate(); err != nil {
 			return err
@@ -298,7 +307,7 @@ func (a *App) action(action, payload string) error {
 					continue
 				}
 				if !strings.HasSuffix(name, ".bin") {
-					return errors.New("invalid fake file")
+					return core.NewMessageError("error006")
 				}
 				if _, err := os.Stat(filepath.Join(a.root, "packages", c.Active, "bin", name)); err != nil {
 					return err
@@ -309,7 +318,7 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		a.config = c
-		a.journal.Add("Settings saved; engine has not been started")
+		a.journal.Add(core.NewMessage("settingsSaved").Error())
 		return nil
 	case "start":
 		root, args, err := a.prepared()
@@ -319,7 +328,7 @@ func (a *App) action(action, payload string) error {
 		if err := a.engine.Start(root, args, a.journal); err != nil {
 			return err
 		}
-		a.journal.Add("Started " + a.config.Strategy)
+		a.journal.Add(core.NewMessage("started", a.config.Strategy).Error())
 		return nil
 	case "stop":
 		// Stopping our own process is always permitted, including in inspection mode.
@@ -335,12 +344,12 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		if a.toolSession {
-			return errors.New("сначала завершите оригинальные утилиты")
+			return core.NewMessageError("error007")
 		}
 		if action == "service-start" {
 			s := a.engine.State()
 			if s.Running || s.ExternalRunning || s.ForeignServiceInstalled {
-				return errors.New("обнаружен другой движок или служба zapret; запуск службы отменён")
+				return core.NewMessageError("error008")
 			}
 		}
 		return a.engine.Service(strings.TrimPrefix(action, "service-"), "", nil)
@@ -360,12 +369,12 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		a.toolSession = true
-		a.journal.Add("Opened upstream " + action + "; managed file changes are locked until the tool session ends")
+		a.journal.Add(core.NewMessage("openedTool", action).Error())
 		return nil
 	case "tools-finished":
 		s := a.engine.State()
 		if s.ExternalRunning {
-			return errors.New("winws.exe ещё работает; завершите его через оригинальную утилиту")
+			return core.NewMessageError("error009")
 		}
 		a.toolSession = false
 		return nil
@@ -374,7 +383,7 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		if a.engine.State().Running || a.toolSession {
-			return errors.New("остановите процесс GUI и завершите оригинальные утилиты перед перезапуском")
+			return core.NewMessageError("error010")
 		}
 		if err := a.engine.Elevate(a.root); err != nil {
 			return err
@@ -398,7 +407,7 @@ func (a *App) action(action, payload string) error {
 		if err := core.AtomicWrite(filepath.Join(a.root, "overrides", "ipset-service.txt"), b); err != nil {
 			return err
 		}
-		a.journal.Add("IPSet updated; user additions preserved")
+		a.journal.Add(core.NewMessage("ipsetUpdated").Error())
 		return nil
 	case "preview-hosts":
 		b, err := a.updater.FetchData(a.ctx, "hosts")
@@ -415,12 +424,12 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		if a.hostsPreview == "" {
-			return errors.New("сначала загрузите и просмотрите изменения hosts")
+			return core.NewMessageError("error011")
 		}
 		if err := a.engine.ApplyHosts(a.hostsPreview); err != nil {
 			return err
 		}
-		a.journal.Add("Hosts block applied; backup saved next to the hosts file")
+		a.journal.Add(core.NewMessage("hostsApplied").Error())
 		return nil
 	case "clear-discord-cache":
 		if err := a.enginePermission(); err != nil {
@@ -432,7 +441,7 @@ func (a *App) action(action, payload string) error {
 		}
 		return err
 	default:
-		return errors.New("unknown GUI action")
+		return core.NewMessageError("error012")
 	}
 }
 
@@ -454,6 +463,6 @@ func (a *App) SaveList(name, content string) error {
 	if err := core.WriteList(a.root, name, content); err != nil {
 		return err
 	}
-	a.journal.Add("Saved user list: " + name)
+	a.journal.Add(core.NewMessage("listSaved", name).Error())
 	return nil
 }

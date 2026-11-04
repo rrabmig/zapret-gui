@@ -1,26 +1,31 @@
 import { useEffect, useRef, useState } from "react";
 
+import { bridgeError } from "@lib/bridge/messages";
 import { policy } from "@lib/bridge/policy";
+import { useI18n } from "@lib/i18n";
 import { arrowNavigation } from "@lib/keyboard/arrowNavigation";
 
 import { Button } from "@components/Button/Button";
 import { Card, Section } from "@components/Card/Card";
 
 import { useApp } from "../../app/AppProvider";
+import * as keyset from "./.i18n";
 
 import page from "../../design/Page.module.css";
 import styles from "./Lists.module.css";
-const files = [
-  ["list-general-user.txt", "Домены"],
-  ["list-exclude-user.txt", "Исключения доменов"],
-  ["ipset-extra-user.txt", "Дополнительные IP"],
-  ["ipset-exclude-user.txt", "Исключения IP"],
-  ["targets.txt", "Цели проверок"],
-] as const;
+
 export interface IListsProps {
   active?: boolean;
 }
 export function Lists({ active = true }: IListsProps) {
+  const i18n = useI18n(keyset);
+  const files = [
+    ["list-general-user.txt", i18n("Домены")],
+    ["list-exclude-user.txt", i18n("Исключения доменов")],
+    ["ipset-extra-user.txt", i18n("Дополнительные IP")],
+    ["ipset-exclude-user.txt", i18n("Исключения IP")],
+    ["targets.txt", i18n("Цели проверок")],
+  ] as const;
   const { state, bridge, act, task, confirm, dirty, notify } = useApp();
   const p = policy(state);
   const [name, setName] = useState<string>(files[0][0]);
@@ -42,9 +47,9 @@ export function Lists({ active = true }: IListsProps) {
     if (
       edited &&
       !(await confirm({
-        title: "Отбросить изменения?",
-        body: "В списке есть несохранённые изменения.",
-        label: "Отбросить",
+        title: i18n.message("Отбросить изменения?"),
+        body: i18n.message("В списке есть несохранённые изменения."),
+        label: i18n.message("Отбросить"),
       }))
     )
       return;
@@ -60,7 +65,7 @@ export function Lists({ active = true }: IListsProps) {
         dirty("lists", false);
       }
     } catch (error) {
-      notify(String(error), "danger");
+      notify(bridgeError(error), "danger");
     } finally {
       loading.current = false;
       if (mounted.current) setReading(false);
@@ -74,36 +79,40 @@ export function Lists({ active = true }: IListsProps) {
       await task(async () => {
         await bridge.SaveList(name, content);
         return true;
-      }, "Список сохранён.")
+      }, i18n.message("Список сохранён."))
     ) {
       setEdited(false);
       dirty("lists", false);
     }
   }
   async function preview() {
-    if (await act("preview-hosts", "", "Предпросмотр загружен.")) {
+    if (
+      await act("preview-hosts", "", i18n.message("Предпросмотр загружен."))
+    ) {
       try {
         setHosts(await bridge.ReadList("hosts-preview"));
       } catch (error) {
-        notify(String(error), "danger");
+        notify(bridgeError(error), "danger");
       }
     }
   }
   return (
     <div className={page.stack}>
       <Section
-        title="Ваши списки"
-        description="Хранятся отдельно от upstream и сохраняются при обновлении."
+        title={i18n("Ваши списки")}
+        description={i18n(
+          "Хранятся отдельно от upstream и сохраняются при обновлении.",
+        )}
         action={
           <Button disabled={!p.idle} onClick={() => void act("update-ipset")}>
-            Обновить IPSet
+            {i18n("Обновить IPSet")}
           </Button>
         }
       >
         <div className={styles.layout}>
           <nav
             className={styles.menu}
-            aria-label="Файлы списков"
+            aria-label={i18n("Файлы списков")}
             onKeyDown={(event) => arrowNavigation(event)}
           >
             {files.map(([file, label]) => (
@@ -136,18 +145,20 @@ export function Lists({ active = true }: IListsProps) {
               <div className={styles.footer}>
                 <p id="list-note">
                   {name.startsWith("ipset")
-                    ? "IP и CIDR, по одному на строку."
+                    ? i18n("IP и CIDR, по одному на строку.")
                     : name === "targets.txt"
-                      ? "Домены для Standard tests."
-                      : "ASCII-домены, без схемы и пути. Комментарии через #."}
-                  {edited && " Есть изменения."}
+                      ? i18n("Домены для Standard tests.")
+                      : i18n(
+                          "ASCII-домены, без схемы и пути. Комментарии через #.",
+                        )}
+                  {edited && <span> {i18n("Есть изменения.")}</span>}
                 </p>
                 <Button
                   variant="primary"
                   disabled={reading || !p.idle || !loaded}
                   onClick={() => void save()}
                 >
-                  Сохранить список
+                  {i18n("Сохранить список")}
                 </Button>
               </div>
             </div>
@@ -156,9 +167,13 @@ export function Lists({ active = true }: IListsProps) {
       </Section>
       <Section
         title="Hosts"
-        description="Применение — отдельным действием с резервной копией."
+        description={i18n(
+          "Применение — отдельным действием с резервной копией.",
+        )}
         action={
-          <Button onClick={() => void preview()}>Загрузить предпросмотр</Button>
+          <Button onClick={() => void preview()}>
+            {i18n("Загрузить предпросмотр")}
+          </Button>
         }
       >
         {hosts !== undefined ? (
@@ -166,29 +181,31 @@ export function Lists({ active = true }: IListsProps) {
             <div className={styles.editor}>
               <pre>{hosts}</pre>
               <div className={styles.footer}>
-                <p>Меняется только блок ZapretDesktop.</p>
+                <p>{i18n("Меняется только блок ZapretDesktop.")}</p>
                 <Button
                   variant="primary"
                   disabled={!p.allowed}
                   onClick={async () => {
                     if (
                       await confirm({
-                        title: "Обновить системный hosts?",
-                        body: "Показанные записи будут добавлены в отдельный блок ZapretDesktop. Остальное содержимое сохранится. Рядом с hosts появится резервная копия.",
-                        label: "Применить записи",
+                        title: i18n.message("Обновить системный hosts?"),
+                        body: i18n.message(
+                          "Показанные записи будут добавлены в отдельный блок ZapretDesktop. Остальное содержимое сохранится. Рядом с hosts появится резервная копия.",
+                        ),
+                        label: i18n.message("Применить записи"),
                       })
                     )
                       await act("apply-hosts");
                   }}
                 >
-                  Применить к hosts
+                  {i18n("Применить к hosts")}
                 </Button>
               </div>
             </div>
           </Card>
         ) : (
           <p className={page.footnote}>
-            Сначала загрузите записи upstream и просмотрите изменения.
+            {i18n("Сначала загрузите записи upstream и просмотрите изменения.")}
           </p>
         )}
       </Section>

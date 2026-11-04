@@ -19,6 +19,7 @@ type Config struct {
 	Strategy      string `json:"strategy"`
 	EngineAllowed bool   `json:"engineAllowed"`
 	AutoCheck     bool   `json:"autoCheck"`
+	Language      string `json:"language"`
 	Theme         string `json:"theme"`
 	GameMode      string `json:"gameMode"`
 	GameTCP       string `json:"gameTCP"`
@@ -31,7 +32,7 @@ type Config struct {
 var safeID = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,100}$`)
 
 func DefaultConfig() Config {
-	return Config{Schema: 1, Strategy: "general.bat", Theme: "system", GameMode: "disabled", GameTCP: "1024-65535", GameUDP: "1024-65535", IPSet: "loaded"}
+	return Config{Schema: 1, Strategy: "general.bat", Theme: "system", Language: "ru", GameMode: "disabled", GameTCP: "1024-65535", GameUDP: "1024-65535", IPSet: "loaded"}
 }
 
 func LoadConfig(root string) (Config, error) {
@@ -44,28 +45,29 @@ func LoadConfig(root string) (Config, error) {
 		return c, err
 	}
 	if err := json.Unmarshal(b, &c); err != nil {
-		return c, fmt.Errorf("config.json: %w", err)
+		return c, NewMessageError("error013", fmt.Sprint(err))
 	}
+	c.Language = NormalizeLanguage(c.Language)
 	return c, c.Validate()
 }
 
 func (c Config) Validate() error {
 	if c.Schema != 1 {
-		return errors.New("unsupported settings schema")
+		return NewMessageError("error014")
 	}
 	for _, id := range []string{c.Active, c.Previous} {
 		if id != "" && !safeID.MatchString(id) {
-			return errors.New("invalid package ID")
+			return NewMessageError("error015")
 		}
 	}
 	if c.Theme != "system" && c.Theme != "light" && c.Theme != "dark" {
-		return errors.New("invalid theme")
+		return NewMessageError("error016")
 	}
 	if c.GameMode != "disabled" && c.GameMode != "all" && c.GameMode != "tcp" && c.GameMode != "udp" {
-		return errors.New("invalid game mode")
+		return NewMessageError("error017")
 	}
 	if c.IPSet != "loaded" && c.IPSet != "none" && c.IPSet != "any" {
-		return errors.New("invalid IPSet mode")
+		return NewMessageError("error018")
 	}
 	if err := ValidatePorts(c.GameTCP); err != nil {
 		return err
@@ -75,7 +77,7 @@ func (c Config) Validate() error {
 	}
 	for _, name := range []string{c.Strategy, c.DiscordFake, c.GameFake} {
 		if name != "" && (filepath.Base(name) != name || strings.ContainsAny(name, `/\:`) || strings.ContainsAny(name, "\x00\r\n")) {
-			return errors.New("invalid file name")
+			return NewMessageError("error019")
 		}
 	}
 	return nil
@@ -83,21 +85,21 @@ func (c Config) Validate() error {
 
 func ValidatePorts(value string) error {
 	if len(value) == 0 || len(value) > 512 {
-		return errors.New("port list must contain 1–512 characters")
+		return NewMessageError("error020")
 	}
 	for _, group := range strings.Split(value, ",") {
 		parts := strings.Split(group, "-")
 		if len(parts) > 2 {
-			return fmt.Errorf("invalid port range %q", group)
+			return NewMessageError("error021", fmt.Sprint(group))
 		}
 		last := 0
 		for _, part := range parts {
 			if part == "" || strings.Trim(part, "0123456789") != "" {
-				return fmt.Errorf("invalid port %q", part)
+				return NewMessageError("error022", fmt.Sprint(part))
 			}
 			n, err := strconv.Atoi(part)
 			if err != nil || n < 1 || n > 65535 || n < last {
-				return fmt.Errorf("invalid port range %q", group)
+				return NewMessageError("error021", fmt.Sprint(group))
 			}
 			last = n
 		}
@@ -105,7 +107,15 @@ func ValidatePorts(value string) error {
 	return nil
 }
 
+func NormalizeLanguage(value string) string {
+	if value == "en" {
+		return "en"
+	}
+	return "ru"
+}
+
 func SaveConfig(root string, c Config) error {
+	c.Language = NormalizeLanguage(c.Language)
 	if err := c.Validate(); err != nil {
 		return err
 	}
