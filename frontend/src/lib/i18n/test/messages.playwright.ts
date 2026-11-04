@@ -3,14 +3,14 @@ import { resolve } from "node:path";
 
 import { expect, test } from "@playwright/test";
 
-import * as backend from "@lib/bridge/messages/.i18n";
+import * as backend from "@lib/bridge/messages/i18n";
 
-import * as shell from "@screens/AppShell/.i18n";
-import * as lists from "@screens/Lists/.i18n";
-import * as overview from "@screens/Overview/.i18n";
-import * as settings from "@screens/Settings/.i18n";
-import * as strategies from "@screens/Strategies/.i18n";
-import * as updates from "@screens/Updates/.i18n";
+import * as shell from "@screens/AppShell/i18n";
+import * as lists from "@screens/Lists/i18n";
+import * as overview from "@screens/Overview/i18n";
+import * as settings from "@screens/Settings/i18n";
+import * as strategies from "@screens/Strategies/i18n";
+import * as updates from "@screens/Updates/i18n";
 
 function placeholders(text: string) {
   return [

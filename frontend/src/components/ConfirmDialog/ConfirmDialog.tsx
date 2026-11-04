@@ -4,7 +4,7 @@ import { renderText, type Text, useI18n, useLanguage } from "@lib/i18n";
 
 import { Button } from "@components/Button/Button";
 
-import * as keyset from "./.i18n";
+import * as keyset from "./i18n";
 
 import styles from "./ConfirmDialog.module.css";
 export interface Confirmation {

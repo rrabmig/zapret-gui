@@ -15,7 +15,9 @@ const parserOptions = (jsx = false) => ({
 export default [
   {
     ignores: [
-      "**/.i18n/**",
+      "**/i18n/ru.ts",
+      "**/i18n/en.ts",
+      "**/i18n/index.ts",
       "node_modules/**",
       "dist/**",
       "dist-fixtures/**",

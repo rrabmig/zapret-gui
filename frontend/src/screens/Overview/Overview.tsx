@@ -18,7 +18,7 @@ import { Card, Section } from "@components/Card/Card";
 import { ConnectionCard } from "@components/ConnectionCard/ConnectionCard";
 
 import { useApp } from "../../app/AppProvider";
-import * as keyset from "./.i18n";
+import * as keyset from "./i18n";
 
 import styles from "../../design/Page.module.css";
 export interface IOverviewProps {}

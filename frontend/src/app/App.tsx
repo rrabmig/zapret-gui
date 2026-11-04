@@ -7,7 +7,7 @@ import { Notice } from "@components/Notice/Notice";
 
 import { AppShell } from "@screens/AppShell/AppShell";
 
-import * as keyset from "./.i18n";
+import * as keyset from "./i18n";
 import { AppProvider } from "./AppProvider";
 
 import styles from "./App.module.css";

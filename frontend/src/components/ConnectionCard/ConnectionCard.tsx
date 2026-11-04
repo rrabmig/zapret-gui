@@ -7,7 +7,7 @@ import { useI18n } from "@lib/i18n";
 import { Badge } from "@components/Badge/Badge";
 import { Button } from "@components/Button/Button";
 
-import * as keyset from "./.i18n";
+import * as keyset from "./i18n";
 
 import styles from "./ConnectionCard.module.css";
 export interface IConnectionCardProps {

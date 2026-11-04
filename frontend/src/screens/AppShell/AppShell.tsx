@@ -24,7 +24,7 @@ import { Strategies } from "@screens/Strategies/Strategies";
 import { Updates } from "@screens/Updates/Updates";
 
 import { useApp } from "../../app/AppProvider";
-import * as keyset from "./.i18n";
+import * as keyset from "./i18n";
 
 import styles from "./AppShell.module.css";
 

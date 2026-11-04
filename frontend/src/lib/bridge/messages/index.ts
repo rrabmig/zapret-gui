@@ -1,6 +1,6 @@
 import { type Message, type Text, useI18n } from "@lib/i18n";
 
-import * as keyset from "./.i18n";
+import * as keyset from "./i18n";
 
 /** Validate the Wails JSON rejection envelope; unknown external text stays verbatim. */
 function decode(value: unknown): Message | undefined {

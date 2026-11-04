@@ -26,7 +26,7 @@ import {
 } from "@components/ConfirmDialog/ConfirmDialog";
 import { Notice } from "@components/Notice/Notice";
 
-import * as keyset from "./.i18n";
+import * as keyset from "./i18n";
 
 import styles from "../App.module.css";
 interface Model {
