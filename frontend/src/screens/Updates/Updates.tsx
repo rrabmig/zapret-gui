@@ -1,11 +1,12 @@
 import { useApp } from "../../app/AppProvider";
-import { policy } from "../../bridge/policy";
+import { policy } from "../../lib/bridge/policy";
 import { Button } from "../../components/Button/Button";
 import { Badge } from "../../components/Badge/Badge";
 import { Card, Section } from "../../components/Card/Card";
 import { Notice } from "../../components/Notice/Notice";
 import styles from "../../design/Page.module.css";
-export function Updates() {
+export interface IUpdatesProps {}
+export function Updates(_props: IUpdatesProps) {
   const { state, act } = useApp();
   const p = policy(state);
   return (

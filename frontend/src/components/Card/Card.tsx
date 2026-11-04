@@ -1,27 +1,25 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import styles from "./Card.module.css";
-export function Card({
-  children,
-  className = "",
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
+export interface ICardProps extends HTMLAttributes<HTMLDivElement> {}
+export function Card({ children, className = "", ...props }: ICardProps) {
   return (
     <div {...props} className={`${styles.card} ${className}`}>
       {children}
     </div>
   );
 }
+export interface ISectionProps {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}
 export function Section({
   title,
   description,
   action,
   children,
-}: {
-  title: string;
-  description?: string;
-  action?: ReactNode;
-  children: ReactNode;
-}) {
+}: ISectionProps) {
   return (
     <section className={styles.section}>
       <div className={styles.heading}>

@@ -1,16 +1,14 @@
 import { PlayIcon, StopIcon, LightningBoltIcon } from "@radix-ui/react-icons";
-import type { Snapshot } from "../../bridge/types";
-import { policy } from "../../bridge/policy";
+import type { Snapshot } from "../../lib/bridge/types";
+import { policy } from "../../lib/bridge/policy";
 import { Button } from "../Button/Button";
 import { Badge } from "../Badge/Badge";
 import styles from "./ConnectionCard.module.css";
-export function ConnectionCard({
-  state,
-  onToggle,
-}: {
+export interface IConnectionCardProps {
   state: Snapshot;
   onToggle: () => void;
-}) {
+}
+export function ConnectionCard({ state, onToggle }: IConnectionCardProps) {
   const p = policy(state);
   return (
     <div className={`${styles.connection} ${p.running ? styles.running : ""}`}>

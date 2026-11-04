@@ -9,7 +9,8 @@ const meta = {
 } satisfies Meta<typeof ConfirmDialog>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-function Example() {
+interface IExampleProps {}
+function Example(_props: IExampleProps) {
   const [open, setOpen] = useState(false);
   return (
     <>

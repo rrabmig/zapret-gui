@@ -2,13 +2,11 @@ import { useEffect } from "react";
 import type { Preview } from "@storybook/react-vite";
 import "../src/design/tokens.css";
 import "../src/design/global.css";
-function Theme({
-  theme,
-  children,
-}: {
+interface IThemeProps {
   theme: string;
   children: React.ReactNode;
-}) {
+}
+function Theme({ theme, children }: IThemeProps) {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);

@@ -10,8 +10,8 @@ React + TypeScript (strict), Vite, CSS Modules. Версии зависимос�
 - `frontend/src/components/Component/stories/Component.stories.tsx` — состояния компонента.
 - `frontend/src/design/tokens.css` — единые семантические цвета, отступы, шрифты и радиусы.
 - `frontend/src/design/global.css` — reset, нативные поля и клавиатурный фокус.
-- `frontend/src/bridge/types.ts` — JSON-контракт существующих методов Go. При изменении `Snapshot`, `Config`, `EngineState` в Go нужно синхронно обновить его.
-- `frontend/src/bridge/policy.ts` — UI-блокировки. Go остаётся источником проверки разрешений.
+- `frontend/src/lib/bridge/types.ts` — JSON-контракт существующих методов Go. При изменении `Snapshot`, `Config`, `EngineState` в Go нужно синхронно обновить его.
+- `frontend/src/lib/bridge/policy.ts` — UI-блокировки. Go остаётся источником проверки разрешений.
 - `frontend/src/app/AppProvider.tsx` — состояние, последовательные операции, обновление Snapshot, ошибки, подтверждения и защита несохранённых форм.
 
 Wails выполняет frontend install/build из `wails.json`. `assets.go` встраивает `all:frontend/dist`; `main.go` раздаёт только этот каталог через Wails asset server. `.gitkeep` нужен генератору bindings до первой сборки и заменяется содержимым Vite в CI. Исходники, node_modules и Storybook не встраиваются. Для прямого `go build` сначала нужна production-сборка фронтенда.
@@ -46,9 +46,9 @@ npx playwright install --with-deps chromium
 npm run test:ui
 ```
 
-Два теста выполняются в светлой и тёмной теме: визуальный проход по состояниям и разделам; сквозное взаимодействие через mock Bridge, ошибки, production без моста и рендер каждой story. Эталоны лежат в `frontend/tests/__screenshots__/{light,dark}`. Playwright сравнивает изображения, а не просто сохраняет новые; допустимое отличие — 0.2% пикселей. В CI загружается `frontend-review` с HTML-отчётом, traces при ошибках, PNG и статическим Storybook. Скачанный каталог Storybook можно открыть через HTTP-сервер на разрешённом устройстве.
+Два теста выполняются в светлой и тёмной теме: визуальный проход по состояниям и разделам; сквозное взаимодействие через mock Bridge, ошибки, production без моста и рендер каждой story. Эталоны лежат в `frontend/src/screens/AppShell/test/__screenshots__/{light,dark}`. Playwright сравнивает изображения, а не просто сохраняет новые; допустимое отличие — 0.2% пикселей. В CI загружается `frontend-review` с HTML-отчётом, traces при ошибках, PNG и статическим Storybook. Скачанный каталог Storybook можно открыть через HTTP-сервер на разрешённом устройстве.
 
-Для намеренного обновления дизайна запустить **Build desktop → Run workflow** на ветке PR с `update_visual_baselines: true`. Скачать `frontend-review`, просмотреть PNG из `tests/__screenshots__`, перенести их в репозиторий и закоммитить. Обычный PR-run не обновляет эталоны. Сборка desktop начинается после core и interface checks и создаёт пакеты Windows/macOS/Linux. Автоматического merge нет.
+Для намеренного обновления дизайна запустить **Build desktop → Run workflow** на ветке PR с `update_visual_baselines: true`. Скачать `frontend-review`, просмотреть PNG из `src/screens/AppShell/test/__screenshots__`, перенести их в репозиторий и закоммитить. Обычный PR-run не обновляет эталоны. Сборка desktop начинается после core и interface checks и создаёт пакеты Windows/macOS/Linux. Автоматического merge нет.
 
 Chromium и инертный мост не подтверждают работу WinDivert, UAC, Windows-службы и системного WebView. Реальный запуск проверяется отдельно на личном Windows-устройстве.
 
@@ -66,3 +66,10 @@ Chromium и инертный мост не подтверждают работу
 `Tab` и `Shift+Tab` проходят по нативным кнопкам и полям, `Enter`/`Space` активируют кнопки. В навигации разделов стрелки и Home/End переводят фокус и открывают раздел; в меню файлов стрелки перемещают фокус, а Enter/Space открывают файл, сохраняя подтверждение несохранённых изменений. Первая ссылка «Перейти к содержимому» позволяет пропустить боковую панель. У активного раздела есть `aria-current`, у полей — связанные подписи, у диалога — фокус на отмене и возврат при Escape.
 
 В CI `@axe-core/playwright` проверяет реальные экраны приложения в обеих темах (WCAG 2 A/AA, 2.1 A/AA, 2.2 AA), включая имена элементов управления и контраст. Это дополнение к настоящим клавиатурным действиям в сквозном сценарии; автоматический axe-аудит не заменяет ручную проверку скринридером.
+
+## Соглашения по структуре
+
+- Тесты лежат рядом с владельцем: `src/screens/ScreenName/test/` или `src/components/ComponentName/test/`. Сквозные проверки всего приложения принадлежат AppShell: `src/screens/AppShell/test/AppShell.playwright.ts`; их PNG — в соседнем `test/__screenshots__/`.
+- Суффикс Playwright-тестов — `.playwright.ts`/`.playwright.tsx`, Jest — `.jest.ts`/`.jest.tsx`. Jest сейчас не подключён: unit-тестов фронтенда нет. Playwright собирает только соответствующие файлы из папок `test`.
+- Props каждого React-компонента описывает интерфейс `I<ComponentName>Props`, объявленный непосредственно перед компонентом. Контракт есть и у компонентов без входных параметров.
+- Переиспользуемые функции и контракты находятся в `src/lib/`: `lib/bridge/` и `lib/keyboard/`. Стили и визуальные токены остаются в `src/design/`.

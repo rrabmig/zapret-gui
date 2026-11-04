@@ -1,13 +1,15 @@
 import { defineConfig } from "@playwright/test";
 export default defineConfig({
-  testDir: "./tests",
+  testDir: "./src",
+  testMatch: ["**/test/*.playwright.ts", "**/test/*.playwright.tsx"],
   fullyParallel: false,
   workers: 1,
   timeout: 240_000,
   forbidOnly: !!process.env.CI,
   retries: 0,
   reporter: [["list"], ["html", { open: "never" }]],
-  snapshotPathTemplate: "{testDir}/__screenshots__/{projectName}/{arg}{ext}",
+  snapshotPathTemplate:
+    "{testDir}/{testFileDir}/__screenshots__/{projectName}/{arg}{ext}",
   expect: {
     timeout: 10_000,
     toHaveScreenshot: { animations: "disabled", maxDiffPixelRatio: 0.002 },

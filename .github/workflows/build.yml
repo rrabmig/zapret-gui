@@ -60,7 +60,7 @@ jobs:
           path: |
             frontend/playwright-report/
             frontend/test-results/
-            frontend/tests/__screenshots__/
+            frontend/src/**/test/__screenshots__/
             frontend/storybook-static/
           if-no-files-found: warn
           retention-days: 14

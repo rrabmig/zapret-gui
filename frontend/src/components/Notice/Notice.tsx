@@ -2,13 +2,11 @@ import type { ReactNode } from "react";
 import { InfoCircledIcon } from "@radix-ui/react-icons";
 import type { Tone } from "../Badge/Badge";
 import styles from "./Notice.module.css";
-export function Notice({
-  children,
-  tone = "neutral",
-}: {
+export interface INoticeProps {
   children: ReactNode;
   tone?: Tone;
-}) {
+}
+export function Notice({ children, tone = "neutral" }: INoticeProps) {
   return (
     <div
       className={`${styles.notice} ${styles[tone]}`}

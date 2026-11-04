@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { arrowNavigation } from "../../design/arrowNavigation";
+import { arrowNavigation } from "../../lib/keyboard/arrowNavigation";
 import { useApp } from "../../app/AppProvider";
-import { policy } from "../../bridge/policy";
+import { policy } from "../../lib/bridge/policy";
 import { Button } from "../../components/Button/Button";
 import { Card, Section } from "../../components/Card/Card";
 import styles from "./Lists.module.css";
@@ -13,7 +13,10 @@ const files = [
   ["ipset-exclude-user.txt", "Исключения IP"],
   ["targets.txt", "Цели проверок"],
 ] as const;
-export function Lists({ active = true }: { active?: boolean }) {
+export interface IListsProps {
+  active?: boolean;
+}
+export function Lists({ active = true }: IListsProps) {
   const { state, bridge, act, task, confirm, dirty, notify } = useApp();
   const p = policy(state);
   const [name, setName] = useState<string>(files[0][0]);

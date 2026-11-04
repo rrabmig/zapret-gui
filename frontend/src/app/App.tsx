@@ -1,11 +1,14 @@
-import type { Bridge } from "../bridge/types";
-import { openBuilds } from "../bridge/desktop";
+import type { Bridge } from "../lib/bridge/types";
+import { openBuilds } from "../lib/bridge/desktop";
 import { Button } from "../components/Button/Button";
 import { Notice } from "../components/Notice/Notice";
 import { AppProvider } from "./AppProvider";
 import { AppShell } from "../screens/AppShell/AppShell";
 import styles from "./App.module.css";
-export function App({ bridge }: { bridge?: Bridge }) {
+export interface IAppProps {
+  bridge?: Bridge;
+}
+export function App({ bridge }: IAppProps) {
   if (!bridge)
     return (
       <main className={styles.loading}>
@@ -18,10 +21,7 @@ export function App({ bridge }: { bridge?: Bridge }) {
     );
   return (
     <AppProvider bridge={bridge}>
-      <Desktop />
+      <AppShell />
     </AppProvider>
   );
-}
-function Desktop() {
-  return <AppShell />;
 }

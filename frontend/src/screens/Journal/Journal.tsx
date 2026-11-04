@@ -2,7 +2,8 @@ import { useApp } from "../../app/AppProvider";
 import { Button } from "../../components/Button/Button";
 import { Card, Section } from "../../components/Card/Card";
 import styles from "../../design/Page.module.css";
-export function Journal() {
+export interface IJournalProps {}
+export function Journal(_props: IJournalProps) {
   const { state, refresh } = useApp();
   return (
     <Section

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { arrowNavigation } from "../../design/arrowNavigation";
+import { arrowNavigation } from "../../lib/keyboard/arrowNavigation";
 import {
   DashboardIcon,
   MixerHorizontalIcon,
@@ -9,7 +9,7 @@ import {
   ReaderIcon,
   ExternalLinkIcon,
 } from "@radix-ui/react-icons";
-import { openBuilds } from "../../bridge/desktop";
+import { openBuilds } from "../../lib/bridge/desktop";
 import { useApp } from "../../app/AppProvider";
 import { Button } from "../../components/Button/Button";
 import { Notice } from "../../components/Notice/Notice";
@@ -33,7 +33,8 @@ const tabs = [
   ["settings", "Настройки", GearIcon, "Поведение приложения и фильтрация"],
   ["journal", "Журнал", ReaderIcon, "События и диагностика"],
 ] as const;
-export function AppShell() {
+export interface IAppShellProps {}
+export function AppShell(_props: IAppShellProps) {
   const [tab, setTab] = useState<string>("overview");
   const { state, act } = useApp();
   const current = tabs.find((item) => item[0] === tab)!;

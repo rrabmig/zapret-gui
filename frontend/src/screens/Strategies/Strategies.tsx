@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useApp } from "../../app/AppProvider";
-import { policy } from "../../bridge/policy";
+import { policy } from "../../lib/bridge/policy";
 import { Badge } from "../../components/Badge/Badge";
 import { Card, Section } from "../../components/Card/Card";
 import styles from "../../design/Page.module.css";
-export function Strategies() {
+export interface IStrategiesProps {}
+export function Strategies(_props: IStrategiesProps) {
   const { state, act, hasEdits, notify } = useApp();
   const [query, setQuery] = useState("");
   const p = policy(state);

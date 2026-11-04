@@ -6,13 +6,14 @@ export interface Confirmation {
   body: string;
   label?: string;
 }
+export interface IConfirmDialogProps {
+  confirmation: Confirmation | null;
+  onResolve: (value: boolean) => void;
+}
 export function ConfirmDialog({
   confirmation,
   onResolve,
-}: {
-  confirmation: Confirmation | null;
-  onResolve: (value: boolean) => void;
-}) {
+}: IConfirmDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (confirmation && !ref.current?.open) ref.current?.showModal();

@@ -30,7 +30,8 @@ export const Select: Story = {
     </Field>
   ),
 };
-function InteractiveSwitch() {
+interface IInteractiveSwitchProps {}
+function InteractiveSwitch(_props: IInteractiveSwitchProps) {
   const [checked, setChecked] = useState(false);
   return (
     <Switch

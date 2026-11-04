@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from "react";
 import styles from "./Button.module.css";
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "quiet";
 }
 export function Button({
@@ -8,7 +8,7 @@ export function Button({
   className = "",
   type = "button",
   ...props
-}: ButtonProps) {
+}: IButtonProps) {
   return (
     <button
       {...props}

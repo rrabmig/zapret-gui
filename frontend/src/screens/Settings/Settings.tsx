@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../../app/AppProvider";
-import { policy } from "../../bridge/policy";
-import type { Config } from "../../bridge/types";
+import { policy } from "../../lib/bridge/policy";
+import type { Config } from "../../lib/bridge/types";
 import { Button } from "../../components/Button/Button";
 import { Card, Section } from "../../components/Card/Card";
 import { Field, Switch } from "../../components/Field/Field";
 import styles from "../../design/Page.module.css";
-export function Settings() {
+export interface ISettingsProps {}
+export function Settings(_props: ISettingsProps) {
   const { state, act, confirm, dirty, hasEdits, notify } = useApp();
   const p = policy(state);
   const [draft, setDraft] = useState(state.config);

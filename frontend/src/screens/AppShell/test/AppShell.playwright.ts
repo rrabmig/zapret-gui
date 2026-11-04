@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
-import { scenarios } from "../src/testing/fixtures";
+import { scenarios } from "../../../testing/fixtures";
 async function open(page: Page, state = "idle") {
   await page.goto(`http://127.0.0.1:4173/?state=${state}`);
   await expect(

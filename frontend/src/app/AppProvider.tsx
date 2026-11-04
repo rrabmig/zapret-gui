@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Action, Bridge, Snapshot } from "../bridge/types";
+import type { Action, Bridge, Snapshot } from "../lib/bridge/types";
 import {
   ConfirmDialog,
   type Confirmation,
@@ -33,13 +33,11 @@ export function useApp() {
   if (!value) throw new Error("AppProvider is required");
   return value;
 }
-export function AppProvider({
-  bridge,
-  children,
-}: {
+export interface IAppProviderProps {
   bridge: Bridge;
   children: ReactNode;
-}) {
+}
+export function AppProvider({ bridge, children }: IAppProviderProps) {
   const [state, setState] = useState<Snapshot>();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ text: string; tone: Tone }>();
