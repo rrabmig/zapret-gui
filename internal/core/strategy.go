@@ -146,7 +146,7 @@ func splitArguments(text string) ([]string, error) {
 		case r == 0 || r == '\r' || r == '\n':
 			return nil, NewMessageError("error053")
 		case !quoted && strings.ContainsRune("&|<>^", r):
-			return nil, NewMessageError("error054", fmt.Sprint(r))
+			return nil, NewMessageError("error054", fmt.Sprintf("%c", r))
 		case !quoted && unicode.IsSpace(r):
 			flush()
 		default:

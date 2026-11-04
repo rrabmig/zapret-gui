@@ -1,6 +1,9 @@
 package core
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strconv"
+)
 
 // Message is a stable GUI code with named values, independent of the UI language.
 // OS errors and external utility output remain technical details, never matched by text.
@@ -12,7 +15,7 @@ type Message struct {
 func NewMessage(code string, values ...string) Message {
 	params := map[string]string{}
 	for i, value := range values {
-		params["value"+string(rune('1'+i))] = value
+		params["value"+strconv.Itoa(i+1)] = value
 	}
 	return Message{Code: code, Params: params}
 }

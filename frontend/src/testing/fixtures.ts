@@ -60,9 +60,9 @@ export function snapshot(scenario = "idle"): Snapshot {
     packages: ["1.10.4", "1.10.3"],
     fakes: ["quic_initial_www_google_com.bin"],
     logs: [
-      '12:00:00  {"code":"fixtureStartup","params":{}}',
-      '12:00:01  {"code":"fixturePackage","params":{"value1":"1.10.4"}}',
-      '12:00:01  {"code":"fixtureStrategy","params":{"value1":"general.bat"}}',
+      '12:00:00  {"code":"startup","params":{"value1":"0.2.0"}}',
+      '12:00:01  {"code":"release","params":{"value1":"1.10.4"}}',
+      '12:00:01  {"code":"started","params":{"value1":"general.bat"}}',
     ],
     checks: [],
     latest: null,
@@ -126,7 +126,9 @@ export function createMockBridge(scenario = "idle"): MockBridge {
     Action: async (action: Action, payload: string) => {
       calls.push({ action, payload });
       if (scenario === "bridge-error")
-        throw new Error(JSON.stringify({ code: "fixtureError", params: {} }));
+        throw new Error(
+          JSON.stringify({ code: "error026", params: { value1: "fixture" } }),
+        );
       if (action === "language") {
         state.config.language = payload === "en" ? "en" : "ru";
         localStorage.setItem("fixture-language", state.config.language);
@@ -155,7 +157,7 @@ export function createMockBridge(scenario = "idle"): MockBridge {
           {
             name: "Flowseal",
             state: "ok",
-            detail: JSON.stringify({ code: "fixtureDiagnostic", params: {} }),
+            detail: JSON.stringify({ code: "diagnosticsReadOnly", params: {} }),
           },
         ];
       if (action === "check-updates" || action === "install-update")

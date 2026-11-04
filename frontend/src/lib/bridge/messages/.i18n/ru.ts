@@ -116,12 +116,6 @@ export const ru = {
   ipsetUpdated: "IPSet обновлён; пользовательские дополнения сохранены",
   hostsApplied: "Блок hosts применён; резервная копия сохранена рядом с hosts",
   listSaved: "Пользовательский список сохранён: {value1}",
-  fixtureError: "Не удалось сохранить: тестовая ошибка моста",
-  fixtureDiagnostic:
-    "Файлы доступны. Инертный пример: системные и сетевые вызовы отсутствуют.",
-  fixtureStartup: "Zapret Desktop · автоматический запуск выключен",
-  fixturePackage: "Официальный пакет {value1} готов",
-  fixtureStrategy: "Выбрана стратегия {value1}",
   winwsExited: "winws завершился: {value1}",
   winwsStopped: "winws остановлен",
 };

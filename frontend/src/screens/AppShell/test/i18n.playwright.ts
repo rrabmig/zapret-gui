@@ -21,6 +21,8 @@ async function english(page: Page) {
 }
 async function clean(page: Page) {
   const text = await page.locator("body").innerText();
+  if ((await page.locator("html").getAttribute("lang")) === "en")
+    expect(text.replaceAll("Русский", "")).not.toMatch(/[А-Яа-яЁё]/);
   expect(text).not.toMatch(
     /undefined|\[object Object\]|\{value\d\}|error\d{3}|fixtureStartup|operationFailed/,
   );
@@ -44,6 +46,7 @@ async function clean(page: Page) {
 test("язык по умолчанию, черновики, фокус, выбранный экран и сохранение", async ({
   page,
 }) => {
+  page.on("dialog", (dialog) => void dialog.accept());
   await page.goto("http://127.0.0.1:4173/");
   await expect(page.locator("html")).toHaveAttribute("lang", "ru");
   await section(page, "Списки");
@@ -179,14 +182,12 @@ test("английские экраны, диалог, динамические 
     page.getByRole("heading", { name: "Overview", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Diagnostics", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText(
-    "Could not save: fixture bridge error",
-  );
+  await expect(page.getByRole("alert")).toContainText("Line fixture");
   await section(page, "Settings", "en");
   await page
     .getByRole("combobox", { name: "Language", exact: true })
     .selectOption("ru");
-  await expect(page.getByRole("alert")).toContainText("тестовая ошибка моста");
+  await expect(page.getByRole("alert")).toContainText("Строка fixture");
   expect(errors).toEqual([]);
 });
 
@@ -197,7 +198,12 @@ test("общий язык Storybook применяется к экранам и 
     await page.goto(
       `http://127.0.0.1:6006/iframe.html?id=screens-appshell--default&viewMode=story&globals=language:${language}`,
     );
-    // Catalog IDs are verified by the existing all-stories test; use a known component below.
+    await expect(
+      page.getByRole("heading", {
+        name: language === "ru" ? "Обзор" : "Overview",
+        exact: true,
+      }),
+    ).toBeVisible();
     await page.goto(
       `http://127.0.0.1:6006/iframe.html?id=design-system-confirmdialog--default&viewMode=story&globals=language:${language}`,
     );

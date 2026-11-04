@@ -116,12 +116,6 @@ export const en = {
   ipsetUpdated: "IPSet updated; user additions preserved",
   hostsApplied: "Hosts block applied; backup saved next to hosts",
   listSaved: "User list saved: {value1}",
-  fixtureError: "Could not save: fixture bridge error",
-  fixtureDiagnostic:
-    "Files available. Inert example: no system or network calls.",
-  fixtureStartup: "Zapret Desktop · automatic startup disabled",
-  fixturePackage: "Official package {value1} ready",
-  fixtureStrategy: "Selected strategy {value1}",
   winwsExited: "winws exited: {value1}",
   winwsStopped: "winws stopped",
 };
