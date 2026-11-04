@@ -32,10 +32,9 @@ export function Journal(_props: IJournalProps) {
         >
           {state.logs
             ?.map((line) => {
-              const match = /^(\d{2}:\d{2}:\d{2}  )(.*)$/.exec(line);
-              return match
-                ? match[1] + renderText(backendText(match[2]), language)
-                : renderText(backendText(line), language);
+              return line.message
+                ? `${line.time ?? ""}  ${renderText(backendText(JSON.stringify(line.message)), language)}`
+                : (line.text ?? "");
             })
             .join("\n") || i18n("Пока нет записей.")}
         </pre>

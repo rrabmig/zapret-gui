@@ -263,3 +263,27 @@ func TestLanguagePersistence(t *testing.T) {
 		t.Fatalf("legacy config: %+v, %v", loaded, err)
 	}
 }
+
+func TestJournalOwnMessagesAndExternalOutput(t *testing.T) {
+	journal, err := NewJournal(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer journal.Close()
+	external := NewMessage("error041").Error()
+	if _, err := journal.Write([]byte(external)); err != nil {
+		t.Fatal(err)
+	}
+	journal.AddMessage(NewMessage("started", "general.bat"))
+	journal.AddError(NewMessageError("error021", "443-1"))
+	lines := journal.Lines()
+	if len(lines) != 3 || lines[0].Text != external || lines[0].Message != nil {
+		t.Fatalf("external output was interpreted: %+v", lines)
+	}
+	if lines[1].Message == nil || lines[1].Message.Code != "started" || lines[1].Message.Params["value1"] != "general.bat" {
+		t.Fatal("owned event lost code or values")
+	}
+	if lines[2].Message == nil || lines[2].Message.Code != "error021" {
+		t.Fatal("structured error lost code")
+	}
+}

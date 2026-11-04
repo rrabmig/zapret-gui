@@ -160,9 +160,9 @@ func (e *windowsEngine) Start(root string, args []string, output io.Writer) erro
 	go func() {
 		err := cmd.Wait()
 		if err != nil {
-			fmt.Fprintln(output, NewMessage("winwsExited", fmt.Sprint(err)).Error())
+			WriteMessage(output, NewMessage("winwsExited", fmt.Sprint(err)))
 		} else {
-			fmt.Fprintln(output, NewMessage("winwsStopped").Error())
+			WriteMessage(output, NewMessage("winwsStopped"))
 		}
 		e.mu.Lock()
 		if e.cmd == cmd {

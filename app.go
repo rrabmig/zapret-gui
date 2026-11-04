@@ -28,7 +28,7 @@ type Snapshot struct {
 	Strategies  []core.Strategy  `json:"strategies"`
 	Packages    []string         `json:"packages"`
 	Fakes       []string         `json:"fakes"`
-	Logs        []string         `json:"logs"`
+	Logs        []core.LogEntry  `json:"logs"`
 	Checks      []core.Check     `json:"checks"`
 	Latest      *core.Release    `json:"latest"`
 	LastCheck   string           `json:"lastCheck"`
@@ -61,7 +61,7 @@ func NewApp(root string) (*App, error) {
 		return nil, err
 	}
 	a := &App{root: root, config: c, engine: core.NewEngine(), updater: core.NewUpdater(), journal: j, checks: []core.Check{}}
-	j.Add(core.NewMessage("startup", Version).Error())
+	j.AddMessage(core.NewMessage("startup", Version))
 	return a, nil
 }
 
@@ -76,7 +76,7 @@ func (a *App) startup(ctx context.Context) {
 				return
 			}
 			if err := a.checkUpdates(); err != nil {
-				a.journal.Add(err.Error())
+				a.journal.AddError(err)
 			}
 		}()
 	}
@@ -87,7 +87,7 @@ func (a *App) shutdown(context.Context) {
 	defer a.mu.Unlock()
 	a.closed = true
 	if err := a.engine.Stop(); err != nil {
-		a.journal.Add(err.Error())
+		a.journal.AddError(err)
 	}
 	a.journal.Close()
 }
@@ -176,7 +176,7 @@ func (a *App) checkUpdates() error {
 	}
 	a.latest = &r
 	a.lastCheck = time.Now().Format(time.RFC3339)
-	a.journal.Add(core.NewMessage("release", r.Tag).Error())
+	a.journal.AddMessage(core.NewMessage("release", r.Tag))
 	return nil
 }
 
@@ -230,7 +230,7 @@ func (a *App) activate(tag string) error {
 		return err
 	}
 	a.config = c
-	a.journal.Add(core.NewMessage("activated", tag).Error())
+	a.journal.AddMessage(core.NewMessage("activated", tag))
 	return nil
 }
 
@@ -240,7 +240,7 @@ func (a *App) Action(action, payload string) (Snapshot, error) {
 	defer a.mu.Unlock()
 	err := a.action(action, payload)
 	if err != nil {
-		a.journal.Add(err.Error())
+		a.journal.AddError(err)
 		return Snapshot{}, err
 	}
 	return a.snapshot()
@@ -318,7 +318,7 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		a.config = c
-		a.journal.Add(core.NewMessage("settingsSaved").Error())
+		a.journal.AddMessage(core.NewMessage("settingsSaved"))
 		return nil
 	case "start":
 		root, args, err := a.prepared()
@@ -328,7 +328,7 @@ func (a *App) action(action, payload string) error {
 		if err := a.engine.Start(root, args, a.journal); err != nil {
 			return err
 		}
-		a.journal.Add(core.NewMessage("started", a.config.Strategy).Error())
+		a.journal.AddMessage(core.NewMessage("started", a.config.Strategy))
 		return nil
 	case "stop":
 		// Stopping our own process is always permitted, including in inspection mode.
@@ -369,7 +369,7 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		a.toolSession = true
-		a.journal.Add(core.NewMessage("openedTool", action).Error())
+		a.journal.AddMessage(core.NewMessage("openedTool", action))
 		return nil
 	case "tools-finished":
 		s := a.engine.State()
@@ -407,7 +407,7 @@ func (a *App) action(action, payload string) error {
 		if err := core.AtomicWrite(filepath.Join(a.root, "overrides", "ipset-service.txt"), b); err != nil {
 			return err
 		}
-		a.journal.Add(core.NewMessage("ipsetUpdated").Error())
+		a.journal.AddMessage(core.NewMessage("ipsetUpdated"))
 		return nil
 	case "preview-hosts":
 		b, err := a.updater.FetchData(a.ctx, "hosts")
@@ -429,7 +429,7 @@ func (a *App) action(action, payload string) error {
 		if err := a.engine.ApplyHosts(a.hostsPreview); err != nil {
 			return err
 		}
-		a.journal.Add(core.NewMessage("hostsApplied").Error())
+		a.journal.AddMessage(core.NewMessage("hostsApplied"))
 		return nil
 	case "clear-discord-cache":
 		if err := a.enginePermission(); err != nil {
@@ -437,7 +437,13 @@ func (a *App) action(action, payload string) error {
 		}
 		message, err := a.engine.ClearDiscordCache()
 		if message != "" {
-			a.journal.Add(message)
+			// ClearDiscordCache returns an owned message or raw backup paths.
+			var event core.Message
+			if json.Unmarshal([]byte(message), &event) == nil && event.Code != "" {
+				a.journal.AddMessage(event)
+			} else {
+				a.journal.Add(message)
+			}
 		}
 		return err
 	default:
@@ -463,6 +469,6 @@ func (a *App) SaveList(name, content string) error {
 	if err := core.WriteList(a.root, name, content); err != nil {
 		return err
 	}
-	a.journal.Add(core.NewMessage("listSaved", name).Error())
+	a.journal.AddMessage(core.NewMessage("listSaved", name))
 	return nil
 }

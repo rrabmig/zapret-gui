@@ -60,9 +60,19 @@ export function snapshot(scenario = "idle"): Snapshot {
     packages: ["1.10.4", "1.10.3"],
     fakes: ["quic_initial_www_google_com.bin"],
     logs: [
-      '12:00:00  {"code":"startup","params":{"value1":"0.2.0"}}',
-      '12:00:01  {"code":"release","params":{"value1":"1.10.4"}}',
-      '12:00:01  {"code":"started","params":{"value1":"general.bat"}}',
+      {
+        time: "12:00:00",
+        message: { code: "startup", params: { value1: "0.2.0" } },
+      },
+      {
+        time: "12:00:01",
+        message: { code: "release", params: { value1: "1.10.4" } },
+      },
+      {
+        time: "12:00:01",
+        message: { code: "started", params: { value1: "general.bat" } },
+      },
+      { text: "winws: original output" },
     ],
     checks: [],
     latest: null,

@@ -60,7 +60,13 @@ export interface Snapshot {
   strategies: Strategy[];
   packages: string[];
   fakes: string[];
-  logs: string[] | null;
+  logs:
+    | {
+        time?: string;
+        text?: string;
+        message?: { code: string; params: Record<string, string> };
+      }[]
+    | null;
   checks: Check[] | null;
   latest: Release | null;
   lastCheck: string;
