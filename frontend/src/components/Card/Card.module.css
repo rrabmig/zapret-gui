@@ -1,0 +1,30 @@
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.section {
+  display: grid;
+  gap: 12px;
+}
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.heading h2 {
+  font-size: 14px;
+  font-weight: 600;
+}
+.heading p {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+@media (max-width: 850px) {
+  .heading {
+    flex-wrap: wrap;
+  }
+}

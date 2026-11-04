@@ -25,3 +25,40 @@ with their own license terms.
 The UI uses system fonts. No corporate font files, report CSS, report data, or
 client scripts are included. Visual similarity follows the user's requested
 reference, with independently written markup and styles.
+
+Frontend runtime dependencies (exact versions in `frontend/package-lock.json`):
+
+- [React and React DOM](https://github.com/facebook/react): MIT,
+  Copyright (c) Meta Platforms, Inc. and affiliates.
+- [Radix Icons](https://github.com/radix-ui/icons): MIT,
+  Copyright (c) 2022 WorkOS.
+
+Vite, TypeScript, Storybook and Playwright are development/build dependencies;
+Storybook and fixture code are excluded from the shipped frontend. Design craft
+references from [Stageshow](https://github.com/benjitaylor/skills) were consulted;
+its kit, examples and other assets are not copied into the application.
+
+## MIT terms for the frontend runtime dependencies
+
+MIT License
+
+Copyright (c) Meta Platforms, Inc. and affiliates.
+Copyright (c) 2022 WorkOS.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

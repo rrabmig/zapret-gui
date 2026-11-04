@@ -3,15 +3,18 @@
   "name": "zapret-gui",
   "outputfilename": "ZapretDesktop",
   "frontend:dir": "frontend",
-  "frontend:install": "",
-  "frontend:build": "",
-  "frontend:dev:watcher": "",
-  "author": { "name": "Kalinin Danila" },
+  "frontend:install": "npm ci --ignore-scripts",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "author": {
+    "name": "Kalinin Danila"
+  },
   "info": {
     "companyName": "rrabmig",
     "productName": "Zapret Desktop",
     "productVersion": "0.1.0",
     "copyright": "Copyright 2026 Kalinin Danila",
     "comments": "Independent GUI for Flowseal/zapret-discord-youtube"
-  }
+  },
+  "frontend:dev:serverUrl": "auto"
 }

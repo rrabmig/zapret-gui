@@ -1,0 +1,67 @@
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.field:last-child {
+  border-bottom: 0;
+}
+.field label {
+  font-weight: 550;
+}
+.field p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+  max-width: 380px;
+}
+.field select,
+.field input:not([type="checkbox"]) {
+  max-width: 290px;
+  width: 42%;
+}
+.switch {
+  appearance: none;
+  width: 34px;
+  height: 20px;
+  background: var(--line-strong);
+  border: 0;
+  border-radius: 99px;
+  padding: 3px;
+  flex: none;
+  cursor: pointer;
+}
+.switch::before {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.15s;
+  box-shadow: 0 1px 2px #0002;
+}
+.switch:checked {
+  background: var(--accent);
+}
+.switch:checked::before {
+  transform: translateX(14px);
+}
+.switch:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+@media (max-width: 600px) {
+  .field {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .field select,
+  .field input:not([type="checkbox"]) {
+    width: 100%;
+    max-width: none;
+  }
+}

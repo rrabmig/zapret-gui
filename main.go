@@ -52,7 +52,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		return
 	}
-	frontend, err := fs.Sub(assets, "frontend")
+	frontend, err := fs.Sub(assets, "frontend/dist")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return

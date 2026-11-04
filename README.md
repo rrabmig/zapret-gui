@@ -33,7 +33,7 @@
 
 ## Первый запуск на личном Windows-устройстве
 
-1. В верхней части интерфейса раскройте **«Скачать приложение»** и откройте страницу сборок. Этот блок доступен и в HTML-превью. На GitHub выберите успешный запуск **Actions → Build desktop**, прокрутите до **Artifacts** и скачайте `zapret-gui-windows-amd64`. Для скачивания нужно войти в GitHub с доступом к [private-репозиторию](https://github.com/rrabmig/zapret-gui). Распакуйте скачанный архив и ZIP внутри него. Для WebView нужен [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
+1. В боковой панели нажмите **«Скачать приложение»**, чтобы открыть страницу сборок. Эта ссылка доступна и при отсутствии Go-моста. На GitHub выберите успешный запуск **Actions → Build desktop**, прокрутите до **Artifacts** и скачайте `zapret-gui-windows-amd64`. Для скачивания нужно войти в GitHub с доступом к [private-репозиторию](https://github.com/rrabmig/zapret-gui). Распакуйте скачанный архив и ZIP внутри него. Для WebView нужен [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
 2. Откройте `ZapretDesktop.exe`. Движок выключен; установки драйвера и запуска стратегий при открытии нет.
 3. В «Обновлениях» загрузите официальный стабильный пакет. Проверьте выбранную стратегию и пользовательские списки.
 4. В «Настройках» включите «Разрешить запуск движка», сохраните и нажмите «Запросить права». GUI перезапустится после UAC.
@@ -80,11 +80,11 @@ app.log                     локальный журнал
 
 1. Unit-тесты и race detector для ядра на Windows/Linux/macOS, без запуска движка.
 2. Чтение всех стратегий последнего стабильного upstream-релиза, без извлечения и запуска его бинарников.
-   Интерфейс проверяется отдельно в Chromium с неисполняемой заглушкой Go-моста; скриншоты обеих тем доступны в артефакте `ui-screenshots-fixtures`.
+   Интерфейс проверяется отдельно в Chromium с неисполняемой заглушкой Go-моста; сравнения скриншотов обеих тем, HTML-отчёт Playwright и собранный Storybook доступны в артефакте `frontend-review`.
 3. Сборки `windows/amd64`, `darwin/universal`, `linux/amd64` с Wails v2.15.0.
 4. ZIP-артефакты, доступные участникам private-репозитория. Тег `v*` создаёт draft release после успешных сборок и проверки совместимости.
 
-Зависимости: Go 1.25+ и Wails CLI v2.15.0. Интерфейс — обычные HTML/CSS/JS, без npm и frontend-сборщика. На Linux нужны GTK3 и WebKitGTK 4.1, для macOS — Xcode Command Line Tools. Команды ниже предназначены для подходящего устройства или CI:
+Зависимости: Go 1.25+, Node.js 24 и Wails CLI v2.15.0. Интерфейс — React + TypeScript + Vite, стили компонентов — CSS Modules. Wails выполняет `npm ci --ignore-scripts` и `npm run build`, затем встраивает только `frontend/dist` в приложение. На Linux нужны GTK3 и WebKitGTK 4.1, для macOS — Xcode Command Line Tools. Команды ниже предназначены для подходящего устройства или CI:
 
 ```sh
 go install github.com/wailsapp/wails/v2/cmd/wails@v2.15.0
@@ -94,6 +94,8 @@ wails build -tags webkit2_41
 ```
 
 Пакеты GUI пока без code signing / notarization и без автоматического обновления самой оболочки. Билд не открывает окно и не запускает движок; генерация Wails bindings использует отдельную точку входа без инициализации приложения. Полная проверка WinDivert, служб и обхода должна выполняться отдельно на личном Windows-устройстве: [docs/validation.md](docs/validation.md).
+
+Разработка интерфейса, дизайн-система, Storybook и обновление визуальных эталонов: [docs/frontend.md](docs/frontend.md).
 
 ## Лицензии
 

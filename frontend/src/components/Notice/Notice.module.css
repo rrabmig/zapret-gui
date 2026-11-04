@@ -1,0 +1,26 @@
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--well);
+  color: var(--muted);
+  line-height: 1.6;
+}
+.notice svg {
+  flex: none;
+  margin-top: 2px;
+}
+.success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
