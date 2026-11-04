@@ -97,3 +97,23 @@ func TestVersionChangesRespectEveryInterlock(t *testing.T) {
 		t.Fatal("ignored upstream session")
 	}
 }
+
+func TestSnapshotRemainsUsableWhenSelectedVersionIsDamaged(t *testing.T) {
+	app, err := NewApp(t.TempDir(), t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer app.journal.Close()
+	app.engine = &inertEngine{}
+	appVersion(t, app.versionsDir, "1.0.0")
+	if err := app.action("activate", "1.0.0"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(filepath.Join(app.versionsDir, "1.0.0", "bin", "winws.exe")); err != nil {
+		t.Fatal(err)
+	}
+	snapshot, err := app.snapshot()
+	if err != nil || len(snapshot.Versions) != 1 || snapshot.Versions[0].Problem == "" || len(snapshot.Strategies) != 0 {
+		t.Fatalf("cannot recover using the catalog: %+v, %v", snapshot, err)
+	}
+}

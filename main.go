@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	rootFlag := flag.String("data-dir", "", "GUI package and settings directory")
+	rootFlag := flag.String("data-dir", "", "GUI settings and working-copy directory")
 	waitLock := flag.Bool("wait-lock", false, "wait for an elevated GUI replacement")
 	flag.Parse()
 	root := *rootFlag

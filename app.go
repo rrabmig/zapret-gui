@@ -106,7 +106,15 @@ func (a *App) snapshot() (Snapshot, error) {
 		return s, err
 	}
 	s.Versions = versions
-	if a.config.Active != "" {
+	activeReady := false
+	for _, v := range versions {
+		if v.Tag == a.config.Active && v.Problem == "" {
+			activeReady = true
+			break
+		}
+	}
+	// Keep the catalog usable when a selected package was damaged or removed.
+	if activeReady {
 		base := filepath.Join(a.versionsDir, a.config.Active)
 		s.Strategies, err = core.Strategies(base, a.config)
 		if err != nil {

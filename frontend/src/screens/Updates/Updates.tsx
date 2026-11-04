@@ -24,7 +24,9 @@ export function Updates(_props: IUpdatesProps) {
   const [selection, setSelection] = useState("");
   const selected = state.versions.some((v) => v.tag === selection)
     ? selection
-    : state.config.active || state.versions.find((v) => !v.problem)?.tag || "";
+    : state.versions.some((v) => v.tag === state.config.active)
+      ? state.config.active
+      : state.versions.find((v) => !v.problem)?.tag || "";
   const locale = language === "ru" ? "ru-RU" : "en-US";
   const date = (value: string) => new Date(value).toLocaleDateString(locale);
   async function activate(version: InstalledVersion | undefined) {
