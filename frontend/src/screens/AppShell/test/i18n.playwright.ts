@@ -144,7 +144,7 @@ test("английские экраны, диалог, динамические 
     await expect(page).toHaveScreenshot(`en-${name}.png`, { fullPage: true });
   }
   await section(page, "Overview", "en");
-  await page.getByRole("button", { name: "Diagnostics", exact: true }).click();
+  await page.getByRole("button", { name: /^Diagnostics/ }).click();
   await expect(
     page.getByRole("status").filter({ hasText: "Done." }),
   ).toBeVisible();
@@ -182,7 +182,7 @@ test("английские экраны, диалог, динамические 
   await expect(
     page.getByRole("heading", { name: "Overview", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Diagnostics", exact: true }).click();
+  await page.getByRole("button", { name: /^Diagnostics/ }).click();
   await expect(page.getByRole("alert")).toContainText("Line fixture");
   await section(page, "Settings", "en");
   await page
