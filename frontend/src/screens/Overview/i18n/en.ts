@@ -1,5 +1,5 @@
 export const en = {
-  "Автозапуск zapret": "Service and automatic startup",
+  "Автозапуск zapret": "zapret service and startup",
   "zapret продолжает работать после закрытия GUI.":
     "Keeps running after the application closes.",
   Работает: "Running",
@@ -37,7 +37,7 @@ export const en = {
     "service.bat runs with administrator privileges and can change the network, services and files. Its changes are not copied to saved GUI settings.",
   "Открыть service.bat": "Open service.bat",
   "Оригинальное меню": "Original menu",
-  "Утилита service.bat из сборки Flowseal": "All service.bat features",
+  "Утилита service.bat из сборки Flowseal": "service.bat from the Flowseal build",
   "Сбросить кэш Discord?": "Reset Discord cache?",
   "Сначала закройте Discord. Cache, Code Cache и GPUCache будут переименованы в резервные папки для Stable, PTB, Canary и Development.":
     "Close Discord first. Cache, Code Cache and GPUCache will be renamed as backup folders for Stable, PTB, Canary and Development.",
