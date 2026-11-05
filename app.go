@@ -251,7 +251,7 @@ func (a *App) action(action, payload string) error {
 		if s.Elevated {
 			return core.NewMessageError("guiUpdateUnelevated")
 		}
-		if !a.guiUpdate.Available {
+		if !a.guiUpdate.Available || !a.guiUpdate.Ready {
 			return core.NewMessageError("guiUpdateInvalid")
 		}
 		// Stop only the child owned by this GUI. A protected service stays running.

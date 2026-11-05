@@ -23,7 +23,7 @@ func TestGUISemVer(t *testing.T) {
 		{"0.1.0", "v0.2.0", true}, {"v0.1.0", "v0.1.1", true}, {"0.1.0-1234abcd", "v0.1.0", true},
 		{"0.2.0", "v0.1.9", false}, {"0.2.0", "v0.2.0", false}, {"0.2.0", "v0.3.0-beta", false},
 		{"0.2.0", "0.3.0", false}, {"unknown", "v1.0.0", false}, {"0.1.0", "v01.2.0", false},
-		{"0.1.0", "v999999999999.0.0", false}, {"1.9.9", "v2.0.0", true},
+		{"0.1.0", "v1.999999999999.0", false}, {"0.1.0", "v999999999999.0.0", false}, {"1.9.9", "v2.0.0", true},
 	} {
 		if got := NewerGUIVersion(v.current, v.tag); got != v.newer {
 			t.Errorf("%s -> %s = %v", v.current, v.tag, got)
@@ -218,5 +218,19 @@ func TestGUIInstallCancellationRestoresPreviousExecutableAndPreservesData(t *tes
 				}
 			}
 		})
+	}
+}
+
+func TestGUIRedirectPolicy(t *testing.T) {
+	u := NewGUIUpdater()
+	for _, target := range []string{"http://github.com/rrabmig", "https://evil.example/file", "https://github.com.evil.example/file", "https://user@github.com/file", "https://github.com:444/file"} {
+		req, _ := http.NewRequest(http.MethodGet, target, nil)
+		if u.client.CheckRedirect(req, nil) == nil {
+			t.Fatalf("allowed redirect %s", target)
+		}
+	}
+	req, _ := http.NewRequest(http.MethodGet, "https://release-assets.githubusercontent.com/file", nil)
+	if err := u.client.CheckRedirect(req, nil); err != nil {
+		t.Fatal(err)
 	}
 }

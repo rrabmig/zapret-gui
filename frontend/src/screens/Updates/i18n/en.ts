@@ -66,6 +66,4 @@ export const en = {
   "Удалить версию {tag}": "Delete version {tag}",
   "Сборки ещё не скачаны.": "No builds downloaded yet.",
   "Открыть папку": "Open folder",
-  "GUI for zapret обновляется отдельным установщиком. Здесь выбирается сборка Flowseal; настройки и списки сохраняются.":
-    "Update GUI for zapret with its separate installer. Select a Flowseal build here; settings and lists are preserved.",
 };

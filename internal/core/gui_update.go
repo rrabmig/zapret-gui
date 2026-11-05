@@ -29,14 +29,18 @@ func NewerGUIVersion(current, candidate string) bool {
 	if a == nil || b == nil || !strings.HasPrefix(candidate, "v") || b[4] != "" {
 		return false
 	}
-	for i := 1; i <= 3; i++ {
-		x, e := strconv.ParseUint(a[i], 10, 32)
-		y, f := strconv.ParseUint(b[i], 10, 32)
+	var left, right [3]uint64
+	for i := 0; i < 3; i++ {
+		x, e := strconv.ParseUint(a[i+1], 10, 32)
+		y, f := strconv.ParseUint(b[i+1], 10, 32)
 		if e != nil || f != nil {
 			return false
 		}
-		if x != y {
-			return y > x
+		left[i], right[i] = x, y
+	}
+	for i := 0; i < 3; i++ {
+		if left[i] != right[i] {
+			return right[i] > left[i]
 		}
 	}
 	return a[4] != ""
@@ -62,7 +66,18 @@ type GUIUpdater struct {
 }
 
 func NewGUIUpdater() *GUIUpdater {
-	return &GUIUpdater{client: NewUpdater().client, endpoint: "https://api.github.com/repos/" + GUIRepository + "/releases/latest"}
+	client := &http.Client{Timeout: 90 * time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 || req.URL.Scheme != "https" || req.URL.User != nil {
+			return guiError()
+		}
+		switch req.URL.Host {
+		case "github.com", "api.github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com":
+			return nil
+		default:
+			return guiError()
+		}
+	}}
+	return &GUIUpdater{client: client, endpoint: "https://api.github.com/repos/" + GUIRepository + "/releases/latest"}
 }
 func guiError() error { return NewMessageError("guiUpdateInvalid") }
 func guiReleaseURL(tag string) string {
