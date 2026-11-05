@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"os"
@@ -47,7 +48,7 @@ func TestVersionActionsDoNotActivateDownloadsOrRunEngine(t *testing.T) {
 	if err := app.action("activate", "1.0.0"); err != nil {
 		t.Fatal(err)
 	}
-	if err := app.action("download-version", ""); err != nil {
+	if _, err := app.Action("download-version", ""); err != nil {
 		t.Fatal(err)
 	}
 	if app.config.Active != "1.0.0" || app.config.Previous != "" {
@@ -149,5 +150,25 @@ func TestGUIUpdateInterlocksDoNotRequireRemovingAService(t *testing.T) {
 	}
 	if !app.config.GUIAutoCheck {
 		t.Fatal("GUI check preference lost")
+	}
+}
+
+func (e *inertEngine) Stop() error { return nil }
+func TestGUIUpdateKeepsOwnedService(t *testing.T) {
+	app, err := NewApp(t.TempDir(), t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer app.shutdown(context.Background())
+	app.engine = &inertEngine{state: core.EngineState{ServiceInstalled: true, ServiceRunning: true}}
+	app.guiUpdate = core.GUIUpdate{Available: true, Ready: true}
+	launched := false
+	app.launchUpdate = func(string, core.GUIUpdate, string) error { launched = true; return nil }
+	app.quit = func() {}
+	if _, err = app.Action("apply-gui-update", ""); err != nil {
+		t.Fatal(err)
+	}
+	if !launched || !app.engine.State().ServiceRunning {
+		t.Fatal("GUI update changed the service")
 	}
 }

@@ -86,7 +86,7 @@ export function snapshot(scenario = "idle"): Snapshot {
     lastCheck: "",
     toolSession: false,
   };
-  if (scenario === "running") {
+  if (scenario === "running" || scenario === "slow-operation") {
     state.engine.running = true;
     state.config.engineAllowed = true;
   }
@@ -136,12 +136,22 @@ export function createMockBridge(scenario = "idle"): MockBridge {
   const calls: MockBridge["calls"] = [];
   window.__uiCalls = calls;
   const lists = new Map<string, string>();
+  let cancelOperation: (() => void) | undefined;
   const clone = () => structuredClone(state);
   return {
     calls,
     Snapshot: async () => clone(),
     Action: async (action: Action, payload: string) => {
       calls.push({ action, payload });
+      if (action === "diagnostics" && scenario === "slow-operation") {
+        await new Promise<void>((resolve) => {
+          cancelOperation = resolve;
+        });
+        throw new Error(
+          JSON.stringify({ code: "operationCancelled", params: {} }),
+        );
+      }
+      if (action === "cancel-operation") cancelOperation?.();
       if (scenario === "bridge-error")
         throw new Error(
           JSON.stringify({ code: "error026", params: { value1: "fixture" } }),

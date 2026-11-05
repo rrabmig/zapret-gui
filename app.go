@@ -11,7 +11,6 @@ import (
 	"runtime"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/rrabmig/zapret-gui/internal/core"
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -37,7 +36,13 @@ type Snapshot struct {
 }
 
 type App struct {
-	guiUpdater   *core.GUIUpdater
+	cancel       context.CancelFunc
+	desktopCtx   context.Context
+	operation    *operation
+	launchUpdate func(string, core.GUIUpdate, string) error
+	quit         func()
+
+	guiUpdater   guiSource
 	guiUpdate    core.GUIUpdate
 	updating     bool
 	mu           sync.Mutex
@@ -46,7 +51,7 @@ type App struct {
 	versionsDir  string
 	config       core.Config
 	engine       core.Engine
-	updater      *core.Updater
+	updater      packageSource
 	journal      *core.Journal
 	latest       *core.Release
 	lastCheck    string
@@ -65,49 +70,32 @@ func NewApp(root, versionsDir string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	a := &App{root: root, versionsDir: versionsDir, config: c, engine: core.NewEngine(), updater: core.NewUpdater(), guiUpdater: core.NewGUIUpdater(), journal: j, checks: []core.Check{}}
+	ctx, cancel := context.WithCancel(context.Background())
+	a := &App{ctx: ctx, cancel: cancel, launchUpdate: core.StartGUIUpdate, quit: func() {}, root: root, versionsDir: versionsDir, config: c, engine: core.NewEngine(), updater: core.NewUpdater(), guiUpdater: core.NewGUIUpdater(), journal: j, checks: []core.Check{}}
 	j.AddMessage(core.NewMessage("startup", Version))
 	return a, nil
 }
 
 func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
-	// Startup checks fetch metadata only. GUI metadata is fetched outside the
-	// app mutex so a slow GitHub response cannot hold the first Snapshot hostage.
-	if a.config.AutoCheck {
-		go func() {
-			a.mu.Lock()
-			defer a.mu.Unlock()
-			if a.closed {
-				return
-			}
-			if err := a.checkUpdates(); err != nil {
-				a.journal.AddError(err)
-			}
-		}()
-	}
-	if a.config.GUIAutoCheck {
-		go func() {
-			next, err := a.guiUpdater.Check(ctx, Version, runtime.GOOS, runtime.GOARCH)
-			a.mu.Lock()
-			defer a.mu.Unlock()
-			if a.closed {
-				return
-			}
-			if err != nil {
-				a.journal.AddError(err)
-				return
-			}
-			a.setGUIUpdate(next)
-		}()
-	}
-
+	a.mu.Lock()
+	a.desktopCtx = ctx
+	a.quit = func() { wailsruntime.Quit(ctx) }
+	flowseal, gui := a.config.AutoCheck, a.config.GUIAutoCheck
+	a.mu.Unlock()
+	go func() {
+		if flowseal {
+			_, _ = a.Action("check-updates", "")
+		}
+		if gui {
+			_, _ = a.Action("check-gui-update", "")
+		}
+	}()
 }
-
 func (a *App) shutdown(context.Context) {
 	a.mu.Lock()
-	defer a.mu.Unlock()
 	a.closed = true
+	a.cancel()
+	a.mu.Unlock()
 	if err := a.engine.Stop(); err != nil {
 		a.journal.AddError(err)
 	}
@@ -194,17 +182,6 @@ func (a *App) prepared() (string, []string, error) {
 	return root, args, err
 }
 
-func (a *App) checkUpdates() error {
-	r, err := a.updater.Latest(a.ctx)
-	if err != nil {
-		return err
-	}
-	a.latest = &r
-	a.lastCheck = time.Now().Format(time.RFC3339)
-	a.journal.AddMessage(core.NewMessage("release", r.Tag))
-	return nil
-}
-
 func (a *App) activate(tag string) error {
 	if err := a.idle(); err != nil {
 		return err
@@ -226,8 +203,30 @@ func (a *App) activate(tag string) error {
 
 // Action is the allowlisted GUI bridge. Payloads never become shell commands.
 func (a *App) Action(action, payload string) (Snapshot, error) {
+	if isOperation(action) {
+		return a.runOperation(action)
+	}
+	if action == "stop" {
+		// Never wait for a download, catalog read or another UI action to stop our child.
+		if err := a.engine.Stop(); err != nil {
+			return Snapshot{}, err
+		}
+		return a.Snapshot()
+	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
+	if a.closed {
+		return Snapshot{}, context.Canceled
+	}
+	if action == "cancel-operation" {
+		if a.operation != nil {
+			a.operation.cancel()
+		}
+		return a.snapshot()
+	}
+	if a.operation != nil && action != "service-stop" {
+		return Snapshot{}, core.NewMessageError("operationBusy")
+	}
 	err := a.action(action, payload)
 	if err != nil {
 		a.journal.AddError(err)
@@ -241,18 +240,6 @@ func (a *App) action(action, payload string) error {
 		return core.NewMessageError("guiUpdateInProgress")
 	}
 	switch action {
-	case "check-gui-update":
-		return a.checkGUIUpdates()
-	case "download-gui-update":
-		if runtime.GOOS != "windows" || runtime.GOARCH != "amd64" {
-			return core.NewMessageError("guiUpdateManual")
-		}
-		next, err := a.guiUpdater.Download(a.ctx, a.root, Version, a.guiUpdate)
-		if err != nil {
-			return err
-		}
-		a.guiUpdate = next
-		return nil
 	case "apply-gui-update":
 		s := a.engine.State()
 		if s.StatusError != "" || s.ExternalRunning || a.toolSession {
@@ -268,11 +255,11 @@ func (a *App) action(action, payload string) error {
 		if err := a.engine.Stop(); err != nil {
 			return err
 		}
-		if err := core.StartGUIUpdate(a.root, a.guiUpdate, a.config.Language); err != nil {
+		if err := a.launchUpdate(a.root, a.guiUpdate, a.config.Language); err != nil {
 			return err
 		}
 		a.updating = true
-		go wailsruntime.Quit(a.ctx)
+		go a.quit()
 		return nil
 	case "language":
 		c := a.config
@@ -281,26 +268,6 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		a.config = c
-		return nil
-	case "check-updates":
-		return a.checkUpdates()
-	case "download-version":
-		if err := a.idle(); err != nil {
-			return err
-		}
-		if a.latest == nil {
-			if err := a.checkUpdates(); err != nil {
-				return err
-			}
-		}
-		if _, err := os.Stat(filepath.Join(a.versionsDir, a.latest.Tag)); errors.Is(err, os.ErrNotExist) {
-			if err := a.updater.Install(a.ctx, a.versionsDir, *a.latest); err != nil {
-				return err
-			}
-		} else if err != nil {
-			return err
-		}
-		a.journal.AddMessage(core.NewMessage("downloaded", a.latest.Tag))
 		return nil
 	case "open-versions":
 		if err := os.MkdirAll(a.versionsDir, 0700); err != nil {
@@ -441,36 +408,7 @@ func (a *App) action(action, payload string) error {
 		if err := a.engine.Elevate(a.root); err != nil {
 			return err
 		}
-		go wailsruntime.Quit(a.ctx)
-		return nil
-	case "diagnostics":
-		a.checks = a.engine.Diagnostics()
-		return nil
-	case "update-ipset":
-		if err := a.idle(); err != nil {
-			return err
-		}
-		b, err := a.updater.FetchData(a.ctx, "ipset-service.txt")
-		if err != nil {
-			return err
-		}
-		if err := core.ValidateList("ipset-service.txt", b); err != nil {
-			return err
-		}
-		if err := core.AtomicWrite(filepath.Join(a.root, "overrides", "ipset-service.txt"), b); err != nil {
-			return err
-		}
-		a.journal.AddMessage(core.NewMessage("ipsetUpdated"))
-		return nil
-	case "preview-hosts":
-		b, err := a.updater.FetchData(a.ctx, "hosts")
-		if err != nil {
-			return err
-		}
-		if err := core.ValidateHosts(b); err != nil {
-			return err
-		}
-		a.hostsPreview = string(b)
+		go a.quit()
 		return nil
 	case "apply-hosts":
 		if err := a.enginePermission(); err != nil {
@@ -516,6 +454,12 @@ func (a *App) ReadList(name string) (string, error) {
 func (a *App) SaveList(name, content string) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
+	if a.closed {
+		return context.Canceled
+	}
+	if a.operation != nil {
+		return core.NewMessageError("operationBusy")
+	}
 	if err := a.idle(); err != nil {
 		return err
 	}
@@ -523,15 +467,6 @@ func (a *App) SaveList(name, content string) error {
 		return err
 	}
 	a.journal.AddMessage(core.NewMessage("listSaved", name))
-	return nil
-}
-
-func (a *App) checkGUIUpdates() error {
-	next, err := a.guiUpdater.Check(a.ctx, Version, runtime.GOOS, runtime.GOARCH)
-	if err != nil {
-		return err
-	}
-	a.setGUIUpdate(next)
 	return nil
 }
 

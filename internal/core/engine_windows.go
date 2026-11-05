@@ -3,6 +3,7 @@
 package core
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -36,6 +37,7 @@ func (e *windowsEngine) State() EngineState {
 		pid = uint32(e.cmd.Process.Pid)
 	}
 	e.mu.Unlock()
+	servicePID := uint32(0)
 	s := EngineState{Supported: true, Elevated: windows.GetCurrentProcessToken().IsElevated(), Running: pid != 0, Message: NewMessage("bfeRunning").Error()}
 	handle, err := windows.OpenSCManager(nil, nil, windows.SC_MANAGER_CONNECT)
 	if err != nil {
@@ -52,6 +54,7 @@ func (e *windowsEngine) State() EngineState {
 				s.StatusError = err.Error()
 			} else {
 				s.ServiceRunning = status.State != svc.Stopped
+				servicePID = status.ProcessId
 			}
 		} else if !errors.Is(err, windows.ERROR_SERVICE_DOES_NOT_EXIST) {
 			s.StatusError = err.Error()
@@ -69,7 +72,7 @@ func (e *windowsEngine) State() EngineState {
 		defer windows.CloseHandle(snapshot)
 		entry := windows.ProcessEntry32{Size: uint32(unsafe.Sizeof(windows.ProcessEntry32{}))}
 		for err = windows.Process32First(snapshot, &entry); err == nil; err = windows.Process32Next(snapshot, &entry) {
-			if strings.EqualFold(windows.UTF16ToString(entry.ExeFile[:]), "winws.exe") && entry.ProcessID != pid {
+			if IsForeignEngine(windows.UTF16ToString(entry.ExeFile[:]), entry.ProcessID, pid, servicePID) {
 				s.ExternalRunning = true
 			}
 		}
@@ -312,14 +315,16 @@ func (e *windowsEngine) Elevate(dataDir string) error {
 	return shellExecute("runas", exe, commandLine([]string{"--data-dir", dataDir, "--wait-lock"}), filepath.Dir(exe))
 }
 
-func query(exe string, args ...string) (string, error) {
-	cmd := exec.Command(exe, args...)
+func query(ctx context.Context, exe string, args ...string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, exe, args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	output, err := cmd.CombinedOutput()
 	return strings.TrimSpace(string(output)), err
 }
 
-func (e *windowsEngine) Diagnostics() []Check {
+func (e *windowsEngine) Diagnostics(ctx context.Context) []Check {
 	checks := []Check{}
 	handle, err := windows.OpenSCManager(nil, nil, windows.SC_MANAGER_CONNECT)
 	if err != nil {
@@ -352,10 +357,10 @@ func (e *windowsEngine) Diagnostics() []Check {
 			checks = append(checks, Check{name, "warning", NewMessage("conflict").Error()})
 		}
 	}
-	if text, err := query("netsh.exe", "interface", "tcp", "show", "global"); err == nil {
+	if text, err := query(ctx, "netsh.exe", "interface", "tcp", "show", "global"); err == nil {
 		checks = append(checks, Check{"TCP / timestamps", "info", text})
 	}
-	if text, err := query("reg.exe", "query", `HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings`, "/v", "ProxyEnable"); err == nil {
+	if text, err := query(ctx, "reg.exe", "query", `HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings`, "/v", "ProxyEnable"); err == nil {
 		checks = append(checks, Check{NewMessage("proxy").Error(), "info", text})
 	}
 	checks = append(checks, Check{NewMessage("readOnly").Error(), "ok", NewMessage("diagnosticsReadOnly").Error()})

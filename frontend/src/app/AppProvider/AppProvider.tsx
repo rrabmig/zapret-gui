@@ -19,6 +19,7 @@ import {
 } from "@lib/i18n";
 import { useI18n } from "@lib/i18n";
 
+import { Button } from "@components/Button/Button";
 import type { Tone } from "@components/Badge/Badge";
 import {
   type Confirmation,
@@ -59,6 +60,8 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
   const languageWrites = useRef(Promise.resolve());
   const [state, setState] = useState<Snapshot>();
   const [busy, setBusy] = useState(false);
+  const [action, setAction] = useState<Action>();
+  const [stopping, setStopping] = useState(false);
   const [notice, setNotice] = useState<{ text: Text; tone: Tone }>();
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const pending = useRef(false);
@@ -180,6 +183,7 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
     payload = "",
     success: Text = i18n.message("Готово."),
   ) {
+    setAction(action);
     return (
       (await task(async () => {
         const next = await bridge.Action(action, payload);
@@ -187,6 +191,17 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
         return true;
       }, success)) === true
     );
+  }
+  async function control(action: "stop" | "service-stop" | "cancel-operation") {
+    if (stopping) return;
+    setStopping(true);
+    try {
+      setState(await bridge.Action(action, ""));
+    } catch (error) {
+      notify(bridgeError(error), "danger");
+    } finally {
+      setStopping(false);
+    }
   }
   function confirm(value: Confirmation) {
     if (pending.current || resolver.current) return Promise.resolve(false);
@@ -243,14 +258,47 @@ export function AppProvider({ bridge, children }: IAppProviderProps) {
         hasEdits: () => edits.current.settings || edits.current.lists,
       }}
     >
+      {notice?.text && (
+        <div className={styles.notification}>
+          <Notice tone={notice.tone}>
+            {renderText(notice.text, language)}
+            {busy && (
+              <>
+                {action &&
+                  [
+                    "check-updates",
+                    "check-gui-update",
+                    "download-version",
+                    "download-gui-update",
+                    "update-ipset",
+                    "preview-hosts",
+                    "diagnostics",
+                  ].includes(action) && (
+                    <Button
+                      disabled={stopping}
+                      onClick={() => void control("cancel-operation")}
+                    >
+                      {i18n("Отменить операцию")}
+                    </Button>
+                  )}
+                {(state.engine.running || state.engine.serviceRunning) && (
+                  <Button
+                    disabled={stopping}
+                    onClick={() =>
+                      void control(
+                        state.engine.running ? "stop" : "service-stop",
+                      )
+                    }
+                  >
+                    {i18n("Остановить zapret")}
+                  </Button>
+                )}
+              </>
+            )}
+          </Notice>
+        </div>
+      )}
       <fieldset disabled={busy} className={styles.boundary} aria-busy={busy}>
-        {notice?.text && (
-          <div className={styles.notification}>
-            <Notice tone={notice.tone}>
-              {renderText(notice.text, language)}
-            </Notice>
-          </div>
-        )}
         {children}
       </fieldset>
       <ConfirmDialog confirmation={confirmation} onResolve={resolve} />
