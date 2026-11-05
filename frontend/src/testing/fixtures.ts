@@ -34,7 +34,7 @@ export function snapshot(scenario = "idle"): Snapshot {
     },
     engine: {
       supported: true,
-      elevated: true,
+      elevated: scenario !== "gui-update",
       running: false,
       serviceInstalled: false,
       serviceRunning: false,
@@ -146,6 +146,18 @@ export function createMockBridge(scenario = "idle"): MockBridge {
         throw new Error(
           JSON.stringify({ code: "error026", params: { value1: "fixture" } }),
         );
+      if (action === "check-gui-update")
+        state.guiUpdate = {
+          tag: "v0.3.0",
+          url: "https://github.com/rrabmig/zapret-gui/releases/tag/v0.3.0",
+          notes: "Update fixture notes",
+          size: 12000000,
+          available: true,
+          ready: false,
+          checked: "2026-01-01T12:00:00Z",
+        };
+      if (action === "download-gui-update" && state.guiUpdate)
+        state.guiUpdate.ready = true;
       if (action === "language") {
         state.config.language = payload === "en" ? "en" : "ru";
         localStorage.setItem("fixture-language", state.config.language);

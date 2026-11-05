@@ -6,6 +6,7 @@ export interface Config {
   strategy: string;
   engineAllowed: boolean;
   autoCheck: boolean;
+  guiAutoCheck?: boolean;
   language?: "ru" | "en";
   theme: "system" | "light" | "dark";
   gameMode: "disabled" | "all" | "tcp" | "udp";
@@ -57,7 +58,17 @@ export interface InstalledVersion {
   strategy: string;
   problem?: string;
 }
+export interface GUIUpdate {
+  tag: string;
+  url: string;
+  notes: string;
+  size: number;
+  available: boolean;
+  ready: boolean;
+  checked: string;
+}
 export interface Snapshot {
+  guiUpdate?: GUIUpdate;
   version: string;
   os: string;
   arch: string;
@@ -81,6 +92,9 @@ export interface Snapshot {
   toolSession: boolean;
 }
 export type Action =
+  | "check-gui-update"
+  | "download-gui-update"
+  | "apply-gui-update"
   | "language"
   | "settings"
   | "start"

@@ -170,7 +170,12 @@ Section "Install"
  !insertmacro CheckClosed
  !insertmacro wails.webview2runtime
  SetOutPath $INSTDIR
+ ClearErrors
  !insertmacro wails.files
+ ${If} ${Errors}
+  SetErrorLevel 1
+  Abort
+ ${EndIf}
  # Replace only the legacy GUI entrypoints; retain downloaded builds and data.
  Delete "$INSTDIR\ZapretDesktop.exe"
  Delete "$SMPROGRAMS\Zapret Desktop.lnk"

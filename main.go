@@ -18,9 +18,17 @@ import (
 )
 
 func main() {
+	applyUpdate := flag.String("apply-gui-update", "", "internal GUI update helper job")
 	rootFlag := flag.String("data-dir", "", "GUI settings and working-copy directory")
 	waitLock := flag.Bool("wait-lock", false, "wait for an elevated GUI replacement")
 	flag.Parse()
+	if *applyUpdate != "" {
+		if err := core.RunGUIUpdate(*applyUpdate); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 	root := *rootFlag
 	if root == "" {
 		base, err := os.UserConfigDir()

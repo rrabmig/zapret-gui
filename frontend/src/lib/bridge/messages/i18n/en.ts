@@ -1,7 +1,23 @@
 export const en = {
-  invalidVersion: "Version {value1} is damaged or has an unsupported structure.",
-  versionInUse: "Select another version first. The version in use cannot be deleted.",
-  downloaded: "Downloaded Flowseal build {value1}; the selected version is unchanged.",
+  guiUpdateInvalid:
+    "Could not verify the GUI update: invalid release, installer, size or SHA-256.",
+  guiUpdateWait: "Retry the GUI update check after {value1}.",
+  guiUpdateManual:
+    "On this platform, install the GUI manually from the release page.",
+  guiUpdateUnelevated:
+    "To update, open the GUI without administrator privileges.",
+  guiUpdateHelperTimeout:
+    "The update helper could not wait for the GUI to close. Retry the update.",
+  guiUpdateInProgress: "The GUI is closing to install an update.",
+  guiUpdateCloseTools:
+    "Close the original Flowseal tools and check zapret state before updating the GUI.",
+
+  invalidVersion:
+    "Version {value1} is damaged or has an unsupported structure.",
+  versionInUse:
+    "Select another version first. The version in use cannot be deleted.",
+  downloaded:
+    "Downloaded Flowseal build {value1}; the selected version is unchanged.",
   versionDeleted: "Deleted version {value1}.",
 
   error001:

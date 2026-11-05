@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { openExternalLink } from "@lib/bridge/desktop";
 import { backendText } from "@lib/bridge/messages";
 import { policy } from "@lib/bridge/policy";
 import type { InstalledVersion } from "@lib/bridge/types";
@@ -8,7 +9,7 @@ import { renderText, useI18n, useLanguage } from "@lib/i18n";
 import { Badge } from "@components/Badge/Badge";
 import { Button } from "@components/Button/Button";
 import { Card, Section } from "@components/Card/Card";
-import { Field } from "@components/Field/Field";
+import { Field, Switch } from "@components/Field/Field";
 import { Notice } from "@components/Notice/Notice";
 
 import { useApp } from "../../app/AppProvider";
@@ -18,9 +19,30 @@ import styles from "./Updates.module.css";
 export interface IUpdatesProps {}
 export function Updates(_props: IUpdatesProps) {
   const i18n = useI18n(keyset);
-  const { state, act, confirm } = useApp();
+  const { state, act, confirm, hasEdits, notify } = useApp();
   const { language } = useLanguage();
   const p = policy(state);
+  const gui = state.guiUpdate;
+  const canInstall = state.os === "windows" && state.arch === "amd64";
+  async function installGUI() {
+    if (hasEdits()) {
+      notify(
+        i18n.message("Сохраните изменения перед обновлением GUI."),
+        "warning",
+      );
+      return;
+    }
+    if (
+      await confirm({
+        title: i18n.message("Обновить и перезапустить GUI?"),
+        body: i18n.message(
+          "Откроется установщик. Настройки, сборки и служба сохранятся. Процесс zapret, запущенный из GUI, остановится. После установки GUI откроется без запуска zapret.",
+        ),
+        label: i18n.message("Обновить и перезапустить"),
+      })
+    )
+      await act("apply-gui-update");
+  }
   const [selection, setSelection] = useState("");
   const selected = state.versions.some((v) => v.tag === selection)
     ? selection
@@ -76,6 +98,118 @@ export function Updates(_props: IUpdatesProps) {
   return (
     <div className={styles.stack}>
       <Section
+        title="GUI for zapret"
+        description={i18n("Обновление приложения через GitHub Releases.")}
+        action={
+          <Button onClick={() => void act("check-gui-update")}>
+            {i18n("Проверить обновление GUI")}
+          </Button>
+        }
+      >
+        <Switch
+          label={i18n("Проверять обновления GUI при открытии")}
+          checked={!!state.config.guiAutoCheck}
+          onChange={(value) => {
+            if (hasEdits())
+              notify(
+                i18n.message("Сохраните изменения перед обновлением GUI."),
+                "warning",
+              );
+            else
+              void act(
+                "settings",
+                JSON.stringify({ ...state.config, guiAutoCheck: value }),
+              );
+          }}
+        />
+        <Card>
+          <div className={styles.release}>
+            <div>
+              <span>{i18n("Установлена")}</span>
+              <strong>{state.version}</strong>
+            </div>
+            <div>
+              <span>{i18n("Релиз GUI")}</span>
+              <strong>
+                {gui?.tag ||
+                  (gui?.checked
+                    ? i18n("Опубликованных релизов пока нет")
+                    : i18n("Не проверен"))}
+              </strong>
+            </div>
+          </div>
+          {gui?.tag && !gui.available && (
+            <p>{i18n("Новая версия не требуется.")}</p>
+          )}
+          {gui?.notes && (
+            <details>
+              <summary>{i18n("Что нового")}</summary>
+              <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+                {gui.notes}
+              </p>
+            </details>
+          )}
+        </Card>
+        <div className={styles.actionLine}>
+          <p>
+            {i18n("Скачивание и установка — только по вашему подтверждению.")}
+            {gui?.available
+              ? ` · ${(gui.size / 1024 / 1024).toFixed(1)} ${i18n("МБ")}`
+              : ""}
+          </p>
+          <div className={styles.actions}>
+            <a
+              href={
+                gui?.url || "https://github.com/rrabmig/zapret-gui/releases"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={openExternalLink}
+            >
+              {i18n("Релизы GUI")}
+            </a>
+            {canInstall && (
+              <Button
+                disabled={!gui?.available || gui.ready}
+                onClick={() => void act("download-gui-update")}
+              >
+                {gui?.ready
+                  ? i18n("Установщик скачан")
+                  : i18n("Скачать обновление GUI")}
+              </Button>
+            )}
+            {canInstall && gui?.ready && (
+              <Button
+                variant="primary"
+                disabled={
+                  state.engine.elevated ||
+                  !!state.engine.statusError ||
+                  state.engine.externalRunning ||
+                  state.toolSession
+                }
+                onClick={() => void installGUI()}
+              >
+                {i18n("Обновить и перезапустить")}
+              </Button>
+            )}
+          </div>
+        </div>
+        {!canInstall && (
+          <Notice>
+            {i18n(
+              "На этой платформе установите новую версию вручную со страницы релиза.",
+            )}
+          </Notice>
+        )}
+        {canInstall && state.engine.elevated && (
+          <Notice>
+            {i18n(
+              "Для установки обновления откройте GUI без прав администратора.",
+            )}
+          </Notice>
+        )}
+      </Section>
+      <Section
         title={i18n("Выбранная сборка")}
         description={i18n("Выбор версии не запускает zapret.")}
       >
@@ -124,6 +258,22 @@ export function Updates(_props: IUpdatesProps) {
           </Button>
         }
       >
+        <Switch
+          label={i18n("Проверять обновления GUI при открытии")}
+          checked={!!state.config.guiAutoCheck}
+          onChange={(value) => {
+            if (hasEdits())
+              notify(
+                i18n.message("Сохраните изменения перед обновлением GUI."),
+                "warning",
+              );
+            else
+              void act(
+                "settings",
+                JSON.stringify({ ...state.config, guiAutoCheck: value }),
+              );
+          }}
+        />
         <Card>
           <div className={styles.release}>
             <div>
@@ -231,11 +381,6 @@ export function Updates(_props: IUpdatesProps) {
           </Button>
         </div>
       </Section>
-      <Notice>
-        {i18n(
-          "GUI for zapret обновляется отдельным установщиком. Здесь выбирается сборка Flowseal; настройки и списки сохраняются.",
-        )}
-      </Notice>
     </div>
   );
 }

@@ -18,6 +18,7 @@ type Config struct {
 	Previous      string `json:"previous"`
 	Strategy      string `json:"strategy"`
 	EngineAllowed bool   `json:"engineAllowed"`
+	GUIAutoCheck  bool   `json:"guiAutoCheck"`
 	AutoCheck     bool   `json:"autoCheck"`
 	Language      string `json:"language"`
 	Theme         string `json:"theme"`
