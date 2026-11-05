@@ -1,16 +1,14 @@
 export const en = {
   guiUpdateInvalid:
-    "Could not verify the GUI update: invalid release, installer, size or SHA-256.",
+    "GUI update failed release, installer or SHA-256 verification.",
   guiUpdateWait: "Retry the GUI update check after {value1}.",
-  guiUpdateManual:
-    "On this platform, install the GUI manually from the release page.",
+  guiUpdateManual: "Install the GUI manually from the release page.",
   guiUpdateUnelevated:
     "To update, open the GUI without administrator privileges.",
   guiUpdateHelperTimeout:
-    "The update helper could not wait for the GUI to close. Retry the update.",
+    "Helper not ready or GUI did not close in time. Retry the update.",
   guiUpdateInProgress: "The GUI is closing to install an update.",
-  guiUpdateCloseTools:
-    "Close the original Flowseal tools and check zapret state before updating the GUI.",
+  guiUpdateCloseTools: "Close the Flowseal tools and check zapret state.",
 
   invalidVersion:
     "Version {value1} is damaged or has an unsupported structure.",

@@ -13,14 +13,13 @@ export const en = {
   guiReady: "Installer downloaded",
   guiDownload: "Download GUI update",
   guiApply: "Update and restart",
-  guiManual:
-    "On this platform, install the new version manually from the release page.",
+  guiManual: "On this platform, install the update manually from the release.",
   guiUnelevated:
     "To install the update, open the GUI without administrator privileges.",
   guiSaveEdits: "Save your changes before updating the GUI.",
   guiConfirmTitle: "Update and restart the GUI?",
   guiConfirmBody:
-    "The installer will open. Settings, downloads and the service will be kept. The zapret process started by this GUI will stop. After installation, the GUI will reopen without starting zapret.",
+    "Settings, builds and the service are kept. This GUI’s zapret process will stop. The installer will open, then the GUI will restart without starting zapret.",
 
   "Сменить стратегию?": "Change strategy?",
   "В сборке Flowseal {tag} текущая стратегия недоступна. Будет выбрана {strategy}; отсутствующие fake-файлы заменятся стандартными.":

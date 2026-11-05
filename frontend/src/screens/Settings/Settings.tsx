@@ -150,9 +150,7 @@ export function Settings(_props: ISettingsProps) {
             />
             <Switch
               label={i18n("Проверять обновления сборки Flowseal")}
-              hint={i18n(
-                "Проверяется пакет zapret от Flowseal на GitHub. GUI обновляется отдельным установщиком.",
-              )}
+              hint={i18n("flowsealCheckHint")}
               checked={draft.autoCheck}
               onChange={(value) => change("autoCheck", value)}
             />
