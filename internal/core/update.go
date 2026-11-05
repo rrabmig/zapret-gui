@@ -30,6 +30,7 @@ type Asset struct {
 
 type Release struct {
 	Tag        string  `json:"tag_name"`
+	Body       string  `json:"body"`
 	URL        string  `json:"html_url"`
 	Published  string  `json:"published_at"`
 	Prerelease bool    `json:"prerelease"`

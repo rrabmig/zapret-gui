@@ -117,3 +117,37 @@ func TestSnapshotRemainsUsableWhenSelectedVersionIsDamaged(t *testing.T) {
 		t.Fatalf("cannot recover using the catalog: %+v, %v", snapshot, err)
 	}
 }
+
+func TestGUIUpdateInterlocksDoNotRequireRemovingAService(t *testing.T) {
+	app, err := NewApp(t.TempDir(), t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer app.journal.Close()
+	for _, state := range []core.EngineState{{Elevated: true}, {ExternalRunning: true}, {StatusError: "fixture"}} {
+		app.engine = &inertEngine{state: state}
+		if err := app.action("apply-gui-update", ""); err == nil {
+			t.Fatalf("ignored interlock %+v", state)
+		}
+	}
+	app.engine = &inertEngine{}
+	app.toolSession = true
+	if err := app.action("apply-gui-update", ""); err == nil {
+		t.Fatal("ignored tools")
+	}
+	app.toolSession = false
+	if err := app.action("apply-gui-update", ""); err == nil {
+		t.Fatal("allowed missing download")
+	}
+	// GUI-only settings remain writable while the own service is installed.
+	app.engine = &inertEngine{state: core.EngineState{ServiceInstalled: true, ServiceRunning: true}}
+	c := app.config
+	c.GUIAutoCheck = true
+	payload, _ := json.Marshal(c)
+	if err := app.action("settings", string(payload)); err != nil {
+		t.Fatal(err)
+	}
+	if !app.config.GUIAutoCheck {
+		t.Fatal("GUI check preference lost")
+	}
+}

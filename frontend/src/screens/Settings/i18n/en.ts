@@ -12,8 +12,8 @@ export const en = {
   "Запуск, службы и системные действия на Windows.":
     "Startup, services and system actions on Windows.",
   "Проверять обновления сборки Flowseal": "Check for Flowseal build updates",
-  "Проверяется пакет zapret от Flowseal на GitHub. GUI обновляется отдельным установщиком.":
-    "Checks the Flowseal zapret package on GitHub. Update the GUI with its separate installer.",
+  flowsealCheckHint:
+    "Checks only the Flowseal zapret package. GUI updates are in Flowseal builds.",
   Оформление: "Appearance",
   "Светлая, тёмная или тема системы.": "Light, dark or system theme.",
   Системная: "System",

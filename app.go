@@ -18,6 +18,7 @@ import (
 )
 
 type Snapshot struct {
+	GUIUpdate   core.GUIUpdate          `json:"guiUpdate"`
 	Version     string                  `json:"version"`
 	OS          string                  `json:"os"`
 	Arch        string                  `json:"arch"`
@@ -36,6 +37,9 @@ type Snapshot struct {
 }
 
 type App struct {
+	guiUpdater   *core.GUIUpdater
+	guiUpdate    core.GUIUpdate
+	updating     bool
 	mu           sync.Mutex
 	ctx          context.Context
 	root         string
@@ -61,14 +65,15 @@ func NewApp(root, versionsDir string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	a := &App{root: root, versionsDir: versionsDir, config: c, engine: core.NewEngine(), updater: core.NewUpdater(), journal: j, checks: []core.Check{}}
+	a := &App{root: root, versionsDir: versionsDir, config: c, engine: core.NewEngine(), updater: core.NewUpdater(), guiUpdater: core.NewGUIUpdater(), journal: j, checks: []core.Check{}}
 	j.AddMessage(core.NewMessage("startup", Version))
 	return a, nil
 }
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	// AutoCheck is opt-in and only fetches release metadata. Never auto-install.
+	// Startup checks fetch metadata only. GUI metadata is fetched outside the
+	// app mutex so a slow GitHub response cannot hold the first Snapshot hostage.
 	if a.config.AutoCheck {
 		go func() {
 			a.mu.Lock()
@@ -81,6 +86,22 @@ func (a *App) startup(ctx context.Context) {
 			}
 		}()
 	}
+	if a.config.GUIAutoCheck {
+		go func() {
+			next, err := a.guiUpdater.Check(ctx, Version, runtime.GOOS, runtime.GOARCH)
+			a.mu.Lock()
+			defer a.mu.Unlock()
+			if a.closed {
+				return
+			}
+			if err != nil {
+				a.journal.AddError(err)
+				return
+			}
+			a.setGUIUpdate(next)
+		}()
+	}
+
 }
 
 func (a *App) shutdown(context.Context) {
@@ -100,7 +121,7 @@ func (a *App) Snapshot() (Snapshot, error) {
 }
 
 func (a *App) snapshot() (Snapshot, error) {
-	s := Snapshot{Version: Version, OS: runtime.GOOS, Arch: runtime.GOARCH, DataDir: a.root, Config: a.config, Engine: a.engine.State(), Logs: a.journal.Lines(), Checks: a.checks, Latest: a.latest, LastCheck: a.lastCheck, ToolSession: a.toolSession, Versions: []core.InstalledVersion{}, VersionsDir: a.versionsDir, Strategies: []core.Strategy{}, Fakes: []string{}}
+	s := Snapshot{GUIUpdate: a.guiUpdate, Version: Version, OS: runtime.GOOS, Arch: runtime.GOARCH, DataDir: a.root, Config: a.config, Engine: a.engine.State(), Logs: a.journal.Lines(), Checks: a.checks, Latest: a.latest, LastCheck: a.lastCheck, ToolSession: a.toolSession, Versions: []core.InstalledVersion{}, VersionsDir: a.versionsDir, Strategies: []core.Strategy{}, Fakes: []string{}}
 	versions, err := core.ListVersions(a.versionsDir, a.config)
 	if err != nil {
 		return s, err
@@ -216,7 +237,43 @@ func (a *App) Action(action, payload string) (Snapshot, error) {
 }
 
 func (a *App) action(action, payload string) error {
+	if a.updating {
+		return core.NewMessageError("guiUpdateInProgress")
+	}
 	switch action {
+	case "check-gui-update":
+		return a.checkGUIUpdates()
+	case "download-gui-update":
+		if runtime.GOOS != "windows" || runtime.GOARCH != "amd64" {
+			return core.NewMessageError("guiUpdateManual")
+		}
+		next, err := a.guiUpdater.Download(a.ctx, a.root, Version, a.guiUpdate)
+		if err != nil {
+			return err
+		}
+		a.guiUpdate = next
+		return nil
+	case "apply-gui-update":
+		s := a.engine.State()
+		if s.StatusError != "" || s.ExternalRunning || a.toolSession {
+			return core.NewMessageError("guiUpdateCloseTools")
+		}
+		if s.Elevated {
+			return core.NewMessageError("guiUpdateUnelevated")
+		}
+		if !a.guiUpdate.Available || !a.guiUpdate.Ready {
+			return core.NewMessageError("guiUpdateInvalid")
+		}
+		// Stop only the child owned by this GUI. A protected service stays running.
+		if err := a.engine.Stop(); err != nil {
+			return err
+		}
+		if err := core.StartGUIUpdate(a.root, a.guiUpdate, a.config.Language); err != nil {
+			return err
+		}
+		a.updating = true
+		go wailsruntime.Quit(a.ctx)
+		return nil
 	case "language":
 		c := a.config
 		c.Language = core.NormalizeLanguage(payload)
@@ -286,7 +343,7 @@ func (a *App) action(action, payload string) error {
 			return err
 		}
 		before, after := a.config, c
-		before.Theme, before.AutoCheck, before.EngineAllowed = after.Theme, after.AutoCheck, after.EngineAllowed
+		before.Theme, before.AutoCheck, before.EngineAllowed, before.GUIAutoCheck = after.Theme, after.AutoCheck, after.EngineAllowed, after.GUIAutoCheck
 		if !reflect.DeepEqual(before, after) {
 			if err := a.idle(); err != nil {
 				return err
@@ -467,4 +524,22 @@ func (a *App) SaveList(name, content string) error {
 	}
 	a.journal.AddMessage(core.NewMessage("listSaved", name))
 	return nil
+}
+
+func (a *App) checkGUIUpdates() error {
+	next, err := a.guiUpdater.Check(a.ctx, Version, runtime.GOOS, runtime.GOARCH)
+	if err != nil {
+		return err
+	}
+	a.setGUIUpdate(next)
+	return nil
+}
+
+func (a *App) setGUIUpdate(next core.GUIUpdate) {
+	// Keep a verified download across metadata refreshes for the same asset.
+	if a.guiUpdate.Ready && a.guiUpdate.Tag == next.Tag && a.guiUpdate.Asset == next.Asset {
+		next.Ready = true
+		next.Installer = a.guiUpdate.Installer
+	}
+	a.guiUpdate = next
 }
