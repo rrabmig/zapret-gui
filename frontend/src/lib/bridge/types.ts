@@ -92,6 +92,7 @@ export interface Snapshot {
   toolSession: boolean;
 }
 export type Action =
+  | "cancel-operation"
   | "check-gui-update"
   | "download-gui-update"
   | "apply-gui-update"

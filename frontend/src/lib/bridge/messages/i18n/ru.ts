@@ -1,4 +1,7 @@
 export const ru = {
+  operationBusy: "Дождитесь завершения операции или отмените её.",
+  operationCancelled: "Операция отменена.",
+
   guiUpdateInvalid:
     "Обновление GUI не прошло проверку релиза, установщика или SHA-256.",
   guiUpdateWait: "Повторите проверку обновления GUI после {value1}.",

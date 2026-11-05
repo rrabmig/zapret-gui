@@ -1,4 +1,7 @@
 export const en = {
+  operationBusy: "Wait for the operation or cancel it.",
+  operationCancelled: "Operation cancelled.",
+
   guiUpdateInvalid:
     "GUI update failed release, installer or SHA-256 verification.",
   guiUpdateWait: "Retry the GUI update check after {value1}.",

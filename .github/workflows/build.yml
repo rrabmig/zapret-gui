@@ -178,7 +178,7 @@ jobs:
           wails build -clean -platform "$TARGET_PLATFORM" $BUILD_FLAGS -ldflags "-X main.Version=$version"
       - name: Check Windows bridge lifecycle without starting the app
         if: runner.os == 'Windows'
-        run: go test -tags bindings .
+        run: go test -race -tags bindings .
       - name: Inspect English and Russian installer options without installing
         if: runner.os == 'Windows'
         shell: pwsh

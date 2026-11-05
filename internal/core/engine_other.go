@@ -3,6 +3,7 @@
 package core
 
 import (
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,11 +19,11 @@ func (*unsupportedEngine) State() EngineState {
 	return EngineState{Message: NewMessage("error035").Error()}
 }
 func (*unsupportedEngine) Start(string, []string, io.Writer) error { return errWindows }
-func (*unsupportedEngine) Stop() error                             { return errWindows }
+func (*unsupportedEngine) Stop() error                             { return nil }
 func (*unsupportedEngine) Service(string, string, []string) error  { return errWindows }
 func (*unsupportedEngine) OpenTool(string, string) error           { return errWindows }
 func (*unsupportedEngine) Elevate(string) error                    { return errWindows }
-func (*unsupportedEngine) Diagnostics() []Check {
+func (*unsupportedEngine) Diagnostics(context.Context) []Check {
 	return []Check{{Name: NewMessage("engine").Error(), State: "unavailable", Detail: errWindows.Error()}}
 }
 func (*unsupportedEngine) ApplyHosts(string) error            { return errWindows }

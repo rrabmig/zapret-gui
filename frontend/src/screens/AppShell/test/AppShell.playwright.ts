@@ -347,3 +347,28 @@ test("project links, padded hover areas and themed native select", async ({
   await expect(theme).toHaveValue("dark");
   await accessible(page);
 });
+
+test("stop and cancel remain available during a slow operation", async ({
+  page,
+}) => {
+  await open(page, "slow-operation");
+  await page.getByRole("button", { name: "Диагностика", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Отменить операцию", exact: true }),
+  ).toBeEnabled();
+  await page
+    .getByRole("button", { name: "Остановить zapret", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Остановить zapret", exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Отменить операцию", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("Операция отменена");
+  expect((await calls(page)).map((c) => c.action)).toEqual([
+    "diagnostics",
+    "stop",
+    "cancel-operation",
+  ]);
+});
