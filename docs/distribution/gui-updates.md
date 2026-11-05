@@ -1,5 +1,7 @@
 # Обновление GUI через GitHub Releases
 
+[Дистрибуция](README.md) · [Проверки](validation.md) · [Документация](../README.md)
+
 Версия GUI for zapret и версия Windows-пакета Flowseal независимы. Этот updater получает **только GUI** из `rrabmig/zapret-gui`, не устанавливает драйверы и не меняет службу или выбранную сборку Flowseal.
 
 ## Использование
