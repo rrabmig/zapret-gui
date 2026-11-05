@@ -72,26 +72,36 @@ func NewApp(root, versionsDir string) (*App, error) {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	// AutoCheck is opt-in and only fetches release metadata. Never auto-install.
-	if a.config.AutoCheck || a.config.GUIAutoCheck {
+	// Startup checks fetch metadata only. GUI metadata is fetched outside the
+	// app mutex so a slow GitHub response cannot hold the first Snapshot hostage.
+	if a.config.AutoCheck {
 		go func() {
 			a.mu.Lock()
 			defer a.mu.Unlock()
 			if a.closed {
 				return
 			}
-			if a.config.AutoCheck {
-				if err := a.checkUpdates(); err != nil {
-					a.journal.AddError(err)
-				}
-			}
-			if a.config.GUIAutoCheck {
-				if err := a.checkGUIUpdates(); err != nil {
-					a.journal.AddError(err)
-				}
+			if err := a.checkUpdates(); err != nil {
+				a.journal.AddError(err)
 			}
 		}()
 	}
+	if a.config.GUIAutoCheck {
+		go func() {
+			next, err := a.guiUpdater.Check(ctx, Version, runtime.GOOS, runtime.GOARCH)
+			a.mu.Lock()
+			defer a.mu.Unlock()
+			if a.closed {
+				return
+			}
+			if err != nil {
+				a.journal.AddError(err)
+				return
+			}
+			a.setGUIUpdate(next)
+		}()
+	}
+
 }
 
 func (a *App) shutdown(context.Context) {
@@ -521,11 +531,15 @@ func (a *App) checkGUIUpdates() error {
 	if err != nil {
 		return err
 	}
+	a.setGUIUpdate(next)
+	return nil
+}
+
+func (a *App) setGUIUpdate(next core.GUIUpdate) {
 	// Keep a verified download across metadata refreshes for the same asset.
 	if a.guiUpdate.Ready && a.guiUpdate.Tag == next.Tag && a.guiUpdate.Asset == next.Asset {
 		next.Ready = true
 		next.Installer = a.guiUpdate.Installer
 	}
 	a.guiUpdate = next
-	return nil
 }

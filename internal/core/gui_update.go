@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -58,6 +59,7 @@ type GUIUpdate struct {
 	Asset     Asset  `json:"-"`
 }
 type GUIUpdater struct {
+	mu       sync.Mutex
 	client   *http.Client
 	endpoint string
 	etag     string
@@ -116,6 +118,8 @@ func guiAsset(r Release) (Asset, error) {
 	return a, nil
 }
 func (u *GUIUpdater) Check(ctx context.Context, current, platform, arch string) (GUIUpdate, error) {
+	u.mu.Lock()
+	defer u.mu.Unlock()
 	var state GUIUpdate
 	now := time.Now()
 	if now.Before(u.next) {

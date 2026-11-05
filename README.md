@@ -116,7 +116,7 @@ wails build -tags webkit2_41
 
 Метаданные GUI и Setup содержат `CompanyName=rrabmig`. Это не Authenticode-подпись: UAC/SmartScreen могут по-прежнему показывать неизвестного издателя. Файлы upstream не переименовываются и не получают метаданные автора GUI.
 
-Проект следующего этапа автообновления GUI из публичных GitHub Releases: [gui-updates.md](docs/gui-updates.md). Автообновление GUI пока не реализовано.
+Обновление GUI из GitHub Releases, выпуск версий и ограничения доверия: [gui-updates.md](docs/gui-updates.md).
 
 ## Технические имена существующих установок
 
