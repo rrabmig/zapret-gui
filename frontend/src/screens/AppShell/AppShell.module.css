@@ -20,8 +20,8 @@
   padding: 0 12px;
 }
 .tagline {
-  margin: 24px 12px 28px;
-  font-size: 11px;
+  margin: 24px 4px 28px 12px;
+  font-size: 10px;
   line-height: 1.7;
   color: var(--muted);
 }
@@ -62,12 +62,6 @@
   color: var(--muted);
   font-size: 10px;
 }
-.sidebarFooter button {
-  font-size: 10px;
-  justify-content: flex-start;
-  padding: 0;
-  min-height: 24px;
-}
 .sidebarFooter code {
   font-size: 10px;
 }
@@ -84,13 +78,6 @@
   justify-content: space-between;
   gap: 20px;
   padding-bottom: 28px;
-}
-.eyebrow {
-  color: var(--muted);
-  font-size: 10px;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  margin-bottom: 6px;
 }
 .header > div > p:last-child {
   color: var(--muted);
@@ -185,4 +172,45 @@
 }
 .main:focus {
   outline: none;
+}
+
+.tagline a {
+  display: block;
+  width: fit-content;
+  margin-inline: -8px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  text-decoration: none;
+}
+.tagline a:hover {
+  color: var(--accent-text);
+  background: var(--hover);
+}
+.projectLinks {
+  display: grid;
+  gap: 2px;
+  margin-inline: -8px;
+}
+.projectLinks a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  text-decoration: none;
+}
+.projectLinks a:hover {
+  color: var(--text);
+  background: var(--hover);
+  border-color: var(--line);
+}
+.projectLinks a svg {
+  flex: none;
+  width: 12px;
+  height: 12px;
 }

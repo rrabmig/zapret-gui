@@ -9,7 +9,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 
-import { openBuilds } from "@lib/bridge/desktop";
+import { openExternalLink } from "@lib/bridge/desktop";
 import { useI18n } from "@lib/i18n";
 import { arrowNavigation } from "@lib/keyboard/arrowNavigation";
 
@@ -75,9 +75,15 @@ export function AppShell(_props: IAppShellProps) {
       <aside className={styles.sidebar}>
         <div className={styles.brand}>GUI for zapret</div>
         <p className={styles.tagline}>
-          {i18n("Графический интерфейс.")}
-          <br />
-          {i18n("Сборки от Flowseal.")}
+          {i18n("Графический интерфейс для")}{" "}
+          <a
+            href="https://github.com/Flowseal/zapret-discord-youtube"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={openExternalLink}
+          >
+            <strong>zapret-discord-youtube</strong>
+          </a>
         </p>
         <nav
           aria-label={i18n("Разделы")}
@@ -97,11 +103,27 @@ export function AppShell(_props: IAppShellProps) {
           ))}
         </nav>
         <div className={styles.sidebarFooter}>
-          <span>{i18n("zapret — bol-van · GUI — rrabmig")}</span>
-          <Button variant="quiet" onClick={openBuilds}>
-            {i18n("Скачать GUI")}
-            <ExternalLinkIcon />
-          </Button>
+          <nav aria-label={i18n("Проекты")} className={styles.projectLinks}>
+            {[
+              ["GUI", "https://github.com/rrabmig/zapret-gui"],
+              [
+                "zapret-discord-youtube",
+                "https://github.com/Flowseal/zapret-discord-youtube",
+              ],
+              ["zapret", "https://github.com/bol-van/zapret"],
+            ].map(([label, href]) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={openExternalLink}
+              >
+                <span>{label}</span>
+                <ExternalLinkIcon aria-hidden="true" />
+              </a>
+            ))}
+          </nav>
           <code>{state.version}</code>
         </div>
       </aside>
@@ -113,7 +135,6 @@ export function AppShell(_props: IAppShellProps) {
       >
         <header className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>{i18n("Рабочее пространство")}</p>
             <h1 id="workspace-title">{current[1]}</h1>
             <p>{current[3]}</p>
           </div>
@@ -163,7 +184,6 @@ export function AppShell(_props: IAppShellProps) {
         </div>
         <footer className={styles.footer}>
           <span>{i18n("Без автоматического запуска")}</span>
-          <span>{i18n("zapret — bol-van · сборки — Flowseal")}</span>
         </footer>
       </main>
     </div>

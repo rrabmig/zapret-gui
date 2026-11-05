@@ -2,11 +2,11 @@
 $ErrorActionPreference = 'Stop'
 $setup = @(Get-ChildItem build/bin/GUIforzapret-Setup-*-x64.exe)
 if ($setup.Count -ne 1) { throw 'Expected one installer' }
-$installDir = Join-Path $env:LOCALAPPDATA 'Programs/ZapretDesktop'
+$installDir = Join-Path $env:LOCALAPPDATA 'Programs/GUIForZapret'
 $exe = Join-Path $installDir 'GUIforzapret.exe'
 $uninstaller = Join-Path $installDir 'uninstall.exe'
 $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\rrabmig.ZapretDesktop'
-$dataDir = Join-Path $env:APPDATA 'ZapretDesktop'
+$dataDir = Join-Path $env:APPDATA 'GUIForZapret'
 function Run-Setup {
     $process = Start-Process $setup[0].FullName -ArgumentList '/S' -Wait -PassThru
     if ($process.ExitCode -ne 0) { throw "Installer exited $($process.ExitCode)" }

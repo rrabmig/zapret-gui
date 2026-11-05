@@ -1,4 +1,6 @@
 export const en = {
+  "Графический интерфейс для": "Graphical interface for",
+  Проекты: "Projects",
   Обзор: "Overview",
   "Управляйте zapret через GUI": "Manage zapret through the GUI",
   Стратегии: "Strategies",
@@ -12,17 +14,11 @@ export const en = {
   Журнал: "Journal",
   "События и диагностика": "Events and diagnostics",
   "Перейти к содержимому": "Skip to content",
-  "Графический интерфейс.": "Graphical interface.",
-  "Сборки от Flowseal.": "Builds from Flowseal.",
   Разделы: "Sections",
-  "zapret — bol-van · GUI — rrabmig": "zapret — bol-van · GUI — rrabmig",
-  "Скачать GUI": "Download GUI",
-  "Рабочее пространство": "Workspace",
   "На этой ОС доступны пакеты, списки и настройки. Запуск zapret из сборки Flowseal, службы и сетевые тесты требуют Windows и WinDivert.":
     "Packages, lists and settings are available on this OS. Running the Flowseal Windows build of zapret, its service and network tests requires Windows and WinDivert.",
   "Открыто оригинальное окно upstream. Закройте его после завершения работы.":
     "An original upstream window is open. Close it when you finish.",
   "Сеанс завершён": "Session finished",
   "Без автоматического запуска": "No automatic startup",
-  "zapret — bol-van · сборки — Flowseal": "zapret — bol-van · builds — Flowseal",
 };

@@ -88,3 +88,80 @@ fieldset {
     scroll-behavior: auto !important;
   }
 }
+
+/* Same trigger geometry everywhere; a fixed inset keeps the arrow away from the edge. */
+select {
+  appearance: none;
+  min-height: 36px;
+  padding-inline: 12px 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='m4 5.5 3 3 3-3' fill='none' stroke='%23778396' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 14px;
+  background-position: right 12px center;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+select:hover:not(:disabled) {
+  border-color: var(--accent);
+  background-color: var(--hover);
+}
+select:disabled {
+  cursor: not-allowed;
+}
+select option {
+  color: var(--text);
+  background: var(--surface);
+}
+/* Native semantics, keyboard and top-layer picker with the application theme. */
+@supports (appearance: base-select) {
+  select,
+  select::picker(select) {
+    appearance: base-select;
+  }
+  select::picker-icon {
+    display: none;
+  }
+  select::picker(select) {
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    margin-block: 6px;
+    max-block-size: min(320px, 70vh);
+    box-shadow: 0 10px 30px #0003;
+    overflow: auto;
+  }
+  select option {
+    min-block-size: 34px;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  select option:hover,
+  select option:focus-visible {
+    color: var(--text);
+    background: var(--hover);
+    outline: none;
+  }
+  select option:checked {
+    color: var(--accent-text);
+    background: var(--accent-soft);
+  }
+  select option::checkmark {
+    color: var(--accent-text);
+  }
+  select option:disabled {
+    color: var(--muted);
+    opacity: 0.5;
+  }
+}
+@media (forced-colors: active) {
+  select {
+    appearance: auto;
+    background-image: none;
+  }
+}

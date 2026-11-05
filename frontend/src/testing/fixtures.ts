@@ -15,7 +15,7 @@ export function snapshot(scenario = "idle"): Snapshot {
     version: "0.2.0 · UI fixture",
     os: "windows",
     arch: "amd64",
-    dataDir: "C:\\Users\\Personal\\AppData\\Roaming\\ZapretDesktop",
+    dataDir: "C:\\Users\\Personal\\AppData\\Roaming\\GUIForZapret",
     config: {
       schema: 1,
       language: "ru",
@@ -58,7 +58,7 @@ export function snapshot(scenario = "idle"): Snapshot {
       },
     ],
     versionsDir:
-      "C:\\Users\\Personal\\AppData\\Local\\Programs\\ZapretDesktop\\versions",
+      "C:\\Users\\Personal\\AppData\\Local\\Programs\\GUIForZapret\\versions",
     versions: ["1.10.4", "1.10.3"].map((tag) => ({
       tag,
       downloadedAt: "2026-01-01T12:00:00Z",

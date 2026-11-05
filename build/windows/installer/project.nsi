@@ -30,8 +30,7 @@ VIAddVersionKey /LANG=1049 "LegalCopyright" "${INFO_COPYRIGHT}"
 ManifestDPIAware true
 Name "GUI for zapret"
 OutFile "..\..\bin\GUIforzapret-Setup-${INFO_PRODUCTVERSION}-x64.exe"
-InstallDir "$LOCALAPPDATA\Programs\ZapretDesktop"
-InstallDirRegKey HKCU "Software\rrabmig\ZapretDesktop" "InstallDir"
+InstallDir "$LOCALAPPDATA\Programs\GUIForZapret"
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
 !define MUI_ABORTWARNING
@@ -209,7 +208,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\versions"
  ${EndIf}
  ${If} $DeleteSettings == ${BST_CHECKED}
-  RMDir /r "$APPDATA\ZapretDesktop"
+  RMDir /r "$APPDATA\GUIForZapret"
  ${EndIf}
  Delete "$SMPROGRAMS\GUI for zapret.lnk"
  Delete "$DESKTOP\GUI for zapret.lnk"

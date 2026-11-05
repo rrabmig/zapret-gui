@@ -274,3 +274,76 @@ test("действия через инертный мост, ошибки и к�
   await page.keyboard.press("Escape");
   expect(errors).toEqual([]);
 });
+
+test("project links, padded hover areas and themed native select", async ({
+  page,
+}) => {
+  await open(page);
+  await expect(
+    page.getByText("Рабочее пространство", { exact: true }),
+  ).toHaveCount(0);
+  await expect(page.getByText(/zapret — bol-van/)).toHaveCount(0);
+  const projects = page.getByRole("navigation", {
+    name: "Проекты",
+    exact: true,
+  });
+  const expected = [
+    ["GUI", "https://github.com/rrabmig/zapret-gui"],
+    [
+      "zapret-discord-youtube",
+      "https://github.com/Flowseal/zapret-discord-youtube",
+    ],
+    ["zapret", "https://github.com/bol-van/zapret"],
+  ];
+  await page.evaluate(() => {
+    window.runtime = {
+      BrowserOpenURL: (url) =>
+        window.__uiCalls?.push({ action: "open-url", payload: url }),
+    };
+  });
+  let previousY = -1;
+  for (const [name, href] of expected) {
+    const link = projects.getByRole("link", { name, exact: true });
+    await expect(link).toHaveAttribute("href", href);
+    const box = await link.boundingBox();
+    expect(box?.y).toBeGreaterThan(previousY);
+    previousY = box!.y;
+    expect(
+      await link.evaluate((el) => parseFloat(getComputedStyle(el).paddingLeft)),
+    ).toBeGreaterThanOrEqual(10);
+    await link.hover();
+    await link.click();
+  }
+  expect((await calls(page)).map((call) => call.payload)).toEqual(
+    expected.map(([, href]) => href),
+  );
+  const upstream = page
+    .getByRole("complementary")
+    .getByRole("link", { name: "zapret-discord-youtube", exact: true })
+    .first();
+  await expect(upstream).toHaveAttribute("href", expected[1][1]);
+  await projects.getByRole("link", { name: "zapret", exact: true }).hover();
+  await expect(page).toHaveScreenshot("project-links-hover.png", {
+    fullPage: true,
+  });
+  await section(page, "Настройки");
+  const theme = page.getByRole("combobox", { name: "Оформление", exact: true });
+  expect(
+    await theme.evaluate((el) => parseFloat(getComputedStyle(el).paddingRight)),
+  ).toBeGreaterThanOrEqual(36);
+  expect(
+    await theme.evaluate(() => CSS.supports("appearance", "base-select")),
+  ).toBe(true);
+  await theme.click();
+  await expect(
+    theme.getByRole("option", { name: "Тёмная", exact: true }),
+  ).toBeVisible();
+  await expect(page).toHaveScreenshot("select-picker.png", { fullPage: true });
+  await page.keyboard.press("Escape");
+  await expect(theme).toBeFocused();
+  await theme.press("Space");
+  await page.keyboard.press("End");
+  await page.keyboard.press("Enter");
+  await expect(theme).toHaveValue("dark");
+  await accessible(page);
+});

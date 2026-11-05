@@ -95,3 +95,6 @@ Chromium и инертный мост не подтверждают работу
 Чтобы добавить язык, расширьте `Language`/`I18nSet`, словари всех владельцев, `normalizeLanguage` и Go `NormalizeLanguage`, варианты Settings и Storybook, локали дат и CI-матрицу проверок. Общий toolbar Storybook использует тот же `I18nProvider`; инертные fixtures не вызывают Go или сетевые утилиты. Их localStorage моделирует сохранение языка только в fixture-сборке, production использует Go.
 
 Проверки i18n находятся рядом с AppShell (`test/i18n.playwright.ts`): RU по умолчанию, сохранение/восстановление/неизвестный язык, черновики настроек/списков/поиска, фокус, реактивные сообщения, динамические значения, accessible names, обе темы, компактная навигация и длинные английские диалоги. Запускать только на GitHub runners.
+
+
+Общие стили select находятся в design/global.css: запас справа под стрелку — 36px, сама стрелка отстоит от края на 12px. @supports(appearance: base-select) оформляет native picker, option/checkmark/hover/focus через токены темы, сохраняя семантику select и текстовые option; unsupported WebView используют системный picker. Никакой JS-библиотеки селекта не добавлено. Ссылки имеют настоящие href/target/rel, в Wails явный клик передаётся runtime.BrowserOpenURL; browser preview использует обычный anchor.
