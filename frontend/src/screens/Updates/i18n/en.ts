@@ -1,28 +1,25 @@
 export const en = {
-  "Проверять обновления GUI при открытии": "Check GUI updates on startup",
+  guiAutoCheck: "Check GUI updates on startup",
 
-  "Обновление приложения через GitHub Releases.":
-    "Application updates through GitHub Releases.",
-  "Проверить обновление GUI": "Check GUI update",
-  Установлена: "Installed",
-  "Релиз GUI": "GUI release",
-  "Опубликованных релизов пока нет": "No published releases yet",
-  "Новая версия не требуется.": "No newer version available.",
-  "Что нового": "What’s new",
-  "Релизы GUI": "GUI releases",
-  "Скачивание и установка — только по вашему подтверждению.":
-    "Download and installation require your confirmation.",
-  "Установщик скачан": "Installer downloaded",
-  "Скачать обновление GUI": "Download GUI update",
-  "Обновить и перезапустить": "Update and restart",
-  "На этой платформе установите новую версию вручную со страницы релиза.":
+  guiDescription: "Application updates through GitHub Releases.",
+  guiCheck: "Check GUI update",
+  guiInstalled: "Installed",
+  guiRelease: "GUI release",
+  guiNoReleases: "No published releases yet",
+  guiCurrent: "No newer version available.",
+  guiNotes: "What’s new",
+  guiReleases: "GUI releases",
+  guiConfirmationHint: "Download and installation require your confirmation.",
+  guiReady: "Installer downloaded",
+  guiDownload: "Download GUI update",
+  guiApply: "Update and restart",
+  guiManual:
     "On this platform, install the new version manually from the release page.",
-  "Для установки обновления откройте GUI без прав администратора.":
+  guiUnelevated:
     "To install the update, open the GUI without administrator privileges.",
-  "Сохраните изменения перед обновлением GUI.":
-    "Save your changes before updating the GUI.",
-  "Обновить и перезапустить GUI?": "Update and restart the GUI?",
-  "Откроется установщик. Настройки, сборки и служба сохранятся. Процесс zapret, запущенный из GUI, остановится. После установки GUI откроется без запуска zapret.":
+  guiSaveEdits: "Save your changes before updating the GUI.",
+  guiConfirmTitle: "Update and restart the GUI?",
+  guiConfirmBody:
     "The installer will open. Settings, downloads and the service will be kept. The zapret process started by this GUI will stop. After installation, the GUI will reopen without starting zapret.",
 
   "Сменить стратегию?": "Change strategy?",

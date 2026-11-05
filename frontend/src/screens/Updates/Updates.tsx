@@ -26,19 +26,14 @@ export function Updates(_props: IUpdatesProps) {
   const canInstall = state.os === "windows" && state.arch === "amd64";
   async function installGUI() {
     if (hasEdits()) {
-      notify(
-        i18n.message("Сохраните изменения перед обновлением GUI."),
-        "warning",
-      );
+      notify(i18n.message("guiSaveEdits"), "warning");
       return;
     }
     if (
       await confirm({
-        title: i18n.message("Обновить и перезапустить GUI?"),
-        body: i18n.message(
-          "Откроется установщик. Настройки, сборки и служба сохранятся. Процесс zapret, запущенный из GUI, остановится. После установки GUI откроется без запуска zapret.",
-        ),
-        label: i18n.message("Обновить и перезапустить"),
+        title: i18n.message("guiConfirmTitle"),
+        body: i18n.message("guiConfirmBody"),
+        label: i18n.message("guiApply"),
       })
     )
       await act("apply-gui-update");
@@ -99,22 +94,18 @@ export function Updates(_props: IUpdatesProps) {
     <div className={styles.stack}>
       <Section
         title="GUI for zapret"
-        description={i18n("Обновление приложения через GitHub Releases.")}
+        description={i18n("guiDescription")}
         action={
           <Button onClick={() => void act("check-gui-update")}>
-            {i18n("Проверить обновление GUI")}
+            {i18n("guiCheck")}
           </Button>
         }
       >
         <Switch
-          label={i18n("Проверять обновления GUI при открытии")}
+          label={i18n("guiAutoCheck")}
           checked={!!state.config.guiAutoCheck}
           onChange={(value) => {
-            if (hasEdits())
-              notify(
-                i18n.message("Сохраните изменения перед обновлением GUI."),
-                "warning",
-              );
+            if (hasEdits()) notify(i18n.message("guiSaveEdits"), "warning");
             else
               void act(
                 "settings",
@@ -125,25 +116,21 @@ export function Updates(_props: IUpdatesProps) {
         <Card>
           <div className={styles.release}>
             <div>
-              <span>{i18n("Установлена")}</span>
+              <span>{i18n("guiInstalled")}</span>
               <strong>{state.version}</strong>
             </div>
             <div>
-              <span>{i18n("Релиз GUI")}</span>
+              <span>{i18n("guiRelease")}</span>
               <strong>
                 {gui?.tag ||
-                  (gui?.checked
-                    ? i18n("Опубликованных релизов пока нет")
-                    : i18n("Не проверен"))}
+                  (gui?.checked ? i18n("guiNoReleases") : i18n("Не проверен"))}
               </strong>
             </div>
           </div>
-          {gui?.tag && !gui.available && (
-            <p>{i18n("Новая версия не требуется.")}</p>
-          )}
+          {gui?.tag && !gui.available && <p>{i18n("guiCurrent")}</p>}
           {gui?.notes && (
             <details>
-              <summary>{i18n("Что нового")}</summary>
+              <summary>{i18n("guiNotes")}</summary>
               <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
                 {gui.notes}
               </p>
@@ -152,7 +139,7 @@ export function Updates(_props: IUpdatesProps) {
         </Card>
         <div className={styles.actionLine}>
           <p>
-            {i18n("Скачивание и установка — только по вашему подтверждению.")}
+            {i18n("guiConfirmationHint")}
             {gui?.available
               ? ` · ${(gui.size / 1024 / 1024).toFixed(1)} ${i18n("МБ")}`
               : ""}
@@ -166,16 +153,14 @@ export function Updates(_props: IUpdatesProps) {
               rel="noopener noreferrer"
               onClick={openExternalLink}
             >
-              {i18n("Релизы GUI")}
+              {i18n("guiReleases")}
             </a>
             {canInstall && (
               <Button
                 disabled={!gui?.available || gui.ready}
                 onClick={() => void act("download-gui-update")}
               >
-                {gui?.ready
-                  ? i18n("Установщик скачан")
-                  : i18n("Скачать обновление GUI")}
+                {gui?.ready ? i18n("guiReady") : i18n("guiDownload")}
               </Button>
             )}
             {canInstall && gui?.ready && (
@@ -189,24 +174,14 @@ export function Updates(_props: IUpdatesProps) {
                 }
                 onClick={() => void installGUI()}
               >
-                {i18n("Обновить и перезапустить")}
+                {i18n("guiApply")}
               </Button>
             )}
           </div>
         </div>
-        {!canInstall && (
-          <Notice>
-            {i18n(
-              "На этой платформе установите новую версию вручную со страницы релиза.",
-            )}
-          </Notice>
-        )}
+        {!canInstall && <Notice>{i18n("guiManual")}</Notice>}
         {canInstall && state.engine.elevated && (
-          <Notice>
-            {i18n(
-              "Для установки обновления откройте GUI без прав администратора.",
-            )}
-          </Notice>
+          <Notice>{i18n("guiUnelevated")}</Notice>
         )}
       </Section>
       <Section
@@ -258,22 +233,6 @@ export function Updates(_props: IUpdatesProps) {
           </Button>
         }
       >
-        <Switch
-          label={i18n("Проверять обновления GUI при открытии")}
-          checked={!!state.config.guiAutoCheck}
-          onChange={(value) => {
-            if (hasEdits())
-              notify(
-                i18n.message("Сохраните изменения перед обновлением GUI."),
-                "warning",
-              );
-            else
-              void act(
-                "settings",
-                JSON.stringify({ ...state.config, guiAutoCheck: value }),
-              );
-          }}
-        />
         <Card>
           <div className={styles.release}>
             <div>
